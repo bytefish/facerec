@@ -72,7 +72,7 @@ class PCA(Model):
 		self._eigenvalues = np.power(self._eigenvalues,2) / X.shape[1]
 	
 	def __repr__(self):
-		return "PCA"
+		return "PCA (num_components=%d)" % (self.num_components)
 		
 	def project(self, X):
 		""" Projects a sample into the PCA subspace.
@@ -203,7 +203,7 @@ class LDA(Model):
 		return np.dot(self._eigenvectors, X)
 	
 	def __repr__(self):
-		return "LDA"
+		return "LDA (num_components=%d)" % (self.num_components)
 	
 	@property
 	def W(self):
@@ -292,6 +292,7 @@ class Eigenfaces(Model):
 			y [1 x num_data] classes
 		"""
 		self.pca = PCA(X, num_components=self.num_components, ignore_components=self.ignore_components)
+		self.num_components = self.pca.num_components
 		self.y = y
 		self.P = self.project(X)
 		
@@ -317,7 +318,7 @@ class Eigenfaces(Model):
 		return self.pca.reconstruct(X)
 		
 	def __repr__(self):
-		return "Eigenfaces"
+		return "Eigenfaces (num_components=%d)" % (self.num_components)
 	
 	def predict(self, X):
 		""" k-Nearest Neighbor prediction of given column vector.

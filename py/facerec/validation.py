@@ -15,7 +15,7 @@ class Commons(object):
 	""" Common methods available to all Validation classes. """
 	@staticmethod
 	def shuffle(X, y):
-		""" Shuffles two arrays by column. Assert that, X.shape[1] ==.y.shape[0].
+		""" Shuffles two arrays by column (len(X) == len(y))
 			Args:
 				X [dim x num_data] input data
 				y [1 x num_data] classes
@@ -29,11 +29,15 @@ class Commons(object):
 	def slice(X,rows,cols):
 		"""
 		Slices a 2D list to a flat array. If you know a better approach, please correct this.
-		>>> from validation import *
-		>>> X=[[1,2,3,4],[5,6,7,8]]
-		>>> # slice first two rows and first column
-		>>> Commons.slice(X, range(0,2), range(0,1)) # returns [1, 5]
-		>>> Commons.slice(X, range(0,1), range(0,4)) # returns [1,2,3,4]
+		Args:
+			X [num_rows x num_cols] multi-dimensional data
+			rows [list] rows to slice
+			cols [list] cols to slice
+		Example:
+			>>> X=[[1,2,3,4],[5,6,7,8]]
+			>>> # slice first two rows and first column
+			>>> Commons.slice(X, range(0,2), range(0,1)) # returns [1, 5]
+			>>> Commons.slice(X, range(0,1), range(0,4)) # returns [1,2,3,4]
 		"""
 		return [X[i][j] for j in cols for i in rows]
 
@@ -56,7 +60,7 @@ class Validation(object):
 		""" Adds a validation result [tp,fp,tn,fn] to this Validation object.
 		
 		Args:
-			result: list with len(result) == 4
+			result [list] [tp, fp, tn, fn]
 		"""
 		if len(result) != 4:
 			return
@@ -71,12 +75,6 @@ class Validation(object):
 			
 		Returns: 
 			List with sliced results.
-			
-			>>> validation.at(0)
-			array([41, 44, 40, 44]) # all results
-			>>> validation.at(0,[0,2])
-			array([41, 40])
-
 		"""
 		if row is None:
 			row = range(0,self._results.shape[0])
@@ -160,16 +158,16 @@ class KFoldCrossValidation(Validation):
 	
 	Here is a 3-fold cross validation example for 9 observations and 3 classes, so each observation is given by its index [c_i][o_i]:
 				
-	     o0 o1 o2         o0 o1 o2         o0 o1 o2  
-	c0  | A  B  B	|   c0 | B  A  B |   c0 | B  B  A |
-	c1  | A  B  B	|   c1 | B  A  B |   c1 | B  B  A |
-	c2  | A  B  B	|   c2 | B  A  B |   c2 | B  B  A |
+	    o0 o1 o2        o0 o1 o2        o0 o1 o2  
+	c0 | A  B  B |  c0 | B  A  B |  c0 | B  B  A |
+	c1 | A  B  B |  c1 | B  A  B |  c1 | B  B  A |
+	c2 | A  B  B |  c2 | B  A  B |  c2 | B  B  A |
 	
 	Please note: If there are less than k observations in a class, k is set to the minimum of observations available through all classes.
 	
 	Arguments:
-		model: Model this validation was performed on.
-		see (class Validation Arguments)
+		model [Model] model for this validation
+		... see [Validation]
 	"""
 	def __init__(self, model, k=10, results_per_fold=False):
 		"""
@@ -242,20 +240,21 @@ class KFoldCrossValidation(Validation):
 class LeaveOneOutCrossValidation(Validation):
 	""" Leave-One-Cross Validation (LOOCV) uses one observation for testing and the rest for training a classifier:
 
-	     o0 o1 o2         o0 o1 o2         o0 o1 o2           o0 o1 o2
-	c0  | A  B  B	|   c0 | B  A  B |   c0 | B  B  A |     c0 | B  B  B |
-	c1  | B  B  B	|   c1 | B  B  B |   c1 | B  B  B |     c1 | B  B  B |
-	c2  | B  B  B	|   c2 | B  B  B |   c2 | B  B  B | ... c2 | B  B  A |
+	    o0 o1 o2        o0 o1 o2        o0 o1 o2           o0 o1 o2
+	c0 | A  B  B |  c0 | B  A  B |  c0 | B  B  A |     c0 | B  B  B |
+	c1 | B  B  B |  c1 | B  B  B |  c1 | B  B  B |     c1 | B  B  B |
+	c2 | B  B  B |  c2 | B  B  B |  c2 | B  B  B | ... c2 | B  B  A |
 	
 	Arguments:
-		model: Model this Validation is performed on.
+		model [Model] model for this validation
+		... see [Validation]
 	"""
 
 	def __init__(self, model):
 		""" Intialize Cross-Validation module.
 		
 		Args:
-			model [Model] model to validate
+			model [Model] model for this validation
 		"""
 		super(LeaveOneOutCrossValidation, self).__init__()
 		self.model = model

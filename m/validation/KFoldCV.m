@@ -23,9 +23,9 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 	end
 	
 	if ~exist("per_fold")
-		per_fold=1;
+		per_fold=0;
 	endif
-	
+
 	% shuffle array (is there a function for this?)
 	[d idx] = sort(rand(1, size(X,2)));
 	X = X(:,idx);
@@ -35,9 +35,9 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 	
 	% create class to image array, looks like this:
 	%
-	% c1	=	[	I1, I2, I3;
-	% c2	=	 	I4, I5, I6; 
-	% c3	=		I7, I8, I9 ] 
+	% c1  = [ I1, I2, I3;
+	% c2  =   I4, I5, I6; 
+	% c3  =   I7, I8, I9 ] 
 	
 	C = max(y); % means y must be {1,2,3,...,C}
 	foldIndices = [];
@@ -66,17 +66,17 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 	for i = 1:k
 		%
 		% Works like this:
-		% (1)	class1|ABBBBBBBBB|	(2)	class1|BABBBBBBBB|	(k) ...
-		%			class2|ABBBBBBBBB|			class2|BABBBBBBBB|
-		%			classN|ABBBBBBBBB|			classN|BABBBBBBBB|
+		% (1) class1|ABBBBBBBBB| (2) class1|BABBBBBBBB| (k) ...
+		%	    class2|ABBBBBBBBB|     class2|BABBBBBBBB|
+		%     classN|ABBBBBBBBB|     classN|BABBBBBBBB|
 		%
-	 	if(print_debug)
-	 		printf("Processing fold %d.\n", i);
-	 		fflush(stdout);
-	 	endif
+		if(print_debug)
+			printf("Processing fold %d.\n", i);
+			fflush(stdout);
+		endif
 	 	
-	 	l = i*foldSize;
-	 	h = (i+1)*foldSize-1;
+		l = i*foldSize;
+		h = (i+1)*foldSize-1;
 
 		testIdx = foldIndices(:, l:h);
 		trainIdx = foldIndices(:, [1:(l-1), (h+1):n]);
@@ -97,21 +97,20 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		for idx=testIdx
 			% evaluate model and return prediction structure
 			prediction = fun_predict(model, X(:,idx));
-			%% if you want to count [tn, fn] please add your code here
+			% if you want to count [tn, fn] please add your code here
 			if(prediction == y(idx))
 				tp = tp + 1;
 			else
 				fp = fp + 1;
 			endif
 		endfor
+		
 		if(per_fold)
 			validation_result = [validation_result; [tp, fp, tn, fn]];
 		endif
 	endfor
-	
 	% or set the accumulated result
 	if(~per_fold)
 		validation_result = [tp, fp, tn, fn];
-	endif
-	
+	endif	
 endfunction

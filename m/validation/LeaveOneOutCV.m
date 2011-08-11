@@ -21,23 +21,24 @@ function validation_result = LeaveOneOutCV(X, y, fun_train, fun_predict, print_d
 			fflush(stdout);
 		endif
 		
-	  Xi = X(:,1); X(:,1) = [];
-	  yi = y(1); y(1) = [];
+		Xi = X(:,1); X(:,1) = [];
+		yi = y(1); y(1) = [];
 	  
-	  model = fun_train(X, y);
-	  prediction = fun_predict(model, Xi);
+		model = fun_train(X, y);
+		prediction = fun_predict(model, Xi);
 
- 		%% if you want to count [tn, fn] please add your code here
+		%% if you want to count [tn, fn] please add your code here
 		if(prediction == yi)
 			tp = tp + 1;
 		else
 			fp = fp + 1;
 		endif
 		
-	  % add to test instance end of list
+		% add to test instance end of list
 		X = [X, Xi];
 		y = [y, yi];
 	endfor
-	
+		
 	validation_result = [tp fp tn fn];
+	
 endfunction

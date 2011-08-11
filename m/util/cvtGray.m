@@ -12,6 +12,6 @@ function G = cvtGray(I, width, height)
 	%% Example:
 	%% 	cvtGray(I, 200, 100)
 	%%
-  G = reshape(normalize(I, 0, 255), height, width);
-  G = uint8(G);
+	G = reshape(normalize(I, 0, 255), height, width);
+	G = uint8(G);
 end

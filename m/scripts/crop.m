@@ -34,7 +34,7 @@ function crop(filename, eye0, eye1, top, left, dsize)
 
 	eye2 = eye1 - eye0
 
-	%rotation angle to align both eyes
+	% rotation angle to align both eyes
 	rotation = -atand(eye2(2)/eye2(1))
 
 	% distance between them
@@ -65,5 +65,5 @@ function crop(filename, eye0, eye1, top, left, dsize)
 	system(cmd1);
 	
 	% do cleanup
-	%system(sprintf("rm %s", tmpfn))
+	system(sprintf("rm %s", tmpfn))
 endfunction

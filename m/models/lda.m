@@ -1,26 +1,21 @@
 function model = lda(X, y, num_components)
-	%% Performs a Linear Discriminant Analysis and returns the 
-	%% num_components components sorted descending by their 
-	%% eigenvalue. 
+	%%	Performs a Linear Discriminant Analysis and returns the 
+	%%	num_components components sorted descending by their 
+	%%	eigenvalue. 
 	%%
-	%% num_components is bound to the number of classes, hence
-	%% num_components = min(c-1, num_components)
+	%%	num_components is bound to the number of classes, hence
+	%%	num_components = min(c-1, num_components)
 	%%
-	%% Args:
-	%%  X: Array with observations given in column.
-	%%  y: Classes corresponding to y.
-	%%  num_components: Number of components to store.
+	%%	Args:
+	%%		X [dim x num_data] input data
+	%%		y [1 x num_data] classes
+	%%		num_components [int] number of components to keep
 	%%	
-	%% Returns:
-	%%  model: Represents the learned model.
-	%%
-	%% Model description:
-	%%  mu - mean of the model.
-	%%  name - "lda"
-	%%  W - 1:num_components eigenvectors
-	%%
-	%% Example:
-	%% 	lda(I, 200)
+	%%	Returns:
+	%%		model [struct] Represents the learned model.
+	%%			.name [char] name of the model
+	%%			.num_components [int] number of components in this model
+	%%			.W [array] components identified by LDA
 	%%
 	dim = size(X,1);
 	c = max(y); 

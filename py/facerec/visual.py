@@ -65,7 +65,7 @@ class PlotBasic(object):
 		Args:
 			I [width x height] input image
 			filename [string] location to store the plot at
-			size [tuple] image dimensions to reshape to (default size(I))
+			size [tuple] image dimensions to reshape to (default: size(I))
 		"""
 		if size == None:
 			size = I.shape
@@ -97,7 +97,8 @@ class PlotSubspace:
 			size [tuple] (width,height)
 			
 		Example:
-			PlotSubspace.weight(pca.W, (130,100), 16, 
+			PlotSubspace.plot_weight(model=eigenfaces, num_components=16, dataset=dataset, 
+			 title="Eigenfaces", rows=4, cols=4, filename="16_eigenfaces.png")
 		"""
 		W = model.W
 		if (rows is None) or (cols is None):
@@ -130,21 +131,20 @@ class PlotValidation:
 	def parameter(validators, parameter, filename, xtitle="parameter", xlim=None, title="Accuracy vs. Parameter"):
 		""" Creates an Errorbar plot with Parameter (X) vs Validator Accuracy (Y). 
 	
-		The parameters must be passed as a list (e.g. [10,15,20,25,30]) in case models have more than 1 parameter. 
-		It would be ambigous otherwise.
+		The parameters must be passed as a list (e.g. [10,15,20,25,30]) 
+		in case models have more than 1 parameter. 
 	
 		Args:
 			validators [dict]
-				key [string] title of validators
-				value [list] list of validator objects
+			key [string] title of validators
+			value [list] list of validator objects
 			parameters [list] Parameter values corresponding to the validators of each model.
 		
 		Example:
-		
 			validators = {'Eigenfaces' : [val0, val1, val2], 'Fisherfaces':[val0, val1, val2]}
 			parameters = [10, 20, 30]
 			
-			 parameter_vs_accuracy(validators, parameter, filename="eigenfaces_vs_accuracy.png", xtitle="Eigenfaces", xlim=[0,105], title="Number of Eigenfaces vs. Accuracy")
+			parameter_vs_accuracy(validators, parameter, filename="eigenfaces_vs_accuracy.png", xtitle="Eigenfaces", xlim=[0,105], title="Number of Eigenfaces vs. Accuracy")
 		"""
 		fig = plt.figure()
 		legend = []

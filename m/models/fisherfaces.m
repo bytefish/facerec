@@ -1,4 +1,22 @@
 function model = fisherfaces(X, y, num_components)
+	%%	Fisherfaces (see Python version for description)
+	%%
+	%%	Args:
+	%%		X [dim x num_data] input data
+	%%		y [1 x num_data] classes
+	%%		num_components [int] components to keep
+	%%
+	%%	Out:
+	%%		model [struct] learned model
+	%%			.name [char] name
+	%%			.mu [dim x 1] sample mean of X
+	%%			.num_components [int] number of components in this model
+	%%			.W [dim x num_components] components identified by LDA
+	%%			.P [num_components x num_data] projection of X
+	%%
+	%%	Example:
+	%%		m_fisherface = fisherface(X, y)
+	
 	N = size(X,2);
 	c = max(y);
 	
