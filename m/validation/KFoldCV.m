@@ -61,9 +61,9 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 
 	% instances per fold
 	foldSize = floor(n/k);
-
+	
 	% calculate fold indices for Testset A, Trainingset B
-	for i = 1:k
+	for i = 0:(k-1)
 		%
 		% Works like this:
 		% (1) class1|ABBBBBBBBB| (2) class1|BABBBBBBBB| (k) ...
@@ -75,9 +75,8 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 			fflush(stdout);
 		endif
 	 	
-		l = i*foldSize;
-		h = (i+1)*foldSize-1;
-
+		l = i*foldSize+1;
+		h = (i+1)*foldSize;
 		testIdx = foldIndices(:, l:h);
 		trainIdx = foldIndices(:, [1:(l-1), (h+1):n]);
 		
@@ -92,7 +91,6 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		if(per_fold)
 			tp=0; fp=0; tn=0; fn=0;
 		endif
-		
 		% test the model
 		for idx=testIdx
 			% evaluate model and return prediction structure
@@ -108,9 +106,11 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		if(per_fold)
 			validation_result = [validation_result; [tp, fp, tn, fn]];
 		endif
+				
 	endfor
+	
 	% or set the accumulated result
 	if(~per_fold)
 		validation_result = [tp, fp, tn, fn];
-	endif	
+	endif
 endfunction
