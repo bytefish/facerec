@@ -1,6 +1,7 @@
 import os as os
 import numpy as np
 import PIL.Image as Image
+import util
 
 """
 	Author: philipp <bytefish[at]gmx.de>
@@ -36,7 +37,10 @@ class FilesystemReader(object):
 		if num < 0 or num >= len(self.names):
 			return 'Class not in Dataset.'
 		return self.names[num]
-	
+
+	def shuffle(self):
+		self.data, self.classes = util.shuffle(self.data, self.classes)
+
 	def load(self, path):
 		""" Load images from a given path (resets stored data).
 		

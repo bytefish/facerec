@@ -154,8 +154,7 @@ class LDA(Model):
 			y [1 x num_data] List with classes corresponding to the samples of X.
 		"""
 		d = X.shape[0]
-		c = len(np.unique(y))
-		
+		c = len(np.unique(y))		
 		if self.num_components is None:
 			self.num_components = c-1
 		elif self.num_components > (c-1):
@@ -171,9 +170,9 @@ class LDA(Model):
 			meanClass = np.mean(Xi, axis = 1).reshape(-1,1)
 			Sw = Sw + np.dot((Xi-meanClass), (Xi-meanClass).T)
 			Sb = Sb + Xi.shape[1] * np.dot((meanClass - meanTotal), (meanClass - meanTotal).T)
-				
-		self._eigenvalues, self._eigenvectors = np.linalg.eig(np.linalg.inv(Sw)*Sb)
 		
+		self._eigenvalues, self._eigenvectors = np.linalg.eig(np.linalg.inv(Sw)*Sb)
+
 		# sort descending by eigenvalue
 		idx = np.argsort(-self._eigenvalues.real)
 		self._eigenvalues, self._eigenvectors = self._eigenvalues[idx], self._eigenvectors[:,idx]
@@ -181,6 +180,7 @@ class LDA(Model):
 		# copy only the (c-1) non-zero eigenvalues
 		self._eigenvalues = np.array(self._eigenvalues[0:self.num_components].real, dtype=np.float32, copy=True)
 		self._eigenvectors = np.matrix(self._eigenvectors[0:,0:self.num_components].real, dtype=np.float32, copy=True)
+
 		
 	def project(self, X):
 		""" Projects X onto the num_components found by the LDA: W'*X

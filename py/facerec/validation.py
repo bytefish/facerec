@@ -286,27 +286,40 @@ class LeaveOneOutCrossValidation(Validation):
 	def __repr__(self):
 		return "Leave-One-Out Cross Validation (model=%s, runs=%d, accuracy=%.2f%%, tp=%s, fp=%s, tn=%s, fn=%s)" % (self.model, self.runs, (self.accuracy * 100.0), self.tps, self.fps, self.tns, self.fns)
 
-if __name__ == "__main__":
-	pass
-	#from models import *
-	#from validation import *
-	#from filereader import *
-	#data, classes, width, height = ReaderFilesystem.scan("/home/philipp/facerec/data/c1")
-	#eigenface = Eigenfaces(num_components=30)
-	#k1 = KFoldCrossValidation(eigenface,10)
-	#for i in range(0,4):
-	#	k1.validate(data,classes)
-	# Example:
-	#>>> k1.tp
-	#array([41, 44, 40, 44])
-	#>>> k1.tps
-	#169
-	#>>> k1.accuracy
-	#0.42249999999999999
-	#>>> k1.runs
-	#4
-	#>>> k1.results
-	#array([[41, 59,  0,  0],
-  #	  	  [44, 56,  0,  0],
-  # 	    [40, 60,  0,  0],
-  #   	  [44, 56,  0,  0]])
+
+class SimpleValidation(Validation):
+	"""
+	"""
+	def __init__(self, model):
+		"""
+		Args:
+			model [Model] model to perform the validation on
+		"""
+		super(SimpleValidation, self).__init__()
+		self.model = model
+	
+	def validate(self, X, y, trainIdx, testIdx, print_debug=False):
+		"""
+		Performs a validation given training data and test data. User is responsible for non-overlapping assignment of indices.
+
+		Args:
+			X [dim x num_data] input data to validate on
+			y [1 x num_data] classes
+		"""
+		if print_debug:
+				print "Performing a simple validation..."
+		
+		self.model.compute(X[:,trainIdx], y[trainIdx])
+		
+		tp, fp, tn, fn = (0,0,0,0)
+		for i in testIdx:
+				prediction = self.model.predict(X[:,i])
+				if prediction == y[i]:
+					tp = tp + 1
+				else:
+					fp = fp + 1
+		self.add([tp, fp, tn, fn])
+		self.model.empty()
+	
+	def __repr__(self):
+		return "Simple Validation (model=%s, runs=%s, accuracy=%.2f%%, std(accuracy)=%.2f%%, tp=%s, fp=%s, tn=%s, fn=%s)" % (self.model, self.runs, (self.accuracy*100.0), (self.std_accuracy*100.0), self.tps, self.fps, self.tns, self.fns)
