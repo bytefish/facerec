@@ -39,5 +39,5 @@ plt.legend(("Eigenfaces", "Fisherfaces"), 'lower right', shadow=True, fancybox=T
 plt.ylim(0,1)
 plt.ylabel('Recognition Rate')
 plt.xlabel('Database Size (Images per Person)')
-fig.savefig(filename, format="png", transparent=False)
+#fig.savefig(filename, format="png", transparent=False)
 plt.show()
