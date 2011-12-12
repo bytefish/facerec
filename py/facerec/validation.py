@@ -1,6 +1,7 @@
 import numpy as np
 import math as math
 import random as random
+from facerec.models import PredictableModel
 
 """
 	Author: philipp <bytefish[at]gmx.de>
@@ -11,36 +12,34 @@ import random as random
 		Add logging and tests. 
 """
 
-class Commons(object):
-	""" Common methods available to all Validation classes. """
-	@staticmethod
-	def shuffle(X, y):
-		""" Shuffles two arrays by column (len(X) == len(y))
-			Args:
-				X [dim x num_data] input data
-				y [1 x num_data] classes
-			Returns:
-				shuffled arrays
-		"""
-		idx = np.argsort([random.random() for i in xrange(y.shape[0])])
-		return (X[:,idx], y[idx])
-
-	@staticmethod
-	def slice(X,rows,cols):
-		"""
-		Slices a 2D list to a flat array. If you know a better approach, please correct this.
+def shuffle(X, y):
+	""" Shuffles two arrays by column (len(X) == len(y))
 		Args:
-			X [num_rows x num_cols] multi-dimensional data
-			rows [list] rows to slice
-			cols [list] cols to slice
-		Example:
-			>>> X=[[1,2,3,4],[5,6,7,8]]
-			>>> # slice first two rows and first column
-			>>> Commons.slice(X, range(0,2), range(0,1)) # returns [1, 5]
-			>>> Commons.slice(X, range(0,1), range(0,4)) # returns [1,2,3,4]
-		"""
-		return [X[i][j] for j in cols for i in rows]
+			X [dim x num_data] input data
+			y [1 x num_data] classes
+		Returns:
+			shuffled arrays
+	"""
+	idx = np.argsort([random.random() for i in xrange(len(y))])
+	y = np.asarray(y)
+	X = [X[i] for i in idx]
+	y = y[idx]
+	return (X, y)
 
+def slice_2d(X,rows,cols):
+	"""
+	Slices a 2D list to a flat array. If you know a better approach, please correct this.
+	Args:
+		X [num_rows x num_cols] multi-dimensional data
+		rows [list] rows to slice
+		cols [list] cols to slice
+	Example:
+		>>> X=[[1,2,3,4],[5,6,7,8]]
+		>>> # slice first two rows and first column
+		>>> Commons.slice(X, range(0,2), range(0,1)) # returns [1, 5]
+		>>> Commons.slice(X, range(0,1), range(0,4)) # returns [1,2,3,4]
+	"""
+	return [X[i][j] for j in cols for i in rows]
 
 class Validation(object):
 	""" Represents a generic Validation kernel for all Validation strategies.
@@ -51,9 +50,13 @@ class Validation(object):
 		std_accuracy [float] stddev over all runs.
 		runs [int] Runs performed for this validation.
 	"""
-	def __init__(self):
+	def __init__(self, model):
 		"""	Initialize validation with empty results.
 		"""
+		# make sure we can predict on this one
+		if not isinstance(model,PredictableModel):
+			raise Exception("Validation only possible on models of type PredictableModel.")
+		self.model = model
 		self._results = np.empty((0,4), np.int)
 	
 	def add(self, result):
@@ -176,10 +179,10 @@ class KFoldCrossValidation(Validation):
 			k [int] number of folds in this k-fold cross-validation (default 10)
 			results_per_fold [bool] store results per fold (default False)
 		"""
-		super(KFoldCrossValidation, self).__init__()
-		self.model = model
+		super(KFoldCrossValidation, self).__init__(model=model)
 		self.k = k
 		self.results_per_fold = results_per_fold
+		self.logger = logging.
 
 	def validate(self, X, y, print_debug=False):
 		""" Performs a k-fold cross validation
@@ -188,7 +191,7 @@ class KFoldCrossValidation(Validation):
 			X [dim x num_data] input data to validate on
 			y [1 x num_data] classes
 		"""
-		(X,y) = Commons.shuffle(X,y)
+		#X,y = shuffle(X,y)
 		c = len(np.unique(y))
 		foldIndices = []
 		n = np.iinfo(np.int).max
@@ -197,9 +200,13 @@ class KFoldCrossValidation(Validation):
 			n = min(n, idx.shape[0])
 			foldIndices.append(idx.tolist()); 
 
+		# I assume all folds to be of equal length, so the minimum
+		# number of samples in a class is responsible for the number
+		# of folds. This is probably not desired. Please adjust for
+		# your use case.
 		if n < self.k:
 			self.k = n
-		
+
 		foldSize = int(math.floor(n/self.k))
 		
 		tp, fp, tn, fn = (0,0,0,0)
@@ -208,19 +215,27 @@ class KFoldCrossValidation(Validation):
 			if print_debug:
 				print "Processing fold %d/%d." % (i+1, self.k)
 				
+			# calculate indices
 			l = int(i*foldSize)
 			h = int((i+1)*foldSize)
-			testIdx = Commons.slice(foldIndices, cols=range(l,h), rows=range(0, c))
-			trainIdx = Commons.slice(foldIndices,cols=range(0,l), rows=range(0,c))
-			trainIdx.extend(Commons.slice(foldIndices,cols=range(h,n),rows=range(0,c)))
-			self.model.compute(X[:,trainIdx], y[trainIdx])
-	
+			testIdx = slice_2d(foldIndices, cols=range(l,h), rows=range(0, c))
+			trainIdx = slice_2d(foldIndices,cols=range(0,l), rows=range(0,c))
+			trainIdx.extend(slice_2d(foldIndices,cols=range(h,n),rows=range(0,c)))
+			
+			# build training data subset
+			Xtrain = [X[t] for t in trainIdx]
+			ytrain = y[trainIdx]
+						
+			self.model.compute(Xtrain, ytrain)
+
 			for j in testIdx:
-				prediction = self.model.predict(X[:,j])
+				prediction = self.model.predict(X[j])
 				if prediction == y[j]:
 					tp = tp + 1
 				else:
 					fp = fp + 1
+
+			# add result for this foldIndex
 			if self.results_per_fold:
 				self.add([tp, fp, tn, fn])
 				tp, fp, tn, fn = (0,0,0,0)
@@ -228,11 +243,6 @@ class KFoldCrossValidation(Validation):
 		# add k-fold cv results
 		if not self.results_per_fold:
 			self.add([tp, fp, tn, fn])
-
-		# empty the model
-		self.model.empty()
-		
-			
 	
 	def __repr__(self):
 		return "k-Fold Cross Validation (model=%s, k=%s, runs=%s, accuracy=%.2f%%, std(accuracy)=%.2f%%, tp=%s, fp=%s, tn=%s, fn=%s)" % (self.model, self.k, self.runs, (self.accuracy*100.0), (self.std_accuracy*100.0), self.tps, self.fps, self.tns, self.fns)
@@ -256,8 +266,7 @@ class LeaveOneOutCrossValidation(Validation):
 		Args:
 			model [Model] model for this validation
 		"""
-		super(LeaveOneOutCrossValidation, self).__init__()
-		self.model = model
+		super(LeaveOneOutCrossValidation, self).__init__(model=model)
 		
 	def validate(self, X, y, print_debug=False):
 		""" Performs a LOOCV.
@@ -266,21 +275,32 @@ class LeaveOneOutCrossValidation(Validation):
 			X [dim x num_data] input data to validate on
 			y [1 x num_data] classes
 		"""
-		(X,y) = Commons.shuffle(X,y)
+		#(X,y) = shuffle(X,y)
 		tp, fp, tn, fn = (0,0,0,0)
 		n = y.shape[0]
 		for i in range(0,n):
-
 			if print_debug:
 				print "Processing fold %d/%d." % (i+1, n)
-
-			self.model.compute(np.delete(X, np.s_[i,i+1], axis=1), np.delete(y, np.s_[i,i+1], axis=0))
-			prediction = self.model.predict(X[:,i])
+			
+			# create train index list
+			trainIdx = []
+			trainIdx.extend(range(0,i))
+			trainIdx.extend(range(i+1,n))
+			
+			# build training data/test data subset
+			Xtrain = [X[t] for t in trainIdx]
+			ytrain = y[trainIdx]
+			
+			# compute the model
+			self.model.compute(Xtrain, ytrain)
+			
+			# get prediction
+			prediction = self.model.predict(X[i])
 			if prediction == y[i]:
 				tp = tp + 1
 			else:
 				fp = fp + 1
-			self.model.empty() # empty the model
+			print tp, fp
 		self.add([tp, fp, tn, fn])
 	
 	def __repr__(self):
@@ -295,8 +315,7 @@ class SimpleValidation(Validation):
 		Args:
 			model [Model] model to perform the validation on
 		"""
-		super(SimpleValidation, self).__init__()
-		self.model = model
+		super(SimpleValidation, self).__init__(model=model)
 	
 	def validate(self, X, y, trainIdx, testIdx, print_debug=False):
 		"""
@@ -309,11 +328,16 @@ class SimpleValidation(Validation):
 		if print_debug:
 				print "Performing a simple validation..."
 		
-		self.model.compute(X[:,trainIdx], y[trainIdx])
+		# build training data/test from given indices
+		Xtrain = [X[t] for t in trainIdx]
+		ytrain = y[trainIdx]
+	
+		# now compute the model
+		self.model.compute(Xtrain, ytrain)
 		
 		tp, fp, tn, fn = (0,0,0,0)
 		for i in testIdx:
-				prediction = self.model.predict(X[:,i])
+				prediction = self.model.predict(X[i])
 				if prediction == y[i]:
 					tp = tp + 1
 				else:

@@ -1,12 +1,13 @@
+# python imports
 import operator as op
-import numpy as np
+
+# numpy imports
 from scipy.linalg import eig
-"""
-	Author: philipp <bytefish[at]gmx.de>
-	License: BSD (see LICENSE for details)
-	Description:
-		Models used for Data Analysis, Validation or Visualization.
-"""
+import numpy as np
+
+# facerec specific stuff
+import facerec.distance as distance
+from facerec.util import *
 
 class Model(object):
 	""" Model that must be subclassed for Cross Validation use. Pretty useless right now, probably more useful in later versions. """
@@ -21,8 +22,38 @@ class Model(object):
 	
 	def __repr__(self):
 		return "Model"
+
+
+class PredictableModel(Model):
+	"""
+	Predictable model is a model which is able
+	to predict given multi-dimensional data.
+	
+	"""
+	def __init__(self, name):
+		Model.__init__(self, name=name)
+	
+	def compute(self, X, y):
+		"""
+		Abstract method for computing a PredictableModel.
 		
+		Args:
+		  X [list] list of multi-dimensional data items.
+		  y [list] integer label for each data item
+		"""
+		pass
 		
+	def predict(self, X):
+		"""
+		Abstract method for predicting on a PredictableModel.
+		
+		Args:
+		  X [array] multidimensional data
+		Returns:
+		  [int] predicted class
+		"""
+		pass
+	
 class PCA(Model):
 	""" Performs a Principal Component Aanalysis.
 	
@@ -34,7 +65,7 @@ class PCA(Model):
 		W [dim x num_components] eigenvectors
 		mean [dim x 1] sample mean
 	"""
-	def __init__(self, X=None, num_components=None, ignore_components=None):
+	def __init__(self, X=None, num_components=0, ignore_components=0):
 		Model.__init__(self, name="PCA")
 		self.num_components = num_components
 		self.ignore_components = ignore_components
@@ -45,15 +76,8 @@ class PCA(Model):
 		
 	
 	def compute(self, X):
-		""" Computes the Eigenvalues of (mean-subtracted) X and selects num_components largest eigenvectors corresponding to their eigenvalue (== PCA).
-
-		Args:
-			X [dim x num_data] input data
-		"""
-		if self.num_components is None:
+		if self.num_components <= 0 or (self.num_components > X.shape[1]-1):
 			self.num_components = X.shape[1]-1 
-		if self.ignore_components is None:
-			self.ignore_component = 0
 			
 		self._mean = X.mean(axis=1).reshape(-1,1)
 		X = X - self._mean
@@ -69,34 +93,17 @@ class PCA(Model):
 		self._eigenvectors = self._eigenvectors[0:,self.ignore_components:self.num_components].copy()
 		self._eigenvalues = self._eigenvalues[self.ignore_components:self.num_components].copy()
 		
+		# calculate eigenvalues from singular values
 		self._eigenvalues = np.power(self._eigenvalues,2) / X.shape[1]
 	
 	def __repr__(self):
 		return "PCA (num_components=%d)" % (self.num_components)
 		
 	def project(self, X):
-		""" Projects a sample into the PCA subspace.
-		
-		Args:
-			X [dim x cols]: sample(s) to project
-			
-		Returns:
-			Xhat = X - mean(X,2);
-			W'*Xhat;
-		"""
 		X = X - self._mean
 		return np.dot(self._eigenvectors.T, X)
 
 	def reconstruct(self, X):
-		""" Reconstructs a given column vector.
-		
-		Args: 
-			X [num_components x cols] projection(s) to reconstruct
-			
-		Returns:
-			Xhat = W*X
-			X = Xhat + mean 
-		"""
 		X = np.dot(self._eigenvectors, X)
 		return X + self._mean
 
@@ -111,13 +118,6 @@ class PCA(Model):
 	@property
 	def L(self):
 		return self._eigenvalues
-	
-	def empty(self):
-		""" Empty the current model. """
-		self._eigenvalues = []
-		self._eigenvectors = []
-		self._mean = []
-
 		
 class LDA(Model):
 	""" Performs a Multiclass Linear Discriminant Analysis.
@@ -130,7 +130,7 @@ class LDA(Model):
 		W [num_components x num_data] Eigenvectors found by the LDA.
 	"""
 	
-	def __init__(self, X=None, y=None, num_components=None):
+	def __init__(self, X=None, y=None, num_components=0):
 		""" Initializes the LDA class and computes the LDA if data is given.
 	
 		Args:
@@ -141,21 +141,13 @@ class LDA(Model):
 		"""
 		Model.__init__(self, name="LDA")
 		self.num_components = num_components
-		try:
+		if (X is not None) and (y is not None):
 			self.compute(X,y)
-		except:
-			pass
 
 	def compute(self, X, y):
-		""" Performs a LDA.
-	
-		Args:
-			X [dim x num_data] Multidimensional list with data given in columns.
-			y [1 x num_data] List with classes corresponding to the samples of X.
-		"""
 		d = X.shape[0]
 		c = len(np.unique(y))		
-		if self.num_components is None:
+		if self.num_components <= 0:
 			self.num_components = c-1
 		elif self.num_components > (c-1):
 			self.num_components = c-1
@@ -164,7 +156,7 @@ class LDA(Model):
 		
 		Sw = np.zeros((d, d), dtype=np.float32)
 		Sb = np.zeros((d, d), dtype=np.float32)
-	
+		
 		for i in range(0,c):
 			Xi = X[:,np.where(y==i)[0]]
 			meanClass = np.mean(Xi, axis = 1).reshape(-1,1)
@@ -180,31 +172,13 @@ class LDA(Model):
 		# copy only the (c-1) non-zero eigenvalues
 		self._eigenvalues = np.array(self._eigenvalues[0:self.num_components].real, dtype=np.float32, copy=True)
 		self._eigenvectors = np.matrix(self._eigenvectors[0:,0:self.num_components].real, dtype=np.float32, copy=True)
-
 		
 	def project(self, X):
-		""" Projects X onto the num_components found by the LDA: W'*X
-	
-		Args:
-			X [dim x cols] sample(s) to project
-		Returns:
-			LDA Projection
-		"""
 		return np.dot(self._eigenvectors.T, X)
 
 	def reconstruct(self, X):
-		""" LDA Reconstruction 
-		
-		Args:
-			X [num_components x cols] projection(s) to reconstruct
-		Returns:
-			W*X
-		"""
 		return np.dot(self._eigenvectors, X)
-	
-	def __repr__(self):
-		return "LDA (num_components=%d)" % (self.num_components)
-	
+		
 	@property
 	def W(self):
 		return self._eigenvectors
@@ -212,39 +186,38 @@ class LDA(Model):
 	@property
 	def L(self):
 		return self._eigenvalues
-		
-	def empty(self):
-		pass
-		#""" Empty the current model.	"""
-		self._eigenvectors = []
-		self._eigenvalues = []
-		
-class NearestNeighbor(object):
-	""" Implements k-Nearest Neighbors. 
 	
-	Euclidean distance is used for measuring neighborhood. Please add your distance metric if necessary.
-	"""
-	@staticmethod
-	def predict(P, Q, y, k=1):
-		""" k-Nearest Neighbor
+	def __repr__(self):
+		return "LDA (num_components=%d)" % (self.num_components)
 		
-		Args:
-			P [dim x num_data] Reference vectors. 
-			Q [dim x 1] Query vector.
-			y [1 x num_data] Classes corresponding to the samples of P.
-			k [int] Number of neighbors for this prediction (default 1).
-		Returns:
-			Predicted class given by the majority of k neighbors.
-		"""
-		Q = Q.reshape(-1,1)
-		distances = np.sqrt(np.power((P-Q),2).sum(axis=0)).flat
+class NearestNeighbor(PredictableModel):
+
+	def __init__(self, X=None, y=None, dist_metric=distance.euclidean, k=1):
+		PredictableModel.__init__(self, name="NearestNeighbor")
+		self.k = k
+		self.dist_metric = dist_metric
+		if (X is not None) and (y is not None):
+			self.compute(X,y)
+	
+	def compute(self, X, y):
+		self.X = X
+		self.y = y
+		
+	def predict(self, q):
+		distances = []
+		for xi in self.X:
+			xi = xi.reshape(-1,1)
+			d = self.dist_metric(xi, q)
+			distances.append(d)
+		if len(distances) > len(self.y):
+			raise Exception("More distances than classes. Is your distance metric correct?")
 		idx = np.argsort(np.array(distances))
-		y = y[idx]
-		y = y[0:(k+1)]
-		hist = dict((key,val) for key, val in enumerate(np.bincount(y)) if val)
+		sorted_y = self.y[idx]
+		sorted_y = sorted_y[0:self.k]
+		hist = dict((key,val) for key, val in enumerate(np.bincount(sorted_y)) if val)
 		return max(hist.iteritems(), key=op.itemgetter(1))[0]
-			
-class Eigenfaces(Model):
+
+class Eigenfaces(PredictableModel):
 	""" Implements the Eigenfaces method by Pentland and Turk.
 	
 	For detailed algorithmic analysis refer to paper:
@@ -266,7 +239,7 @@ class Eigenfaces(Model):
 		k: Number of Nearest Neighbor used in prediction.
 	"""
 	
-	def __init__(self, X=None, y=None, num_components=None, ignore_components=None,k=1):
+	def __init__(self, classifier=NearestNeighbor(), X=None, y=None, num_components=0, ignore_components=0):
 		""" Initialize Eigenfaces object and computes Eigenfaces if data was given.
 		
 		Args:
@@ -275,14 +248,12 @@ class Eigenfaces(Model):
 			num_components [int] Number of components to use in PCA projection.
 			ignore_components [int] Number of components to ignore in PCA projection.
 		"""
-		Model.__init__(self, name="Eigenfaces")
+		PredictableModel.__init__(self, name="Eigenfaces")
 		self.num_components = num_components
 		self.ignore_components = ignore_components
-		self.k=k
-		try:
+		self.classifier = classifier
+		if (X is not None) and (y is not None):
 			self.compute(X,y)
-		except:
-			pass
 			
 	def compute(self, X, y):
 		""" Computes eigenfaces and projects X onto the num_components principal components.
@@ -291,47 +262,33 @@ class Eigenfaces(Model):
 			X [dim x num_data] input data
 			y [1 x num_data] classes
 		"""
-		self.pca = PCA(X, num_components=self.num_components, ignore_components=self.ignore_components)
+		M = asColumnMatrix(X)
+		self.pca = PCA(M, num_components=self.num_components, ignore_components=self.ignore_components)
 		self.num_components = self.pca.num_components
+		
+		# learn a classifier with the projections
+		projections = []
+		for x in X:
+			xp = self.project(x.reshape(-1,1))
+			projections.append(xp)
 		self.y = y
-		self.P = self.project(X)
+		self.P = projections
+		self.classifier.compute(projections, y)
 		
 	def project(self,X):
-		""" Projects X onto the num_components Principal Components.
-		
-		Args:
-			X [dim x cols] sample(s) to project
-		Returns:
-			PCA projection
-		"""
 		return self.pca.project(X)
 		
 	def reconstruct(self, X):
-		""" Reconstruct X from the PCA projection.
-		
-		Args:
-			X [num_components x cols] projection(s) to reconstruct
-			
-		Returns:
-			PCA reconstruction		
-		"""
 		return self.pca.reconstruct(X)
-		
-	def __repr__(self):
-		return "Eigenfaces (num_components=%d)" % (self.num_components)
-	
-	def predict(self, X):
-		""" k-Nearest Neighbor prediction of given column vector.
-		
-		Args:
-			X [dim x 1] sample to predict
 			
-		Returns:
-			Predicted class given by the majority of the k nearest neighbors.
-		"""
-		Q = self.project(X)
-		return NearestNeighbor.predict(self.P, Q, self.y, k=self.k)
-	
+	def predict(self, x):
+		x = np.asarray(x).reshape(-1,1)
+		q = self.project(x)
+		return self.classifier.predict(q)
+
+	def __repr__(self):
+		return "Eigenfaces (classifier=%s, num_components=%d)" % (self.classifier.name, self.num_components)
+
 	@property
 	def W(self):
 		return self.pca.W
@@ -342,11 +299,8 @@ class Eigenfaces(Model):
 		
 	def empty(self):
 		self.pca.empty()
-		self.P = []
-		self.y = []
-		
 
-class Fisherfaces(Model):
+class Fisherfaces(PredictableModel):
 	""" Implements the Fisherface method.
 	
 	For detailed algorithmic analysis refer to paper:
@@ -370,22 +324,19 @@ class Fisherfaces(Model):
 		k [int] Number of Nearest Neighbor used in prediction.
 	"""
 
-	def __init__(self, X=None, y=None, num_components=None, k=1):
+	def __init__(self, X=None, y=None, classifier=NearestNeighbor(), num_components=0):
 		""" Initializes Fisherfaces a model.
 		
 		Args:
 			X [dim x num_data] input data
 			y [1 x num_data] classes (optional)
-			k [int] Number of Nearest Neighbor used in prediction (optional)
+			classifier [PredictableModel] classifier 
 		"""
-		Model.__init__(self, name="Fisherfaces")
-		self.k = k
+		PredictableModel.__init__(self, name="Fisherfaces")
 		self.num_components = num_components
-		try:
-			self.compute(X,y)
-		except:
-			pass
-	
+		self.classifier = classifier
+		if (X is not None) and (y is not None):
+			self.compute(X,y)	
 	
 	def compute(self, X, y):
 		""" Compute the Fisherfaces as described in [BHK1997]: Wpcafld = Wpca * Wfld.
@@ -394,81 +345,109 @@ class Fisherfaces(Model):
 			X [dim x num_data] input data
 			y [1 x num_data] classes
 		"""
+		M = asColumnMatrix(X) # reshape to NumPy matrix
+		y = np.asarray(y) # Convert to NumPy array
 		n = len(y)
 		c = len(np.unique(y))
 		# remove null space by projecting into n-c dimensions
-		pca = PCA(X, n-c)
+		pca = PCA(M, n-c)
 		# calculate LDA
-		lda = LDA(pca.project(X), y, self.num_components)
+		lda = LDA(pca.project(M), y, self.num_components)
 		# Fisherfaces = Wpca * Wlda
-		self._eigenvectors = pca.W*lda.W
+		self._eigenvectors = np.dot(pca.W,lda.W)
 		# store projection and classes
 		self.num_components = lda.num_components
-		self.P = self.project(X)
-		self.y = y
-		
-		
+		# learn the classifier on the data
+		projections = []
+		for x in X:
+			p = self.project(x.reshape(-1,1))
+			projections.append(p)
+		self.classifier.compute(projections, y)
 		
 	def project(self, X):
-		""" Project X into Subspace.
-		
-		Args:
-			X [dim x cols] sample(s) to project.
-		
-		Returns:
-			Projection W'*X
-		"""
 		return np.dot(self._eigenvectors.T, X)
 	
 	def reconstruct(self, X):
-		""" Reconstruct X from Subspace.
-		
-		Args:
-			X [num_components x cols] projection(s) to reconstruct
-			
-		Returns:
-			Reconstruction W*X
-		"""
 		return np.dot(self._eigenvectors, X)
 
 	def predict(self, X):
-		""" Find the k-Nearest Neighbor of this instance.
-		
-		Args:
-			X [dim x 1] sample to predict
-		
-		Returns:
-			Predicted class given by the majority of the k nearest neighbors. 
-		"""
-		Q = self.project(X)
-		return NearestNeighbor.predict(self.P, Q, self.y, k=self.k)
+		X = np.asarray(X).reshape(-1,1)
+		q = self.project(X)
+		return self.classifier.predict(q)
 	
 	@property
 	def W(self):
 		return self._eigenvectors
-		
-	def empty(self):
-		""" Empty the current model (free some space). """
-		self._eigenvectors = []
-		self.P = []
-		
+
 	def __repr__(self):
-		return "Fisherfaces (num_components=%s)" % (self.num_components)
-		
-if __name__ == "__main__":
-	# Nearest Neighbor
-	P = np.array([[0,0],[0.1,0.3],[0,1],[1,1],[9,9],[9.5,9.5],[9,8],[10,10]]).T
-	Q = np.array([[9],[9]])
-	y = np.array([0, 0, 0, 0, 1, 1 , 1 ,1])
-	prediction = NearestNeighbor.predict(P, Q, y,k=1)
-	print prediction
-	# see http://www.bytefish.de/wiki/pca_lda_with_gnu_octave for this example
-	X = np.array([[2,3],[3,4],[4,5],[5,6],[5,7],[2,1],[3, 2],[4 ,2],[4 ,3],[6, 4],[7,6]]).T
-	y = np.array([ 0,0,0,0,0,1,1,1,1,1,1])
+		return "Fisherfaces (classifier=%s, num_components=%s)" % (self.classifier.name, self.num_components)
+
+
+class LBP(PredictableModel):
+	""" Implements Local Binary Pattern as described in 
 	
-	# PCA
-	pca = PCA(X)
-	print pca.W
-	# LDA
-	lda = LDA(X,y)
-	print lda.W
+	@CONFERENCE{Ahonen2004,
+		author = {Ahonen, Timo and Hadid, Abdenour and Pietikainen, Matti},
+		title = {Face Recognition with Local Binary Patterns},
+		booktitle = {Proceedings of European Conference on Computer Vision},
+		year = {2004},
+	}
+	
+	This is a Python version of the MATLAB implementation by Marko Heikkilae 
+	and Timo Ahonen, available at \url{http://www.cse.oulu.fi/MVG/Downloads/LBPMatlab}. 
+	
+	All credit goes to them.
+	"""
+	def __init__(self, lbp_operator=clbp, classifier=NearestNeighbor(), radius=1, neighbors=8, sz = (8,8)):
+		"""
+		Args:
+		  lbp_operator []
+		  classifier [Model]
+		  radius [int]
+		  neighbors [int]
+		  sz [tuple] 
+		"""
+		PredictableModel.__init__(self, name="Local Binary Patterns")
+		self.lbp_operator = lbp_operator
+		self.classifier = classifier
+		self.radius = radius
+		self.neighbors = neighbors
+		self.sz = sz
+		
+	def compute(self,X,y):
+		"""
+		Compute LBP patterns for given data.
+		
+		Args:
+			X [list] multi-dimensional input data
+			y [1 x num_data] Classes
+		
+		"""
+		P = []
+		for i in range(0,len(X)):
+			H = self.spatially_enhanced_histogram(X[i])
+			P.append(H)
+		self.classifier.compute(P,y)
+	
+	def spatially_enhanced_histogram(self, X):
+		L = self.lbp_operator(X, radius = self.radius, neighbors = self.neighbors)
+		# build the histogram vector
+		lbp_height, lbp_width = L.shape
+		grid_rows, grid_cols = self.sz
+		py = int(np.floor(lbp_height/grid_rows))
+		px = int(np.floor(lbp_width/grid_cols))
+		E = []
+		for row in range(0,grid_rows):
+			for col in range(0,grid_cols):
+				C = L[row*py:(row+1)*py,col*px:(col+1)*px]
+				H = np.histogram(C, bins=2**self.neighbors, range=(0, 2**self.neighbors), normed=True)[0]
+				# probably useful to apply a mapping?
+				E.extend(H)
+		return np.asarray(E)
+	
+	def predict(self, X):
+		q = self.spatially_enhanced_histogram(X)
+		return self.classifier.predict(q)
+	
+	def __repr__(self):
+		return "Local Binary Pattern (classifier=%s, radius=%s, neighbors=%s, grid=%s)" % (self.classifier.name, self.radius, self.neighbors, str(self.sz))
