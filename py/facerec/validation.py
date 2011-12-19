@@ -1,7 +1,9 @@
 import numpy as np
 import math as math
 import random as random
-from facerec.models import PredictableModel
+import logging
+
+from facerec.model import PredictableModel
 
 """
 	Author: philipp <bytefish[at]gmx.de>
@@ -55,7 +57,7 @@ class Validation(object):
 		"""
 		# make sure we can predict on this one
 		if not isinstance(model,PredictableModel):
-			raise Exception("Validation only possible on models of type PredictableModel.")
+			raise TypeError("Validation can only validate the type PredictableModel.")
 		self.model = model
 		self._results = np.empty((0,4), np.int)
 	
@@ -182,9 +184,9 @@ class KFoldCrossValidation(Validation):
 		super(KFoldCrossValidation, self).__init__(model=model)
 		self.k = k
 		self.results_per_fold = results_per_fold
-		self.logger = logging.
+		self.logger = logging.getLogger("facerec.validation.KFoldCrossValidation")
 
-	def validate(self, X, y, print_debug=False):
+	def validate(self, X, y):
 		""" Performs a k-fold cross validation
 		
 		Args:
@@ -212,8 +214,7 @@ class KFoldCrossValidation(Validation):
 		tp, fp, tn, fn = (0,0,0,0)
 		for i in range(0,self.k):
 		
-			if print_debug:
-				print "Processing fold %d/%d." % (i+1, self.k)
+			self.logger.info("Processing fold %d/%d." % (i+1, self.k))
 				
 			# calculate indices
 			l = int(i*foldSize)
@@ -267,8 +268,9 @@ class LeaveOneOutCrossValidation(Validation):
 			model [Model] model for this validation
 		"""
 		super(LeaveOneOutCrossValidation, self).__init__(model=model)
+		self.logger = logging.getLogger("facerec.validation.LeaveOneOutCrossValidation")
 		
-	def validate(self, X, y, print_debug=False):
+	def validate(self, X, y):
 		""" Performs a LOOCV.
 		
 		Args:
@@ -279,8 +281,8 @@ class LeaveOneOutCrossValidation(Validation):
 		tp, fp, tn, fn = (0,0,0,0)
 		n = y.shape[0]
 		for i in range(0,n):
-			if print_debug:
-				print "Processing fold %d/%d." % (i+1, n)
+			
+			self.logger.info("Processing fold %d/%d." % (i+1, n))
 			
 			# create train index list
 			trainIdx = []
@@ -316,7 +318,8 @@ class SimpleValidation(Validation):
 			model [Model] model to perform the validation on
 		"""
 		super(SimpleValidation, self).__init__(model=model)
-	
+		self.logger = logging.getLogger("facerec.validation.LeaveOneOutCrossValidation")
+			
 	def validate(self, X, y, trainIdx, testIdx, print_debug=False):
 		"""
 		Performs a validation given training data and test data. User is responsible for non-overlapping assignment of indices.
@@ -325,13 +328,11 @@ class SimpleValidation(Validation):
 			X [dim x num_data] input data to validate on
 			y [1 x num_data] classes
 		"""
-		if print_debug:
-				print "Performing a simple validation..."
-		
+		self.logger.info("Simple Validation.")
 		# build training data/test from given indices
 		Xtrain = [X[t] for t in trainIdx]
 		ytrain = y[trainIdx]
-	
+		
 		# now compute the model
 		self.model.compute(Xtrain, ytrain)
 		
