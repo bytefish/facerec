@@ -1,5 +1,6 @@
-from facerec.distance import euclidean
+from facerec.distance import EuclideanDistance
 from facerec.util import asRowMatrix
+import logging
 import numpy as np
 import operator as op
 
@@ -14,7 +15,7 @@ class NearestNeighbor(AbstractClassifier):
 	"""
 	Implements a k-Nearest Neighbor Model for a generic distance metric.
 	"""
-	def __init__(self, dist_metric=euclidean, k=1):
+	def __init__(self, dist_metric=EuclideanDistance(), k=1):
 		AbstractClassifier.__init__(self)
 		self.k = k
 		self.dist_metric = dist_metric
@@ -36,8 +37,18 @@ class NearestNeighbor(AbstractClassifier):
 		sorted_y = sorted_y[0:self.k]
 		hist = dict((key,val) for key, val in enumerate(np.bincount(sorted_y)) if val)
 		return max(hist.iteritems(), key=op.itemgetter(1))[0]
+		
+	def __repr__(self):
+		return "NearestNeighbor (k=%s, dist_metric=%s)" % (self.k, repr(self.dist_metric))
 
+# libsvm
 from svmutil import *
+# for suppressing output
+import sys
+from StringIO import StringIO
+
+# function handle to stdout
+bkp_stdout=sys.stdout
 
 class SVM(AbstractClassifier):
 	"""
@@ -65,12 +76,10 @@ class SVM(AbstractClassifier):
 		self.param = param
 		
 	def compute(self, X, y):
-		self.logger.info("SVM TRAINING (C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" \
-			% (self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree))
+		self.logger.info("SVM TRAINING (C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" % (self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree))
 		# turn data into a row vector (needed for libsvm)
 		X = asRowMatrix(X)
-		y = np.asanyarray(y)
-
+		y = np.asarray(y)
 		problem = svm_problem(y, X.tolist())		
 		self.svm = svm_train(problem, self.param)
 		self.y = y
@@ -80,7 +89,7 @@ class SVM(AbstractClassifier):
 		sys.stdout=StringIO() 
 		p_lbl, p_acc, p_val = svm_predict([0], X.tolist(), self.svm)
 		sys.stdout=bkp_stdout
-		return p_lbl[0]
+		return int(p_lbl[0])
 		
 	def __repr__(self):		
-		return "Support Vector Machine (classifier=%s, kernel_type=%s, C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" % ("SVM", KERNEL_TYPE[self.param.kernel_type], self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree)
+		return "Support Vector Machine (kernel_type=%s, C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" % (KERNEL_TYPE[self.param.kernel_type], self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree)

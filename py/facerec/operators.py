@@ -15,6 +15,9 @@ class FeatureOperator(AbstractFeature):
 		self.model1 = model1
 		self.model2 = model2
 	
+	def __repr__(self):
+		return "FeatureOperator(" + repr(self.model1) + "," + repr(self.model2) + ")"
+	
 class ChainOperator(FeatureOperator):
 	"""
 	The ChainOperator chains two feature extraction modules:
@@ -35,6 +38,9 @@ class ChainOperator(FeatureOperator):
 	def extract(self,X):
 		X = self.model1.extract(X)
 		return self.model2.extract(X)
+	
+	def __repr__(self):
+		return "ChainOperator(" + repr(self.model1) + "," + repr(self.model2) + ")"
 		
 class CombineOperator(FeatureOperator):
 	"""
@@ -65,7 +71,9 @@ class CombineOperator(FeatureOperator):
 		ai = self.model1.extract(X)
 		bi = self.model2.extract(X)
 		return np.hstack((ai,bi))
-		
+
+	def __repr__(self):
+		return "CombineOperator(" + repr(self.model1) + "," + repr(self.model2) + ")"
 		
 class CombineOperatorND(FeatureOperator):
 	"""
@@ -99,3 +107,6 @@ class CombineOperatorND(FeatureOperator):
 		if self._hstack:
 			return np.hstack((ai,bi))
 		return np.vstack((ai,bi))
+
+	def __repr__(self):
+		return "CombineOperatorND(" + repr(self.model1) + "," + repr(self.model2) + ", hstack=" + str(self._hstack) + ")"

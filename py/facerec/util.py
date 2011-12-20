@@ -25,10 +25,8 @@ def asRowMatrix(X):
 	total = 1
 	for i in range(0, np.ndim(X[0])):
 		total = total * X[0].shape[i]
-	print total
 	mat = np.empty([0, total], dtype=X[0].dtype)
 	for row in X:
-		print "add"
 		mat = np.append(mat, row.reshape(1,-1), axis=0) # same as vstack
 	return np.asmatrix(mat)
 
@@ -45,7 +43,7 @@ def asColumnMatrix(X):
 		total = total * X[0].shape[i]
 	mat = np.empty([total, 0], dtype=X[0].dtype)
 	for col in X:
-		mat = np.append(mat, col.reshape(-1,1), axis=1)
+		mat = np.append(mat, col.reshape(-1,1), axis=1) # same as hstack
 	return np.asmatrix(mat)
 
 

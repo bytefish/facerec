@@ -18,3 +18,8 @@ class PredictableModel(object):
 	def predict(self, X):
 		q = self.feature.extract(X)
 		return self.classifier.predict(q)
+		
+	def __repr__(self):
+		feature_repr = repr(self.feature)
+		classifier_repr = repr(self.classifier)
+		return "PredictableModel (feature=%s, classifier=%s)" % (feature_repr, classifier_repr)

@@ -13,13 +13,32 @@ class AbstractFeature(object):
 	
 	def load(self):
 		raise NotImplementedError("Not implemented yet (TODO).")
+		
+	def __repr__(self):
+		return "AbstractFeature"
+
+class Identity(AbstractFeature):
+	"""
+	Simplest AbstractFeature you could imagine. It only forwards the data and does not operate on it, 
+	probably useful for learning a Support Vector Machine on raw data for example!
+	"""
+	def __init__(self):
+		AbstractFeature.__init__(self)
+		
+	def compute(self,X,y):
+		return X
+	
+	def extract(self,X):
+		return X
+	
+	def __repr__(self):
+		return "Identity"
+
 
 from facerec.util import asColumnMatrix
 from facerec.operators import ChainOperator, CombineOperator
-from facerec.lbp import elbp
 		
 class PCA(AbstractFeature):
-
 	def __init__(self, num_components=0):
 		AbstractFeature.__init__(self)
 		self._num_components = num_components
@@ -203,12 +222,14 @@ class Fisherfaces(AbstractFeature):
 	def __repr__(self):
 		return "Fisherfaces (num_components=%s)" % (self.num_components)
 
+from facerec.lbp import LBPOperator, ExtendedLBP
+
 class LBP(AbstractFeature):
-	def __init__(self, lbp_operator=elbp, radius=1, neighbors=8, sz = (8,8)):
+	def __init__(self, lbp_operator=ExtendedLBP(), sz = (8,8)):
 		AbstractFeature.__init__(self)
+		if not isinstance(lbp_operator, LBPOperator):
+			raise TypeError("Only an operator of type facerec.lbp.LBPOperator is a valid lbp_operator.")
 		self.lbp_operator = lbp_operator
-		self.radius = radius
-		self.neighbors = neighbors
 		self.sz = sz
 		
 	def compute(self,X,y):
@@ -225,7 +246,7 @@ class LBP(AbstractFeature):
 
 	def spatially_enhanced_histogram(self, X):
 		# calculate the LBP image
-		L = self.lbp_operator(X, radius = self.radius, neighbors = self.neighbors)
+		L = self.lbp_operator(X)
 		# calculate the grid geometry
 		lbp_height, lbp_width = L.shape
 		grid_rows, grid_cols = self.sz
@@ -235,10 +256,10 @@ class LBP(AbstractFeature):
 		for row in range(0,grid_rows):
 			for col in range(0,grid_cols):
 				C = L[row*py:(row+1)*py,col*px:(col+1)*px]
-				H = np.histogram(C, bins=2**self.neighbors, range=(0, 2**self.neighbors), normed=True)[0]
+				H = np.histogram(C, bins=2**self.lbp_operator.neighbors, range=(0, 2**self.lbp_operator.neighbors), normed=True)[0]
 				# probably useful to apply a mapping?
 				E.extend(H)
 		return np.asarray(E)
 	
 	def __repr__(self):
-		return "Local Binary Pattern (radius=%s, neighbors=%s, grid=%s)" % (self.radius, self.neighbors, str(self.sz))
+		return "Local Binary Pattern (operator=%s, grid=%s)" % (repr(self.lbp_operator), str(self.sz))

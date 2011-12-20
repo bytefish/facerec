@@ -4,6 +4,7 @@ import random as random
 import logging
 
 from facerec.model import PredictableModel
+from facerec.classifier import AbstractClassifier
 
 """
 	Author: philipp <bytefish[at]gmx.de>
@@ -91,13 +92,7 @@ class Validation(object):
 		return ret
 		
 	def validate(self, X, y):
-		""" Abstract validate method.
-		
-		Args:
-			X [dim x num_data] input data
-			y [1 x num_data] classes
-		"""
-		pass
+		raise NotImplementedError("Every Validation module must implement the validate method!")
 
 	@property
 	def tp(self):
@@ -193,7 +188,7 @@ class KFoldCrossValidation(Validation):
 			X [dim x num_data] input data to validate on
 			y [1 x num_data] classes
 		"""
-		#X,y = shuffle(X,y)
+		X,y = shuffle(X,y)
 		c = len(np.unique(y))
 		foldIndices = []
 		n = np.iinfo(np.int).max
