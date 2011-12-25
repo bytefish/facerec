@@ -9,13 +9,16 @@ class HistogramEqualization(AbstractFeature):
 		self._num_bins = num_bins
 		
 	def compute(self,X,y):
-		return self.extract(X)
+		Xp = []
+		for xi in X:
+			Xp.append(self.extract(xi))
+		return Xp
 		
 	def extract(self,X):
-		h, b = histogram(X.flatten(), self._num_bins, normed=True)
+		h, b = np.histogram(X.flatten(), self._num_bins, normed=True)
 		cdf = h.cumsum()
 		cdf = 255 * cdf / cdf[-1]
-		return interp(X.flatten(), b[:-1], cdf).reshape(X.shape)
+		return np.interp(X.flatten(), b[:-1], cdf).reshape(X.shape)
 	
 	def __repr__(self):
 		return "HistogramEqualization (num_bins=%s)" % (self._num_bins)
@@ -23,11 +26,11 @@ class HistogramEqualization(AbstractFeature):
 class TanTriggsPreprocessing(AbstractFeature):
 	def __init__(self, alpha = 0.1, tau = 10.0, gamma = 0.2, sigma0 = 1.0, sigma1 = 2.0):
 		AbstractFeature.__init__(self)
-		self._alpha = alpha
-		self._tau = tau
-		self._gamma = gamma
-		self._sigma0 = sigma0
-		self._sigma1 = sigma1
+		self._alpha = float(alpha)
+		self._tau = float(tau)
+		self._gamma = float(gamma)
+		self._sigma0 = float(sigma0)
+		self._sigma1 = float(sigma1)
 	
 	def compute(self,X,y):
 		Xp = []
@@ -36,16 +39,17 @@ class TanTriggsPreprocessing(AbstractFeature):
 		return Xp
 
 	def extract(self,X):
+		X = np.array(X, dtype=np.float32)
 		X = np.power(X,self._gamma)
 		X = np.asarray(ndimage.gaussian_filter(X,self._sigma1) - ndimage.gaussian_filter(X,self._sigma0))
 		X = X / np.power(np.mean(np.power(np.abs(X),self._alpha)), 1.0/self._alpha)
 		X = X / np.power(np.mean(np.power(np.minimum(np.abs(X),self._tau),self._alpha)), 1.0/self._alpha)
-		X = 0.5*np.tanh(X/self._tau)+0.5
+		X = self._tau*np.tanh(X/self._tau)
 		return X
 
 	def __repr__(self):
 		return "TanTriggsPreprocessing (alpha=%.3f,tau=%.3f,gamma=%.3f,sigma0=%.3f,sigma1=%.3f)" % (self._alpha,self._tau,self._gamma,self._sigma0,self._sigma1)
-		
+
 from facerec.lbp import ExtendedLBP
 
 class LBPPreprocessing(AbstractFeature):
@@ -76,12 +80,15 @@ class MinMaxNormalizePreprocessing(AbstractFeature):
 		
 	def compute(self,X,y):
 		Xp = []
+		XC = asColumnMatrix(X)
+		self._min = np.min(XC)
+		self._max = np.max(XC)
 		for xi in X:
 			Xp.append(self.extract(xi))
 		return Xp
 	
 	def extract(self,X):
-		return minmax(X, self._low, self._high)
+		return minmax(X, self._low, self._high, self._min, self._max)
 		
 	def __repr__(self):
 		return "MinMaxNormalizePreprocessing (low=%s, high=%s)" % (self._low, self._high)
