@@ -76,7 +76,7 @@ class SVM(AbstractClassifier):
 		self.param = param
 		
 	def compute(self, X, y):
-		self.logger.info("SVM TRAINING (C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" % (self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree))
+		self.logger.debug("SVM TRAINING (C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" % (self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree))
 		# turn data into a row vector (needed for libsvm)
 		X = asRowMatrix(X)
 		y = np.asarray(y)

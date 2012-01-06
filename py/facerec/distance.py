@@ -40,6 +40,25 @@ class CosineDistance(AbstractDistance):
 		q = np.asarray(q).flatten()
 		return -np.dot(p.T,q) / (np.sqrt(np.dot(p,p.T)*np.dot(q,q.T)))
 
+class NormalizedCorrelation(AbstractDistance):
+	"""
+		Calculates the NormalizedCorrelation Coefficient for two vectors.
+	
+		Literature:
+			"Multi-scale Local Binary Pattern Histogram for Face Recognition". PhD (2008). Chi Ho Chan, University Of Surrey.
+	"""
+	def __init__(self):
+		AbstractDistance.__init__(self,"NormalizedCorrelation")
+	
+	def __call__(self, p, q):
+		p = np.asarray(p).flatten()
+		q = np.asarray(q).flatten()
+		pmu = p.mean()
+		qmu = q.mean()
+		pm = p - pmu
+		qm = q - qmu
+		return 1.0 - (np.dot(pm, qm) / (np.sqrt(np.dot(um, um)) * ma.sqrt(np.dot(vm, vm))))
+		
 class ChiSquareDistance(AbstractDistance):
 	"""
 		Negated Mahalanobis Cosine Distance.
@@ -93,8 +112,8 @@ class L1BinRatioDistance(AbstractDistance):
 		AbstractDistance.__init__(self,"L1-BinRatioDistance")
 	
 	def __call__(self, p, q):
-		p = np.asarray(p).flatten()
-		q = np.asarray(q).flatten()
+		p = np.asarray(p, dtype=np.float).flatten()
+		q = np.asarray(q, dtype=np.float).flatten()
 		a = np.abs(1-np.dot(p,q.T)) # NumPy needs np.dot instead of * for reducing to tensor
 		b = ((p-q)**2 + 2*a*(p*q)) * abs(p-q) / ((p+q)**2+np.finfo('float').eps)
 		return np.abs(np.sum(b))
@@ -110,8 +129,8 @@ class ChiSquareBRD(AbstractDistance):
 		AbstractDistance.__init__(self,"ChiSquare-BinRatioDistance")
 	
 	def __call__(self, p, q):
-		p = np.asarray(p).flatten()
-		q = np.asarray(q).flatten()
+		p = np.asarray(p, dtype=np.float).flatten()
+		q = np.asarray(q, dtype=np.float).flatten()
 		a = np.abs(1-np.dot(p,q.T)) # NumPy needs np.dot instead of * for reducing to tensor
 		b = ((p-q)**2 + 2*a*(p*q)) * (p-q)**2 / ((p+q)**3+np.finfo('float').eps)
 		return np.abs(np.sum(b))

@@ -297,12 +297,60 @@ class LeaveOneOutCrossValidation(Validation):
 				tp = tp + 1
 			else:
 				fp = fp + 1
-			print tp, fp
 		self.add([tp, fp, tn, fn])
 	
 	def __repr__(self):
 		return "Leave-One-Out Cross Validation (model=%s, runs=%d, accuracy=%.2f%%, tp=%s, fp=%s, tn=%s, fn=%s)" % (self.model, self.runs, (self.accuracy * 100.0), self.tps, self.fps, self.tns, self.fns)
 
+class LeaveOneClassOutCrossValidation(Validation):
+	""" Leave-One-Cross Validation (LOOCV) uses one observation for testing and the rest for training a classifier:
+
+	    o0 o1 o2        o0 o1 o2        o0 o1 o2           o0 o1 o2
+	c0 | A  B  B |  c0 | B  A  B |  c0 | B  B  A |     c0 | B  B  B |
+	c1 | B  B  B |  c1 | B  B  B |  c1 | B  B  B |     c1 | B  B  B |
+	c2 | B  B  B |  c2 | B  B  B |  c2 | B  B  B | ... c2 | B  B  A |
+	
+	Arguments:
+		model [Model] model for this validation
+		... see [Validation]
+	"""
+
+	def __init__(self, model):
+		""" Intialize Cross-Validation module.
+		
+		Args:
+			model [Model] model for this validation
+		"""
+		super(LeaveOneClassOutCrossValidation, self).__init__(model=model)
+		self.logger = logging.getLogger("facerec.validation.LeaveOneClassOutCrossValidation")
+		
+	def validate(self, X, y, g):
+		#(X,y) = shuffle(X,y)
+		tp, fp, tn, fn = (0,0,0,0)
+		
+		for i in range(0,len(np.unique(y))):
+			self.logger.info("Validating Class %s." % i)
+			# create folds
+			trainIdx = np.where(y!=i)[0]
+			testIdx = np.where(y==i)[0]
+			# build training data/test data subset
+			Xtrain = [X[t] for t in trainIdx]
+			gtrain = g[trainIdx]
+			
+			# compute the model (this time on the group!)
+			self.model.compute(Xtrain, gtrain)
+			
+			for j in testIdx:
+				# get prediction
+				prediction = self.model.predict(X[j])
+				if prediction == g[j]:
+					tp = tp + 1
+				else:
+					fp = fp + 1
+		self.add([tp, fp, tn, fn])
+	
+	def __repr__(self):
+		return "Leave-One-Class-Out Cross Validation (model=%s, runs=%d, accuracy=%.2f%%, tp=%s, fp=%s, tn=%s, fn=%s)" % (self.model, self.runs, (self.accuracy * 100.0), self.tps, self.fps, self.tns, self.fns)
 
 class SimpleValidation(Validation):
 	"""
@@ -313,9 +361,9 @@ class SimpleValidation(Validation):
 			model [Model] model to perform the validation on
 		"""
 		super(SimpleValidation, self).__init__(model=model)
-		self.logger = logging.getLogger("facerec.validation.LeaveOneOutCrossValidation")
+		self.logger = logging.getLogger("facerec.validation.SimpleValidation")
 			
-	def validate(self, X, y, trainIdx, testIdx, print_debug=False):
+	def validate(self, X, y, trainIdx, testIdx):
 		"""
 		Performs a validation given training data and test data. User is responsible for non-overlapping assignment of indices.
 
@@ -330,16 +378,20 @@ class SimpleValidation(Validation):
 		
 		# now compute the model
 		self.model.compute(Xtrain, ytrain)
-		
+
+		self.logger.debug("Model computed.")
+
 		tp, fp, tn, fn = (0,0,0,0)
+		count = 0
 		for i in testIdx:
-				prediction = self.model.predict(X[i])
-				if prediction == y[i]:
-					tp = tp + 1
-				else:
-					fp = fp + 1
+			self.logger.debug("Predicting %s/%s." % (count, len(testIdx)))
+			prediction = self.model.predict(X[i])
+			if prediction == y[i]:
+				tp = tp + 1
+			else:
+				fp = fp + 1
+			count = count + 1
 		self.add([tp, fp, tn, fn])
-		self.model.empty()
-	
+		
 	def __repr__(self):
 		return "Simple Validation (model=%s, runs=%s, accuracy=%.2f%%, std(accuracy)=%.2f%%, tp=%s, fp=%s, tn=%s, fn=%s)" % (self.model, self.runs, (self.accuracy*100.0), (self.std_accuracy*100.0), self.tps, self.fps, self.tns, self.fns)

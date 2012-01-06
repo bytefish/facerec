@@ -1,8 +1,11 @@
 import numpy as np
 
-def minmax(X, low, high, dtype=np.float):
+def minmax(X, low, high, minX=None, maxX=None, dtype=np.float):
 	X = np.asarray(X)
-	minX, maxX = (np.min(X),np.max(X))
+	if minX is None:
+		minX = np.min(X)
+	if maxX is None:
+		maxX = np.max(X)
 	# normalize to [0...1].	
 	X = X - float(minX)
 	X = X / float((maxX - minX))
