@@ -44,7 +44,7 @@ def grid_search(model, X, y, C_range=(-5,  15, 2), gamma_range=(3, -15, -2), k=5
 		gamma_range = (0, 0, 1)
 	
 	# best validation error so far
-	best_accuracy = np.finfo('float').max
+	best_accuracy = np.finfo('float').min
 	
 	# create grid (cartesian product of ranges)		
 	g = grid([C_range, gamma_range])
@@ -63,11 +63,11 @@ def grid_search(model, X, y, C_range=(-5,  15, 2), gamma_range=(3, -15, -2), k=5
 		
 		# store best parameter combination
 		if cv.accuracy > best_accuracy:
+			logger.info("best_accuracy=%s" % (cv.accuracy))
 			best_accuracy = cv.accuracy
 			best_parameter.C, best_parameter.gamma = C, gamma
 		
 		logger.info("%d-CV Result = %.2f." % (k, cv.accuracy))
 		
-	model.classifier.param = best_parameter
 	# set best parameter combination to best found
 	return best_parameter, results
