@@ -49,7 +49,7 @@ function model = lda(X, y, num_components)
 	V = V(:,idx);
 	
 	% build model
-	model.name = "lda";
+	model.name = 'lda';
 	model.num_components = num_components;
 	model.W = V(:,1:(c-1));
 end

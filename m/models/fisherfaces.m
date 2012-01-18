@@ -31,7 +31,7 @@ function model = fisherfaces(X, y, num_components)
 	Lda = lda(project(X, Pca.W, Pca.mu), y, num_components);
 	
 	% build model
-	model.name = "lda";
+	model.name = 'lda';
 	model.mu = repmat(0, size(X,1), 1);
 	model.W = Pca.W*Lda.W;
 	model.P = model.W'*X;

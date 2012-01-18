@@ -24,7 +24,7 @@ function model = eigenfaces(X, y, num_components)
 	Pca = pca(X, num_components);
   
   % build model
-  model.name = "eigenfaces";
+  model.name = 'eigenfaces';
 	model.W = Pca.W;
 	model.num_components = num_components;
 	model.mu = Pca.mu;

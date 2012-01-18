@@ -14,7 +14,7 @@ function model = pca(X, y, num_components)
 	%%			.mu [dim x 1] sample mean of X
 	%%
 	%%	Example:
-	%%		pca(X, y, struct("num_components",100))
+	%%		pca(X, y, struct('num_components',100))
 	%%
 	if(nargin < 3)
 		num_components=size(X,2)-1;
@@ -26,7 +26,7 @@ function model = pca(X, y, num_components)
   [E,D,V] = svd(X ,'econ');
   
   % build model
-  model.name = "pca";
+  model.name = 'pca';
 	model.W = E(:,1:num_components);
 	model.num_components = num_components;
 	model.mu = mu;
