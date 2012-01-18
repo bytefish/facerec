@@ -6,10 +6,10 @@ function X = read_image(filename)
 		% greyscale the image if we have 3 channels
 		if(channels == 3)
 			X = (X(:,:,1) + X(:,:,2) + X(:,:,3)) / 3;
-		endif
+		end
 		X = reshape(X,width*height,1);
 	catch
 		lerr = lasterror;
-		printf("Cannot read image \"%s\".\nReason:\n%s\n", filename, lerr);
+		printf('Cannot read image %s.\nReason:\n%s\n', filename, lerr);
 	end
-endfunction
+end

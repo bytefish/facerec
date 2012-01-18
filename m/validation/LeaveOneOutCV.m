@@ -4,9 +4,9 @@ function validation_result = LeaveOneOutCV(X, y, fun_train, fun_predict, print_d
 	%% Args:
 	%%  see KFoldCV.m
 	
-	if(~exist("print_debug"))
+	if(~exist('print_debug'))
 		print_debug = 0;
-	endif
+	end
 	
 	% shuffle dataset
 	[d idx] = sort(rand(1, size(X,2)));
@@ -17,9 +17,9 @@ function validation_result = LeaveOneOutCV(X, y, fun_train, fun_predict, print_d
 	n = length(y);
 	for i = 1:n
 		if(print_debug)
-			printf("Processing fold %d/%d.\n", i, n);
+			printf('Processing fold %d/%d.\n', i, n);
 			fflush(stdout);
-		endif
+		end
 		
 		Xi = X(:,1); X(:,1) = [];
 		yi = y(1); y(1) = [];
@@ -32,13 +32,13 @@ function validation_result = LeaveOneOutCV(X, y, fun_train, fun_predict, print_d
 			tp = tp + 1;
 		else
 			fp = fp + 1;
-		endif
+		end
 		
 		% add to test instance end of list
 		X = [X, Xi];
 		y = [y, yi];
-	endfor
+	end
 		
 	validation_result = [tp fp tn fn];
 	
-endfunction
+end

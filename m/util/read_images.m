@@ -26,7 +26,7 @@ function [X y width height names] = read_images(path)
 		images = list_files([path, filesep, subject]);
 		if(length(images) == 0)
 			continue; %% dismiss files or empty folder
-		endif
+		end
    
 		added = 0;
 		names{n} = subject;
@@ -46,7 +46,7 @@ function [X y width height names] = read_images(path)
 				T = double(imread(filename));
 			catch
 				lerr = lasterror;
-				printf("Cannot read image \"%s\"", filename)
+				printf('Cannot read image %s', filename)
 			end
 			
 			[height width channels] = size(T);
@@ -54,7 +54,7 @@ function [X y width height names] = read_images(path)
 			% greyscale the image if we have 3 channels
 			if(channels == 3)
 				T = (T(:,:,1) + T(:,:,2) + T(:,:,3)) / 3;
-			endif
+			end
       
 			%% finally try to append data
 			try
@@ -63,13 +63,13 @@ function [X y width height names] = read_images(path)
 				added = added + 1;
 			catch
 				lerr = lasterror;
-				printf("Image cannot be added to the Array. Wrong image size?\n")
+				printf('Image cannot be added to the Array. Wrong image size?\n')
 			end
 			fflush(stdout); % show warnings (probably not necessary, doesn't harm anyway)
-		endfor
+		end
 		% only increment class if images were actually added!
 		if ~(added == 0)
 			n = n + 1;
-		endif
-	endfor
-endfunction
+		end
+	end
+end

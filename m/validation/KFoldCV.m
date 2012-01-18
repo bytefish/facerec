@@ -18,13 +18,13 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 	validation_result = [];
 
 	% set default options
-	if ~exist("print_debug")
+	if ~exist('print_debug')
 		print_debug = 0;
 	end
 	
-	if ~exist("per_fold")
+	if ~exist('per_fold')
 		per_fold=0;
-	endif
+	end
 
 	% shuffle array (is there a function for this?)
 	[d idx] = sort(rand(1, size(X,2)));
@@ -49,15 +49,15 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		% Don't do this at home...
 		if(ni > size(foldIndices,2))
 			foldIndices = resize(foldIndices,size(foldIndices,1),ni);
-		endif
+		end
 		idx = resize(idx, 1, size(foldIndices,2));
 		foldIndices = [foldIndices; idx];
-	endfor
+	end
 
 	% adjust k (less than k examples in one class)
 	if(n<k)
 		k=n;
-	endif
+	end
 
 	% instances per fold
 	foldSize = floor(n/k);
@@ -71,9 +71,9 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		%     classN|ABBBBBBBBB|     classN|BABBBBBBBB|
 		%
 		if(print_debug)
-			printf("Processing fold %d.\n", i);
+			printf('Processing fold %d.\n', i);
 			fflush(stdout);
-		endif
+		end
 	 	
 		l = i*foldSize+1;
 		h = (i+1)*foldSize;
@@ -90,7 +90,7 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		% log per fold
 		if(per_fold)
 			tp=0; fp=0; tn=0; fn=0;
-		endif
+		end
 		% test the model
 		for idx=testIdx
 			% evaluate model and return prediction structure
@@ -100,17 +100,17 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 				tp = tp + 1;
 			else
 				fp = fp + 1;
-			endif
-		endfor
+			end
+		end
 		
 		if(per_fold)
 			validation_result = [validation_result; [tp, fp, tn, fn]];
-		endif
+		end
 				
-	endfor
+	end
 	
 	% or set the accumulated result
 	if(~per_fold)
 		validation_result = [tp, fp, tn, fn];
-	endif
-endfunction
+	end
+end

@@ -20,13 +20,13 @@ function crop(filename, eye0, eye1, top, left, dsize)
 	%% offset. 20% of the image to the left eye, 20% to the right eye
 	%% (2*0.2*70=28px).
 	
-	basename = strsplit(filename, filesep){end}
+	basename = sprintf("%s",strsplit(strsplit(filename, filesep){end}, "."){:})
 	subject = ["crop_",strsplit(filename, filesep){end - 1}]
 	
 	% create folder if necessary
 	if ~isdir(subject)
 		mkdir(subject)
-	endif
+	end
 	
 	% pixel in original image
 	vOffset = floor(top*dsize(2))
@@ -53,7 +53,7 @@ function crop(filename, eye0, eye1, top, left, dsize)
 	crop0 = sprintf("%dx%d+%d+%d", dsize(1)*scale, dsize(2)*scale, cropX, cropY)
 	
 	tmpfn = "tmp.png";
-	outfn = [subject, filesep, "crop_", basename];
+	outfn = [subject, filesep, "crop_", basename, ".png"];
 	
 	% rotate around left eye (http://www.imagemagick.org/script/command-line-options.php?#distort)
 	cmd0 = sprintf("convert %s +distort ScaleRotateTranslate '%d,%d %d' %s", filename, eye0(1), eye0(2), rotation, tmpfn)
@@ -66,4 +66,4 @@ function crop(filename, eye0, eye1, top, left, dsize)
 	
 	% do cleanup
 	system(sprintf("rm %s", tmpfn))
-endfunction
+end

@@ -5,9 +5,9 @@ function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict,
 	%%  g [1 x num_data] groups corresponding to classes of y
 	%%  see KFoldCV.m
 	
-	if(~exist("print_debug"))
+	if(~exist('print_debug'))
 		print_debug = 0;
-	endif
+	end
 	
 	% shuffle idx
 	[d idx] = sort(rand(1, size(X,2)));
@@ -23,9 +23,9 @@ function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict,
 	C = max(y); % y must be {1,2,3,...,C}
 	for i = 1:C
 		if(print_debug)
-			printf("Processing class %d/%d.\n",i,C);
+			printf('Processing class %d/%d.\n',i,C);
 			fflush(stdout);
-		endif
+		end
 		% build indices
 		testIdx = find(y==i);
 		trainIdx = findclasses(y, [1:(i-1), (i+1):C]); 		% see findclasses.m (there's probably a better way around)
@@ -38,9 +38,9 @@ function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict,
 				tp = tp + 1;
 			else
 				fp = fp + 1;
-			endif
-		endfor
-	endfor
+			end
+		end
+	end
 	% set result
 	validation_result = [tp fp tn fn];
 endfunction

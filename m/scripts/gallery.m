@@ -15,8 +15,8 @@ function gallery(path, filename, _rows, _cols)
 		_rows = _cols = ceil(sqrt(length(images)));
 		if(length(images) <= ((_rows-1)*_cols))
 			_rows = _rows-1;
-		endif
-	endif
+		end
+	end
 	g = zeros(_rows * _height,_cols * _width, _channels);
 	c=1;
 	for i=1:_rows
@@ -26,10 +26,10 @@ function gallery(path, filename, _rows, _cols)
   			% construct the row as long as we got images to read
 				_row(:, ((j-1)*_width+1):(j*_width),:) = imread([path,filesep,images{c}]);
 				c=c+1;
-			endif
-		endfor
+			end
+		end
 		% assign row
 		g(((i-1)*_height+1):(i*_height),:,:) = _row;
-	endfor
+	end
 	imwrite(uint8(g) , filename);
-endfunction
+end

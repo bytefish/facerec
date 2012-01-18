@@ -34,7 +34,7 @@ function [X y g group_names subject_names width height] = read_groups(path)
 		% no files to read? -- do nothing
 		if(length(list_files(group)) == 0)
 			continue;
-		endif
+		end
 		% else read group
 		[Xi yi width height names] = read_images(group);
 		% add class offset
@@ -49,5 +49,5 @@ function [X y g group_names subject_names width height] = read_groups(path)
 		% set new class offset and group
 		n = n + max(yi);
 		gi = gi+1;
-	endfor
-endfunction
+	end
+end
