@@ -18,7 +18,9 @@ function validation_result = LeaveOneOutCV(X, y, fun_train, fun_predict, print_d
 	for i = 1:n
 		if(print_debug)
 			printf('Processing fold %d/%d.\n', i, n);
-			fflush(stdout);
+			if isoctave()
+				fflush(stdout);
+			end
 		end
 		
 		Xi = X(:,1); X(:,1) = [];

@@ -7,8 +7,6 @@ addpath (genpath ('.'));
 % compute a model
 eigenface = eigenfaces(X,y,100);
 
-%% Plots
-
 % plot the first (atmost) 16 eigenfaces
 figure; 
 title('Eigenfaces (AT&T Facedatabase)');
@@ -21,7 +19,6 @@ for i=1:min(16, size(eigenface.W,2))
     title(sprintf('Eigenface #%i', i));
 end
 
-
 %% 2D plot of projection (add the classes you want)
 figure; hold on;
 for i = findclasses(eigenface.y, [1,2,3])
@@ -31,7 +28,8 @@ end
 %% 3D plot of projection (first three classes, add those you want)
 figure; hold on;
 for i = findclasses(eigenface.y, [1,2,3])
-	plot3(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), 'r.'); 
+	% LineSpec: red dots 'r.'
+	plot3(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), 'r.'), view(45,-45);
 	text(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), num2str(eigenface.y(i)));
 end
 

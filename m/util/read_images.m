@@ -1,20 +1,15 @@
 function [X y width height names] = read_images(path)
 	%% Read images from a given path and return the Imagematrix X.
 	%%
-	%% Args:
-	%%   path: 
-	%%
 	%% Returns:
-	%%  X: Array with images given in columns -- [X1,X2,...,Xn]
-	%%  y: Classes corresponding to images of X. -- [y1,y2,...,yn]
-	%%  width: width of the images
-	%%  height: height of the images
-	%%  names: name of each class -- names{1} is the name of class 1
+	%%  X [numDim x numSamples] Array with images given in columns -- [X1,X2,...,Xn]
+	%%  y [1 x numSamples] Classes corresponding to images of X. -- [y1,y2,...,yn]
+	%%  width [int] width of the images
+	%%  height [int] height of the images
+	%%  names [cell array] folder name of each class, so names{1} is the name of class 1
 	%%
 	%% Example:
 	%% 	[X y width height names] = read_images("./data/yalefaces")
-	%%
-	%% TODO add fixed image dimension, resizing images if necessary. 
 	%%
 	folder = list_files(path);
 	X = [];
@@ -65,7 +60,6 @@ function [X y width height names] = read_images(path)
 				lerr = lasterror;
 				printf('Image cannot be added to the Array. Wrong image size?\n')
 			end
-			fflush(stdout); % show warnings (probably not necessary, doesn't harm anyway)
 		end
 		% only increment class if images were actually added!
 		if ~(added == 0)

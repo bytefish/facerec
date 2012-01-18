@@ -24,7 +24,9 @@ function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict,
 	for i = 1:C
 		if(print_debug)
 			printf('Processing class %d/%d.\n',i,C);
-			fflush(stdout);
+			if isoctave()
+				fflush(stdout);
+			end
 		end
 		% build indices
 		testIdx = find(y==i);
