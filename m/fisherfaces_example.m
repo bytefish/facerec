@@ -1,0 +1,33 @@
+% load function files from subfolders aswell
+addpath (genpath ("."));
+
+% load data
+[X y width height names] = read_images("/home/philipp/facerec/data/yalefaces_recognition");
+
+% compute a model
+fisherface = fisherfaces(X,y);
+
+% plot fisherfaces
+figure; hold on;
+for i=1:min(16, size(fisherface.W,2))
+    subplot(4,4,i);
+    comp = cvtGray(fisherface.W(:,i), width, height);
+    imshow(comp);
+    colormap(jet(256));
+    title(sprintf("Fisherface #%i", i));
+endfor
+
+%% 2D plot of projection (first three classes)
+figure; hold on;
+for i = findclasses(fisherface.y, [1,2,3])
+	text(fisherface.P(1,i), fisherface.P(2,i), num2str(fisherface.y(i)));
+endfor
+
+%% 3D plot of projection (first three classes)
+figure; hold on;
+for i = findclasses(fisherface.y, [1,2,3])
+	plot3(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), 'r.');
+	text(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), num2str(fisherface.y(i)));
+endfor
+
+pause;

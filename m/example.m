@@ -32,13 +32,17 @@ eigenface = eigenfaces(X,y,100);
 %% Plots
 
 % plot the first (atmost) 16 eigenfaces
-figure; hold on;
+figure; 
+title("Eigenfaces (AT&T Facedatabase)");
+hold on;
 for i=1:min(16, size(eigenface.W,2))
     subplot(4,4,i);
     comp = cvtGray(eigenface.W(:,i), width, height);
     imshow(comp);
+    colormap(jet(256));
     title(sprintf("Eigenface #%i", i));
 endfor
+
 
 %% 2D plot of projection (add the classes you want)
 figure; hold on;
@@ -81,6 +85,7 @@ for i=1:min(16, size(fisherface.W,2))
     subplot(4,4,i);
     comp = cvtGray(fisherface.W(:,i), width, height);
     imshow(comp);
+    colormap(jet(256));
     title(sprintf("Fisherface #%i", i));
 endfor
 
@@ -96,12 +101,3 @@ for i = findclasses(fisherface.y, [1,2,3])
 	plot3(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), 'r.');
 	text(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), num2str(fisherface.y(i)));
 endfor
-
-% is a contour plot probably useful?
-figure; 
-x_values = [1:1:width];
-y_values = [1:1:height];
-contourf(x_values, y_values, cvtGray(fisherface.W(:,13),width,height));
-colorbar;
-axis("equal");
-
