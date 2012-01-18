@@ -43,4 +43,4 @@ function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict,
 	end
 	% set result
 	validation_result = [tp fp tn fn];
-endfunction
+end
