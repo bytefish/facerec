@@ -6,4 +6,4 @@ function C = fisherfaces_predict(model, Xtest, k)
 	%%		Xtest [dim x 1] test vector to predict
 	Q = model.W' * Xtest;
 	C = knn(model.P, model.y, Q, k);
-endfunction
+end

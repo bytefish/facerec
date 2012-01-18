@@ -11,4 +11,4 @@ function Y = project(X, W, mu)
 	%%
 	X = X - repmat(mu, 1, size(X,2));
 	Y = W'*X;
-endfunction
+end

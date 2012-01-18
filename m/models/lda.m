@@ -22,7 +22,7 @@ function model = lda(X, y, num_components)
 	
 	if(nargin==2)
 		num_components = c - 1
-	endif
+	end
 	
 	num_components = min(c-1,num_components);
 	
@@ -39,7 +39,7 @@ function model = lda(X, y, num_components)
 		Sw = Sw + Xi*Xi';
 		% calculate between-class scatter
 		Sb = Sb + size(Xi,2)*(meanClass-meanTotal)*(meanClass-meanTotal)';
-	endfor
+	end
 
 	% solve the eigenvalue problem
 	[V, D] = eig(Sb,Sw);
@@ -52,4 +52,4 @@ function model = lda(X, y, num_components)
 	model.name = "lda";
 	model.num_components = num_components;
 	model.W = V(:,1:(c-1));
-endfunction
+end

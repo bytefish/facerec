@@ -26,7 +26,7 @@ function c = knn(P, y, Q,  k)
 		k=1;
 	elseif (k>n)
 		k=n;
-	endif
+	end
 
 	Q = repmat(Q, 1, n);
 	distances = sqrt(sum(power((P-Q),2),1));
@@ -35,4 +35,4 @@ function c = knn(P, y, Q,  k)
 	y = y(1:k);
 	h = histc(y,(1:max(y)));
 	[v,c] = max(h);
-endfunction
+end

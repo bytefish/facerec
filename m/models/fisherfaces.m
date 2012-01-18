@@ -23,7 +23,7 @@ function model = fisherfaces(X, y, num_components)
 	% set the num_components
 	if(nargin==2)
 		num_components=c-1;
-	endif
+	end
 	num_components = min(c-1,num_components);
 	
 	% reduce dim(X) to (N-c) (see paper [BHK1997])
@@ -37,4 +37,4 @@ function model = fisherfaces(X, y, num_components)
 	model.P = model.W'*X;
 	model.num_components = Lda.num_components;
 	model.y = y;
-endfunction
+end

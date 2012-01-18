@@ -18,7 +18,7 @@ function model = pca(X, y, num_components)
 	%%
 	if(nargin < 3)
 		num_components=size(X,2)-1;
-	endif
+	end
 	% center data
   mu = mean(X,2);
   X = X - repmat(mu, 1, size(X,2));
@@ -30,4 +30,4 @@ function model = pca(X, y, num_components)
 	model.W = E(:,1:num_components);
 	model.num_components = num_components;
 	model.mu = mu;
-endfunction
+end

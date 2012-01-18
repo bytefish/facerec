@@ -18,7 +18,7 @@ function model = eigenfaces(X, y, num_components)
 	%%		m_eigenface = eigenfaces(X, y, 100)
 	if(nargin < 3)
 		num_components=size(X,2)-1;
-	endif
+	end
 	
 	% perform pca
 	Pca = pca(X, num_components);
@@ -32,4 +32,4 @@ function model = eigenfaces(X, y, num_components)
 	model.P = model.W'*(X - repmat(Pca.mu, 1, size(X,2)));
 	% store classes
 	model.y = y;
-endfunction
+end
