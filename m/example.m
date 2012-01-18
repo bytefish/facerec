@@ -1,8 +1,8 @@
 % load function files from subfolders aswell
-addpath (genpath ("."));
+addpath (genpath ('.'));
 
 % load data
-[X y width height names] = read_images("/home/philipp/facerec/data/yalefaces_recognition");
+[X y width height names] = read_images('/home/philipp/facerec/data/yalefaces_recognition');
 
 %% There's no OOP here. If you want to pass a parameter to the validation, 
 %% bind them to the function, see the examples.
@@ -33,29 +33,29 @@ eigenface = eigenfaces(X,y,100);
 
 % plot the first (atmost) 16 eigenfaces
 figure; 
-title("Eigenfaces (AT&T Facedatabase)");
+title('Eigenfaces (AT&T Facedatabase)');
 hold on;
 for i=1:min(16, size(eigenface.W,2))
     subplot(4,4,i);
     comp = cvtGray(eigenface.W(:,i), width, height);
     imshow(comp);
     colormap(jet(256));
-    title(sprintf("Eigenface #%i", i));
-endfor
+    title(sprintf('Eigenface #%i', i));
+end
 
 
 %% 2D plot of projection (add the classes you want)
 figure; hold on;
 for i = findclasses(eigenface.y, [1,2,3])
 	text(eigenface.P(1,i), eigenface.P(2,i), num2str(eigenface.y(i)));
-endfor
+end
 
 %% 3D plot of projection (first three classes, add those you want)
 figure; hold on;
 for i = findclasses(eigenface.y, [1,2,3])
 	plot3(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), 'r.'); 
 	text(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), num2str(eigenface.y(i)));
-endfor
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Fisherfaces
@@ -86,18 +86,18 @@ for i=1:min(16, size(fisherface.W,2))
     comp = cvtGray(fisherface.W(:,i), width, height);
     imshow(comp);
     colormap(jet(256));
-    title(sprintf("Fisherface #%i", i));
-endfor
+    title(sprintf('Fisherface #%i', i));
+end
 
 %% 2D plot of projection (first three classes)
 figure; hold on;
 for i = findclasses(fisherface.y, [1,2,3])
 	text(fisherface.P(1,i), fisherface.P(2,i), num2str(fisherface.y(i)));
-endfor
+end
 
 %% 3D plot of projection (first three classes)
 figure; hold on;
 for i = findclasses(fisherface.y, [1,2,3])
 	plot3(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), 'r.');
 	text(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), num2str(fisherface.y(i)));
-endfor
+end
