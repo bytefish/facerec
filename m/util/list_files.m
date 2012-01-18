@@ -13,4 +13,4 @@ function L = list_files(path)
 	L = L(3:length(L));
 	L = struct2cell(L);
 	L = L(1,:);
-endfunction
+end
