@@ -57,7 +57,7 @@ class NormalizedCorrelation(AbstractDistance):
 		qmu = q.mean()
 		pm = p - pmu
 		qm = q - qmu
-		return 1.0 - (np.dot(pm, qm) / (np.sqrt(np.dot(um, um)) * ma.sqrt(np.dot(vm, vm))))
+		return 1.0 - (np.dot(pm, qm) / (np.sqrt(np.dot(pm, pm)) * np.sqrt(np.dot(qm, qm))))
 		
 class ChiSquareDistance(AbstractDistance):
 	"""

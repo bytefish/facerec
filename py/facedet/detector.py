@@ -4,7 +4,7 @@ import sys
 import numpy as np
 	
 class Detector:
-	def detect(self, img):
+	def detect(self, src):
 		raise NotImplementedError("Every Detector must implement the detect method.")
 
 class SkinDetector(Detector):
@@ -45,7 +45,7 @@ class SkinDetector(Detector):
 		skinPixels = self._R1(src) & self._R2(srcYCrCb) & self._R3(srcHSV)
 		return np.asarray(skinPixels, dtype=np.uint8)
 
-class FaceDetector(Detector):
+class CascadedDetector(Detector):
 
 	def __init__(self, cascade_fn="./cascades/haarcascade_frontalface_alt2.xml", scaleFactor=1.2, minNeighbors=5, minSize=(30,30)):
 		if not os.path.exists(cascade_fn):
@@ -58,7 +58,7 @@ class FaceDetector(Detector):
 	def detect(self, src):
 		if np.ndim(src) == 3:
 			src = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-		src = cv2.equalizeHist(src)
+		#src = cv2.equalizeHist(src)
 		rects = self.cascade.detectMultiScale(src, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors, minSize=self.minSize)
 		if len(rects) == 0:
 			return []
@@ -67,7 +67,7 @@ class FaceDetector(Detector):
 
 class SkinFaceDetector(Detector):
 	def __init__(self, threshold=0.3, cascade_fn="./cascades/haarcascade_frontalface_alt2.xml", scaleFactor=1.2, minNeighbors=5, minSize=(30,30)):
-		self.faceDetector = FaceDetector(cascade_fn=cascade_fn, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
+		self.faceDetector = CascadedDetector(cascade_fn=cascade_fn, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
 		self.skinDetector = SkinDetector()
 		self.threshold = threshold
 
@@ -75,7 +75,7 @@ class SkinFaceDetector(Detector):
 		rects = []
 		for i,r in enumerate(self.faceDetector.detect(src)):
 			x0,y0,x1,y1 = r
-			face = img[y0:y1,x0:x1]
+			face = src[y0:y1,x0:x1]
 			skinPixels = self.skinDetector.detect(face)
 			skinPercentage = float(np.sum(skinPixels)) / skinPixels.size
 			print skinPercentage
@@ -96,18 +96,20 @@ if __name__ == "__main__":
 	# detection begins here
 	img = np.array(cv2.imread(inFileName), dtype=np.uint8)
 	imgOut = img.copy()
-	# set up detectors	
-	detector = SkinFaceDetector(threshold=0.3, cascade_fn="./cascades/haarcascade_frontalface_alt2.xml")
+	# set up detectors
+	detector = SkinFaceDetector(threshold=0.3, cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_frontalface_alt2.xml")
+	eyesDetector = CascadedDetector(scaleFactor=1.1,minNeighbors=5, minSize=(20,20), cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_mcs_nose.xml")
 	# detection
 	for i,r in enumerate(detector.detect(img)):
 		x0,y0,x1,y1 = r
-		cv2.rectangle(imgOut, (x0,y0),(x1,y1),(0,255,0),5)
+		cv2.rectangle(imgOut, (x0,y0),(x1,y1),(0,255,0),1)
 		face = img[y0:y1,x0:x1]
-		cv2.imshow('face', face)
-		cv2.waitKey(0)
+		for j,r2 in enumerate(eyesDetector.detect(face)):
+			ex0,ey0,ex1,ey1 = r2
+			print "??"
+			cv2.rectangle(imgOut, (x0+ex0,y0+ey0),(x0+ex1,y0+ey1),(0,255,0),1)
 	# display image or write to file
 	if outFileName is None:
-		#cv2.imshow('faces', imgOut)
+		cv2.imshow('faces', imgOut)
 		cv2.waitKey(0)
-	else:
 		cv2.imwrite(outFileName, imgOut)
