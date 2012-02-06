@@ -8,7 +8,12 @@ class Detector:
 		raise NotImplementedError("Every Detector must implement the detect method.")
 
 class SkinDetector(Detector):
-
+	"""
+	Implements common color thresholding rules for the RGB, YCrCb and HSV color 
+	space. The values are taken from a paper, which I can't find right now, so
+	be careful with this detector.
+	
+	"""
 	def _R1(self,BGR):
 		# channels
 		B = BGR[:,:,0]
@@ -46,7 +51,13 @@ class SkinDetector(Detector):
 		return np.asarray(skinPixels, dtype=np.uint8)
 
 class CascadedDetector(Detector):
-
+	"""
+	Uses the OpenCV cascades to perform the detection. Returns the Regions of Interest, where
+	the detector assumes a face. You probably have to play around with the scaleFactor, 
+	minNeighbors and minSize parameters to get good results for your use case. From my 
+	personal experience, all I can say is: there's no parameter combination which *just 
+	works*.	
+	"""
 	def __init__(self, cascade_fn="./cascades/haarcascade_frontalface_alt2.xml", scaleFactor=1.2, minNeighbors=5, minSize=(30,30)):
 		if not os.path.exists(cascade_fn):
 			raise IOError("No valid cascade found for path=%s." % cascade_fn)
@@ -58,7 +69,7 @@ class CascadedDetector(Detector):
 	def detect(self, src):
 		if np.ndim(src) == 3:
 			src = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-		#src = cv2.equalizeHist(src)
+		src = cv2.equalizeHist(src)
 		rects = self.cascade.detectMultiScale(src, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors, minSize=self.minSize)
 		if len(rects) == 0:
 			return []
@@ -66,6 +77,12 @@ class CascadedDetector(Detector):
 		return rects
 
 class SkinFaceDetector(Detector):
+	"""
+	Uses the SkinDetector to accept only faces over a given skin color tone threshold (ignored for 
+	grayscale images). Be careful with skin color tone thresholding, as it won't work in uncontrolled 
+	scenarios (without preprocessing)!
+	
+	"""
 	def __init__(self, threshold=0.3, cascade_fn="./cascades/haarcascade_frontalface_alt2.xml", scaleFactor=1.2, minNeighbors=5, minSize=(30,30)):
 		self.faceDetector = CascadedDetector(cascade_fn=cascade_fn, scaleFactor=scaleFactor, minNeighbors=minNeighbors, minSize=minSize)
 		self.skinDetector = SkinDetector()
@@ -97,8 +114,9 @@ if __name__ == "__main__":
 	img = np.array(cv2.imread(inFileName), dtype=np.uint8)
 	imgOut = img.copy()
 	# set up detectors
-	detector = SkinFaceDetector(threshold=0.3, cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_frontalface_alt2.xml")
-	eyesDetector = CascadedDetector(scaleFactor=1.1,minNeighbors=5, minSize=(20,20), cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_mcs_nose.xml")
+	#detector = SkinFaceDetector(threshold=0.3, cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_frontalface_alt2.xml")
+	detector = CascadedDetector(cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_frontalface_alt2.xml")
+	eyesDetector = CascadedDetector(scaleFactor=1.1,minNeighbors=5, minSize=(20,20), cascade_fn="/home/philipp/projects/opencv2/OpenCV-2.3.1/data/haarcascades/haarcascade_eye.xml")
 	# detection
 	for i,r in enumerate(detector.detect(img)):
 		x0,y0,x1,y1 = r
@@ -106,7 +124,6 @@ if __name__ == "__main__":
 		face = img[y0:y1,x0:x1]
 		for j,r2 in enumerate(eyesDetector.detect(face)):
 			ex0,ey0,ex1,ey1 = r2
-			print "??"
 			cv2.rectangle(imgOut, (x0+ex0,y0+ey0),(x0+ex1,y0+ey1),(0,255,0),1)
 	# display image or write to file
 	if outFileName is None:
