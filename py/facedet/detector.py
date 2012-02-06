@@ -129,4 +129,4 @@ if __name__ == "__main__":
 	if outFileName is None:
 		cv2.imshow('faces', imgOut)
 		cv2.waitKey(0)
-		cv2.imwrite(outFileName, imgOut)
+		cv2.imwrite(outFileName, imgOut) 
