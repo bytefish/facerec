@@ -1,8 +1,11 @@
+import sys
+# append facerec to module search path
+sys.path.append("..")
 import cv2
 from facedet.detector import SkinFaceDetector
 import numpy as np
 import os
-import sys
+
 
 def extract_faces(src_dir, dst_dir, detector, face_sz = (130,130)):
 	"""
