@@ -62,14 +62,16 @@ class CombineOperator(FeatureOperator):
 		B = self.model2.compute(X,y)
 		C = []
 		for i in range(0, len(A)):
-			ai = A[i].reshape(1,-1)
-			bi = B[i].reshape(1,-1)
+			ai = np.asarray(A[i]).reshape(1,-1)
+			bi = np.asarray(B[i]).reshape(1,-1)
 			C.append(np.hstack((ai,bi)))
 		return C
 	
 	def extract(self,X):
 		ai = self.model1.extract(X)
 		bi = self.model2.extract(X)
+		ai = np.asarray(ai).reshape(1,-1)
+		bi = np.asarray(bi).reshape(1,-1)
 		return np.hstack((ai,bi))
 
 	def __repr__(self):

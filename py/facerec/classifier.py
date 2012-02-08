@@ -46,7 +46,6 @@ from svmutil import *
 # for suppressing output
 import sys
 from StringIO import StringIO
-
 # function handle to stdout
 bkp_stdout=sys.stdout
 

@@ -1,6 +1,6 @@
+import sys
 import os
 import cv2
-import sys
 import numpy as np
 	
 class Detector:

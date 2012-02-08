@@ -5,13 +5,14 @@ import random
 import csv
 
 class DataSet(object):
-	def __init__(self, fileName=None, sz=None):
+	def __init__(self, filename=None, sz=None):
 		self.labels = []
 		self.groups = []
+		self.names = {}
 		self.data = []
 		self.sz = sz
-		if fileName is not None:
-			self.load(fileName)
+		if filename is not None:
+			self.load(filename)
 
 	def shuffle(self):
 		idx = np.argsort([random.random() for i in xrange(len(self.labels))])
@@ -36,6 +37,7 @@ class DataSet(object):
 						self.labels.append(c)
 					except IOError:
 						pass
+				self.names[c] = subdirname
 				c = c+1
 		self.labels = np.array(self.labels, dtype=np.int)
 		
