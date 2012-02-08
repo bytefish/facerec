@@ -28,11 +28,15 @@ This project implements a face recognition framework for Python with:
 
 ### documentation ###
 
-I need some more time to write a detailed documentation of the framework, but there are some examples how it can be used. Please have a look at [py/apps/scripts/fisherfaces_example.py](https://github.com/bytefish/facerec/blob/master/py/apps/scripts/fisherfaces_example.py) to see how one learns a Fisherfaces model, performs a 10-fold Cross Validation and plots the Fisherfaces. Please see [bytefish.de/blog/fisherfaces](http://www.bytefish.de/blog/fisherfaces) to see how to preprocess the images.
+I need some more time to write a detailed documentation of the framework, but there are some examples how it can be used. Please have a look at [py/apps/scripts/fisherfaces_example.py](https://github.com/bytefish/facerec/blob/master/py/apps/scripts/fisherfaces_example.py) to see how one learns a Fisherfaces model, performs a 10-fold Cross Validation and plots the Fisherfaces. Please see [bytefish.de/blog/fisherfaces](http://www.bytefish.de/blog/fisherfaces) to learn how to preprocess the images.
 
-Basically all face recognition algorithms you build consist of a [Feature Extraction](https://github.com/bytefish/facerec/blob/master/py/facerec/feature.py) and a [Classifier](https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py). A feature and classifier form a [PredictableModel](https://github.com/bytefish/facerec/blob/master/py/facerec/model.py), which does the feature extraction and learns the classifier.
+Basically all face recognition algorithms you build consist of 
+  - [Feature Extraction](https://github.com/bytefish/facerec/blob/master/py/facerec/feature.py)
+  - [Classifier](https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py)
 
-If you just want to use the Fisherfaces method for feature extraction you'd do:
+The feature and the classifier form a [PredictableModel](https://github.com/bytefish/facerec/blob/master/py/facerec/model.py), which does the feature extraction and learns the classifier.
+
+If you want to use the Fisherfaces method for feature extraction you would do:
 
 ```
 from facerec.feature import Fisherfaces
@@ -42,7 +46,7 @@ from facerec.feature import Fisherfaces
 feature = Fisherfaces()
 ```
 
-Sometimes it's necessary to perform preprocessing on your images. You can achieve preprocessing chains by using the [ChainOperator](https://github.com/bytefish/facerec/blob/master/py/facerec/operators.py), which computes feature1 and passes the features to feature2. 
+But sometimes it's necessary to perform preprocessing on your images. You can achieve preprocessing chains by using the [ChainOperator](https://github.com/bytefish/facerec/blob/master/py/facerec/operators.py). The ChainOperator computes a feature1 and passes its output to a feature2. In the following I do a TanTriggs preprocessing before learning the Fisherfaces.
 
 ```
 from facerec.preprocessing import TanTriggsPreprocessing
@@ -53,7 +57,8 @@ from facerec.operators import ChainOperator
 
 feature = ChainOperator(TanTriggsPreprocessing(), Fisherfaces())
 ```
-As a simple classifier you could start with a [Nearest Neighbor model](https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py). In its simplest form you would just write:
+
+Start with a [Nearest Neighbor model](https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py) as a classifier. In its simplest form you just need to write:
 
 ```
 from facerec.classifier import NearestNeighbor
@@ -69,7 +74,7 @@ from facerec.distance import CosineDistance
 
 ...
 
-classifier = NearestNeighbor(dist_metric=CosineDistance())
+classifier = NearestNeighbor(dist_metric=CosineDistance(), k=5)
 ```
 
 To build a model which can be computed and generates prediction, simply use the [PredictableModel](https://github.com/bytefish/facerec/blob/master/py/facerec/model.py):
@@ -82,11 +87,11 @@ from.facerec.classifier import NearestNeighbor
 from facerec.distance import EuclideanDistance
 ...
 feature = Fisherfaces()
-classifier = NearestNeighbor(dist_metric=CosineDistance())
+classifier = NearestNeighbor(dist_metric=CosineDistance(), k=5)
 predictor = PredictableModel(feature, classifier)
 ```
 
-Once you have created your model you can call `compute` to learn it.
+Once you have created your model you can call `compute` to learn it. Please see the [examples](https://github.com/bytefish/facerec/tree/master/py/apps/).
 
 ### sample application ###
 
