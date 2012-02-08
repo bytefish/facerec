@@ -31,8 +31,9 @@ This project implements a face recognition framework for Python with:
 I need some more time to write a detailed documentation of the framework, but there are some examples how it can be used. Please have a look at [py/apps/scripts/fisherfaces_example.py](https://github.com/bytefish/facerec/blob/master/py/apps/scripts/fisherfaces_example.py) to see how one learns a Fisherfaces model, performs a 10-fold Cross Validation and plots the Fisherfaces. Please see [bytefish.de/blog/fisherfaces](http://www.bytefish.de/blog/fisherfaces) to learn how to preprocess the images.
 
 Basically all face recognition algorithms you build consist of 
-  - [Feature Extraction](https://github.com/bytefish/facerec/blob/master/py/facerec/feature.py)
-  - [Classifier](https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py)
+
+- [Feature Extraction](https://github.com/bytefish/facerec/blob/master/py/facerec/feature.py)
+- [Classifier](https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py)
 
 The feature and the classifier form a [PredictableModel](https://github.com/bytefish/facerec/blob/master/py/facerec/model.py), which does the feature extraction and learns the classifier.
 
