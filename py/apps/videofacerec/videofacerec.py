@@ -56,19 +56,20 @@ class App(object):
 			ret, frame = self.cam.read()
 			# resize the frame to half the original size
 			img = cv2.resize(frame, (frame.shape[1]/2, frame.shape[0]/2), interpolation = cv2.INTER_CUBIC)
+			imgout = img.copy()
 			for i,r in enumerate(self.detector.detect(img)):
 				x0,y0,x1,y1 = r
 				# get face, convert to grayscale & resize to face_sz
-				face = img[y0:y1, x0:x1].copy()
+				face = img[y0:y1, x0:x1]
 				face = cv2.cvtColor(face,cv2.COLOR_BGR2GRAY)
 				face = cv2.resize(face, self.face_sz, interpolation = cv2.INTER_CUBIC)
 				# get a prediction
 				prediction = self.predictor.predict(face)
 				# draw the face area
-				cv2.rectangle(img, (x0,y0),(x1,y1),(0,255,0),2)
+				cv2.rectangle(imgout, (x0,y0),(x1,y1),(0,255,0),2)
 				# draw the predicted name (folder name...)
-				draw_str(img, (x0-20,y0-20), self.dataSet.names[prediction])
-			cv2.imshow('videofacerec', img)
+				draw_str(imgout, (x0-20,y0-20), self.dataSet.names[prediction])
+			cv2.imshow('videofacerec', imgout)
 			# get pressed key
 			ch = cv2.waitKey(10)
 			if ch == 27:
