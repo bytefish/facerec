@@ -21,13 +21,7 @@ from helper.video import *
 import sys, os
 sys.path.append("../..")
 # facerec imports
-from facerec.dataset import DataSet
 from facedet.detector import CascadedDetector
-from facerec.preprocessing import TanTriggsPreprocessing
-from facerec.feature import LBP
-from facerec.classifier import NearestNeighbor
-from facerec.operators import ChainOperator
-from facerec.model import PredictableModel
 
 help_message = '''USAGE: createsamples.py [<video source>] [<dst dir>] [<subject name>]
 
