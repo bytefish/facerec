@@ -1,3 +1,7 @@
+import sys
+# append facerec to module search path
+sys.path.append("../..")
+
 from facerec.dataset import DataSet
 from facerec.feature import *
 from facerec.distance import *
@@ -21,16 +25,16 @@ logger = logging.getLogger("facerec")
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 # load a dataset
-dataSet = DataSet("/home/philipp/facerec/data/c2", sz=(100,100))
+dataSet = DataSet("/home/philipp/facerec/data/c1")
 # define Fisherfaces as feature extraction method
-feature = Identity()
+feature = Fisherfaces()
 #from svmutil import *
 # define a SVM with RBF Kernel as classifier
 #param = svm_parameter("-q")
 #param.kernel_type = RBF
 #classifier = SVM(param=param)
 # define a 1-NN classifier with Euclidean Distance
-classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=5)
+classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
 # define the model as the combination
 model = PredictableModel(feature=feature, classifier=classifier)
 
