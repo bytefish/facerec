@@ -68,7 +68,7 @@ class App(object):
 				cv2.rectangle(img, (x0,y0),(x1,y1),(0,255,0),2)
 				# draw the predicted name (folder name...)
 				draw_str(img, (x0-20,y0-20), self.dataSet.names[prediction])
-				cv2.imshow('img', img)
+			cv2.imshow('videofacerec', img)
 			# get pressed key
 			ch = cv2.waitKey(10)
 			if ch == 27:
