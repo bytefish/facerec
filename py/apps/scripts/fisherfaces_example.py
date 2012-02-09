@@ -3,17 +3,13 @@ import sys
 sys.path.append("../..")
 # import facerec stuff
 from facerec.dataset import DataSet
-from facerec.feature import *
-from facerec.distance import *
-from facerec.classifier import NearestNeighbor, SVM
+from facerec.feature import Fisherfaces
+from facerec.distance import EuclideanDistance, CosineDistance
+from facerec.classifier import NearestNeighbor
 from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
 from facerec.visual import subplot
 from facerec.util import minmax_normalize
-from facerec.preprocessing import *
-from facerec.operators import ChainOperator
-from facerec.svm import grid_search
-from facerec.lbp import *
 # import numpy
 import numpy as np
 # import matplotlib colormaps
