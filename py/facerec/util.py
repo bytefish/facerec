@@ -47,7 +47,7 @@ def asColumnMatrix(X):
 	return np.asmatrix(mat)
 
 
-def minmax_normalize(X, low, high, minX=None, maxX=None, dtype=np.float32):
+def minmax_normalize(X, low, high, minX=None, maxX=None, dtype=np.float):
 	""" min-max normalize a given matrix to given range [low,high].
 	
 	Args:
@@ -55,18 +55,19 @@ def minmax_normalize(X, low, high, minX=None, maxX=None, dtype=np.float32):
 		low [numeric] lower bound
 		high [numeric] upper bound
 	"""
-	X = np.array(X, dtype=dtype)
 	if minX is None:
 		minX = np.min(X)
 	if maxX is None:
 		maxX = np.max(X)
+	minX = float(minX)
+	maxX = float(maxX)
 	# Normalize to [0...1].	
 	X = X - minX
 	X = X / (maxX - minX)
 	# Scale to [low...high].
 	X = X * (high-low)
 	X = X + low
-	return X
+	return np.asarray(X, dtype=dtype)
 
 def zscore(X):
 	X = np.asanyarray(X)
