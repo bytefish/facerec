@@ -1,20 +1,24 @@
 import sys
 # append facerec to module search path
 sys.path.append("../..")
-
+# import facerec stuff
 from facerec.dataset import DataSet
 from facerec.feature import *
 from facerec.distance import *
 from facerec.classifier import NearestNeighbor, SVM
 from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
-from facerec.visual import plot_eigenvectors
+from facerec.visual import subplot
+from facerec.util import minmax_normalize
 from facerec.preprocessing import *
 from facerec.operators import ChainOperator
 from facerec.svm import grid_search
 from facerec.lbp import *
-
+# import numpy
 import numpy as np
+# import matplotlib colormaps
+import matplotlib.cm as cm
+# import for logging
 import logging,sys
 # set up a handler for logging
 handler = logging.StreamHandler(sys.stdout)
@@ -34,7 +38,14 @@ classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
 model = PredictableModel(feature=feature, classifier=classifier)
 # show fisherfaces
 model.compute(dataSet.data, dataSet.labels)
-plot_eigenvectors(model.feature.eigenvectors, 10, sz=dataSet.data[0].shape, filename="fisherfaces.pdf")
+# turn the first (at most) 16 eigenvectors into grayscale
+# images (note: eigenvectors are stored by column!)
+E = []
+for i in xrange(min(model.feature.eigenvectors.shape[1], 16)):
+	e = model.feature.eigenvectors[:,i].reshape(dataSet.data[0].shape)
+	E.append(minmax_normalize(e,0,255, dtype=np.uint8))
+# plot them and store the plot to "python_fisherfaces_fisherfaces.pdf"
+subplot(title="Fisherfaces", images=E, rows=4, cols=4, sptitle="Fisherface", colormap=cm.jet, filename="fisherfaces.pdf")
 # perform a 10-fold cross validation
 cv = KFoldCrossValidation(model, k=10)
 cv.validate(dataSet.data, dataSet.labels)
