@@ -42,8 +42,16 @@ class NearestNeighbor(AbstractClassifier):
 		return "NearestNeighbor (k=%s, dist_metric=%s)" % (self.k, repr(self.dist_metric))
 
 # libsvm
-from svmutil import *
-# for suppressing output
+try:
+	from svmutil import *
+	# for suppressing output
+except ImportError:
+	logger = logging.getLogger("facerec.classifier.SVM")
+	logger.debug("Import Error: libsvm bindings not available.")
+except:
+	logger = logging.getLogger("facerec.classifier.SVM")
+	logger.debug("Import Error: libsvm bindings not available.")
+
 import sys
 from StringIO import StringIO
 # function handle to stdout
