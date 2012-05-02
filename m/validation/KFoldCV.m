@@ -1,5 +1,10 @@
 function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, print_debug)
+  %%
 	%% Perform a k-fold cross-validation
+	%%
+	%% There may be a much simpler approach to do a Stratified K-Fold Cross validation, you 
+	%% probably want to look at & translate the scikit-learn approach to MATLAB from:
+	%% https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/cross_validation.py
 	%%
 	%% Args:
 	%%  X [dim x num_data] Dataset a k-fold cross validation is performed on.
@@ -30,37 +35,35 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 	[d idx] = sort(rand(1, size(X,2)));
 	X = X(:,idx);
 	y = y(idx);
-		
+	
+	% holds the cross validation result
 	tp=0; fp=0; tn=0; fn=0;	
-	
-	% create class to image array, looks like this:
-	%
-	% c1  = [ I1, I2, I3;
-	% c2  =   I4, I5, I6; 
-	% c3  =   I7, I8, I9 ] 
-	
+
+  % find the unique classes (TODO make all this independent of any label order)	
 	C = max(y); % means y must be {1,2,3,...,C}
-	foldIndices = [];
-	n = +inf;
+  % find minimum and maximum number of samples per class
+  nmin = +inf;
+  nmax = -inf;
 	for i = 1:C
 		idx = find(y==i);
 		ni = length(idx);
-		n = min(n,ni);
-		% Don't do this at home...
-		if(ni > size(foldIndices,2))
-			foldIndices = resize(foldIndices,size(foldIndices,1),ni);
-		end
-		idx = resize(idx, 1, size(foldIndices,2));
-		foldIndices = [foldIndices; idx];
+    nmin = min(nmin,ni);
+    nmax = max(nmax,ni);
+  end
+  % build fold indices
+  foldIndices = zeros(C, nmax);
+  for i = 1:C
+    idx = find(y==i);
+		foldIndices(i, 1:numel(idx)) = idx;
 	end
 
-	% adjust k (less than k examples in one class)
-	if(n<k)
-		k=n;
+  % adjust k (means there less than k examples in a class)
+	if(nmin<k)
+		k=nmin;
 	end
-
+	
 	% instances per fold
-	foldSize = floor(n/k);
+	foldSize = floor(nmin/k);
 	
 	% calculate fold indices for Testset A, Trainingset B
 	for i = 0:(k-1)
@@ -80,7 +83,7 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		l = i*foldSize+1;
 		h = (i+1)*foldSize;
 		testIdx = foldIndices(:, l:h);
-		trainIdx = foldIndices(:, [1:(l-1), (h+1):n]);
+		trainIdx = foldIndices(:, [1:(l-1), (h+1):nmin]);
 		
 		% reshape to row vector again
 		testIdx = reshape(testIdx, 1, numel(testIdx));
@@ -89,10 +92,6 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		% train a model
 		model = fun_train(X(:,trainIdx), y(:,trainIdx));
 		
-		% log per fold
-		if(per_fold)
-			tp=0; fp=0; tn=0; fn=0;
-		end
 		% test the model
 		for idx=testIdx
 			% evaluate model and return prediction structure
@@ -105,10 +104,11 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 			end
 		end
 		
+		% if you want to log results on a per fold basis
 		if(per_fold)
 			validation_result = [validation_result; [tp, fp, tn, fn]];
+			tp=0; fp=0; tn=0; fn=0;
 		end
-				
 	end
 	
 	% or set the accumulated result
