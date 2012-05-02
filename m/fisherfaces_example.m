@@ -2,7 +2,7 @@
 addpath (genpath ('.'));
 
 % load data
-[X y width height names] = read_images('/home/philipp/facerec/data/yalefaces_recognition');
+[X y width height names] = read_images('/home/philipp/facerec/data/at');
 
 % compute a model
 fisherface = fisherfaces(X,y);
@@ -26,7 +26,8 @@ end
 %% 3D plot of projection (first three classes)
 figure; hold on;
 for i = findclasses(fisherface.y, [1,2,3])
-	plot3(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), 'r.');
+	% LineSpec: red dots 'r.'
+	plot3(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), 'r.'), view(45,-45);
 	text(fisherface.P(1,i), fisherface.P(2,i), fisherface.P(3,i), num2str(fisherface.y(i)));
 end
 

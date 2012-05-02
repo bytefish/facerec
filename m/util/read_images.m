@@ -41,7 +41,7 @@ function [X y width height names] = read_images(path)
 				T = double(imread(filename));
 			catch
 				lerr = lasterror;
-				printf('Cannot read image %s', filename)
+				fprintf(1,'Cannot read image %s', filename)
 			end
 			
 			[height width channels] = size(T);
@@ -58,7 +58,7 @@ function [X y width height names] = read_images(path)
 				added = added + 1;
 			catch
 				lerr = lasterror;
-				printf('Image cannot be added to the Array. Wrong image size?\n')
+				fprintf(1,'Image cannot be added to the Array. Wrong image size?\n')
 			end
 		end
 		% only increment class if images were actually added!

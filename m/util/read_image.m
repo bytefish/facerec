@@ -10,6 +10,6 @@ function X = read_image(filename)
 		X = reshape(X,width*height,1);
 	catch
 		lerr = lasterror;
-		printf('Cannot read image %s.\nReason:\n%s\n', filename, lerr);
+		fprintf(1,'Cannot read image %s.\nReason:\n%s\n', filename, lerr);
 	end
 end

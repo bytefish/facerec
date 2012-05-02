@@ -17,7 +17,7 @@ function validation_result = LeaveOneOutCV(X, y, fun_train, fun_predict, print_d
 	n = length(y);
 	for i = 1:n
 		if(print_debug)
-			printf('Processing fold %d/%d.\n', i, n);
+			fprintf(1,'Processing fold %d/%d.\n', i, n);
 			if isoctave()
 				fflush(stdout);
 			end

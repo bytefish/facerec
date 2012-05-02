@@ -18,4 +18,4 @@ model = fisherfaces(Xtrain,ytrain);
 % get a prediction from the model
 predicted = fisherfaces_predict(model, Xtest, 1);
 % only for debug
-printf('predicted=%d,actual=%d\n', predicted, ytest)
+fprintf(1,'predicted=%d,actual=%d\n', predicted, ytest)

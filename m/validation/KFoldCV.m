@@ -74,7 +74,7 @@ function validation_result = KFoldCV(X, y, k, fun_train, fun_predict, per_fold, 
 		%     classN|ABBBBBBBBB|     classN|BABBBBBBBB|
 		%
 		if(print_debug)
-			printf('Processing fold %d.\n', i);
+			fprintf(1,'Processing fold %d.\n', i);
 			if isoctave()
 				fflush(stdout);
 			end

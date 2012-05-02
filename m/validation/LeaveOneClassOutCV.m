@@ -23,7 +23,7 @@ function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict,
 	C = max(y); % y must be {1,2,3,...,C}
 	for i = 1:C
 		if(print_debug)
-			printf('Processing class %d/%d.\n',i,C);
+			fprintf(1,'Processing class %d/%d.\n',i,C);
 			if isoctave()
 				fflush(stdout);
 			end
