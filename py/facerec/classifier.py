@@ -50,10 +50,10 @@ except ImportError:
 except:
 	logger = logging.getLogger("facerec.classifier.SVM")
 	logger.debug("Import Error: libsvm bindings not available.")
-	
-	import sys
-	from StringIO import StringIO
-	bkp_stdout=sys.stdout
+
+import sys
+from StringIO import StringIO
+bkp_stdout=sys.stdout
 
 class SVM(AbstractClassifier):
 	"""
