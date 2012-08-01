@@ -32,7 +32,7 @@ I've recently got a lot of mails, that this project is hard to start with. Now t
 
 #### Getting the data right 
 
-We aren't doing a toy example, so you'll need some image data. For sake of simplicity I have assumed, that the images (the faces, persons you want to recognize) are given in folders. So imagine I have a folder (a dataset) images, with the subfolders person1, person2 and so on:
+We aren't doing a toy example, so you'll need some image data. For sake of simplicity I have assumed, that the images (the faces, persons you want to recognize) are given in folders. So imagine I have a folder `images` (the dataset!), with the subfolders person1, person2 and so on:
 
 ```
 philipp@mango:~/facerec/data/images$ tree -L 2 | head -n 20
@@ -82,14 +82,20 @@ philipp@mango:~/facerec/data/at$ tree .
 40 directories, 401 files
 ```
 
+That's all that needs to be done.
+
 #### Example: Fisherfaces
 
-The following code listing will learn a Fisherfaces model on the AT&T Facedatabase. I wrote a simple method `read_images`, which reads the images given from a given path (and optionally resizes them). Make sure you have the folder structured as described above. The `read_images` method then takes a path to the folder and it returns [X,y] being:
+The following code listing now will learn a Fisherfaces model on the AT&T Facedatabase. I wrote a simple method `read_images`, which reads the images from a given path (and optionally resizes them). Make sure you have the folder structured as described above. The `read_images` method returns [X,y] being:
 
 * **X**: A list of NumPy arrays (images).
 * **y**: A list of integers (corresponding labels).
 
-#### Source Code
+The source code listing is also in this github repository at:
+
+* [facerec/py/apps/scripts/simple_example.py](https://github.com/bytefish/facerec/blob/master/py/apps/scripts/simple_example.py)
+
+#### simple_example.py
 
 ```python
 #!/usr/bin/env python
