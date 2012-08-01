@@ -90,7 +90,7 @@ if __name__ == "__main__":
     # the tutorial coming with this source code on how to prepare
     # your image data:
     if len(sys.argv) < 2:
-        print "USAGE: facerec_demo.py </path/to/images> [</path/to/store/images/at>]"
+        print "USAGE: facerec_demo.py </path/to/images>"
         sys.exit()
     # Now read in the image data. This must be a valid path!
     [X,y] = read_images(sys.argv[1])
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 	    e = model.feature.eigenvectors[:,i].reshape(X[0].shape)
 	    E.append(minmax_normalize(e,0,255, dtype=np.uint8))
     # Plot them and store the plot to "python_fisherfaces_fisherfaces.pdf"
-    subplot(title="Fisherfaces", images=E, rows=4, cols=4, sptitle="Fisherface", colormap=cm.jet, filename="fisherfaces.pdf")
+    subplot(title="Fisherfaces", images=E, rows=4, cols=4, sptitle="Fisherface", colormap=cm.jet, filename="fisherfaces.png")
     # Perform a 10-fold cross validation
     cv = KFoldCrossValidation(model, k=10)
     cv.validate(X, y)
