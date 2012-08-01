@@ -28,7 +28,7 @@ This project implements a face recognition framework for Python with:
 
 ### A simple example for beginners
 
-I've recently got a lot of mails, that this project is hard to start with. Now that an issue was created, I've hacked something up people can start with. 
+Due to popular request, I've created a simple example for getting started with the facerec framework.
 
 #### Getting the data right 
 
