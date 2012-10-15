@@ -41,6 +41,7 @@ from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
 from facerec.visual import subplot
 from facerec.util import minmax_normalize
+from facerec.serialization import save_model, load_model
 # import numpy, matplotlib and logging
 import numpy as np
 from PIL import Image
@@ -107,9 +108,12 @@ if __name__ == "__main__":
     # Define a 1-NN classifier with Euclidean Distance:
     classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
     # Define the model as the combination
-    model = PredictableModel(feature=feature, classifier=classifier)
+    my_model = PredictableModel(feature=feature, classifier=classifier)
     # Compute the Fisherfaces on the given data (in X) and labels (in y):
-    model.compute(X, y)
+    my_model.compute(X, y)
+    # We then save the model, which uses Pythons pickle module:
+    save_model('model.pkl', my_model)
+    model = load_model('model.pkl')
     # Then turn the first (at most) 16 eigenvectors into grayscale
     # images (note: eigenvectors are stored by column!)
     E = []
