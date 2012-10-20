@@ -302,13 +302,59 @@ def read_images(path, sz=None):
                     raise
             c = c+1
     return [X,y]
+```
 
+Reading in the image data is then as easy as calling:
+```python
 # Read in the image data:
 [X,y] = read_images("/path/to/your/image/data")
+```
+#### Learning a Model
+
+You can then learn a model by calling `compute` on it. You have to pass the image data in a list `X` and the according labels in a list `y`:
+
+```
 # Then compute the model:
 model.compute(X,y)
 # ...
 ```
+
+#### Getting a prediction
+
+Since I can't assume a standard classifier output, a classifier always outputs a list with:
+
+```
+[ predicted_label, generic_classifier_output]
+```
+
+Take the k-Nearest Neighbor for example. Imagine I have a 3-Nearest Neighbor classifier, then your PredictableModel is going to return something similar to:
+
+```
+>>> model.predict(X)
+[ 0, 
+  { 'labels'    : [ 0,      0,      1      ],
+    'distances' : [ 10.132, 10.341, 13.314 ]
+  }
+]
+```
+
+In this example the predicted label is `0`, because two of three nearest neighbors were of label `0` and only one neighbor was `1`. The generic output is given in a dict for these classifiers, so you are given some semantic information. I prefer this over plain Python lists, because it is probably hard to read through some code, if you are accessing stuff by indices only.
+
+If you only want to know the predicted label for a query image `X` you would write:
+
+```
+predicted_label = model.predict(X)[0]
+```
+
+And if you want to make your `PredictableModel` more sophisticated, by rejecting examples based on the classifier output for example, then you'll need to access the generic classifier output:
+
+```
+prediction = model.predict(X)[0]
+predicted_label = prediction[0]
+generic_classifier_output = prediction[1]
+```
+
+You have to read up the classifier output in the help section of each classifers predict method.
 
 #### Image processing chains
 
