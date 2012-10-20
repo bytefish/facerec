@@ -42,10 +42,9 @@ class NearestNeighbor(AbstractClassifier):
             Example:
             
                 [ 0, 
-                   [
-                     [ 0,      0,      1      ],
-                     [ 10.132, 10.341, 13.314 ]
-                   ]
+                   { 'labels'    : [ 0,      0,      1      ],
+                     'distances' : [ 10.132, 10.341, 13.314 ]
+                   }
                 ]
             
             So if you want to perform a thresholding operation, you could 
@@ -78,7 +77,7 @@ class NearestNeighbor(AbstractClassifier):
         # distance of the k first items. So imagine you have a 1-NN and you
         # want to perform a threshold against it, you should take the first
         # item 
-        return [predicted_label, [sorted_y, sorted_distances]]
+        return [predicted_label, { 'labels' : sorted_y, 'distances' : sorted_distances }]
         
     def __repr__(self):
         return "NearestNeighbor (k=%s, dist_metric=%s)" % (self.k, repr(self.dist_metric))
@@ -163,7 +162,7 @@ class SVM(AbstractClassifier):
         p_lbl, p_acc, p_val = svm_predict([0], X.tolist(), self.svm)
         sys.stdout=bkp_stdout
         predicted_label = int(p_lbl[0])
-        return [predicted_label, [p_lbl, p_acc, p_val]]
+        return [predicted_label, { 'p_lbl' : p_lbl, 'p_acc' : p_acc, 'p_val' : p_val }]
     
     def __repr__(self):        
         return "Support Vector Machine (kernel_type=%s, C=%.2f,gamma=%.2f,p=%.2f,nu=%.2f,coef=%.2f,degree=%.2f)" % (KERNEL_TYPE[self.param.kernel_type], self.param.C, self.param.gamma, self.param.p, self.param.nu, self.param.coef0, self.param.degree)
