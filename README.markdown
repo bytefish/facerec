@@ -349,7 +349,7 @@ predicted_label = model.predict(X)[0]
 And if you want to make your `PredictableModel` more sophisticated, by rejecting examples based on the classifier output for example, then you'll need to access the generic classifier output:
 
 ```
-prediction = model.predict(X)[0]
+prediction = model.predict(X)
 predicted_label = prediction[0]
 generic_classifier_output = prediction[1]
 ```
