@@ -125,8 +125,6 @@ class VarLBP(LBPOperator):
         # Calculate output image size:
         dx = xsize - blocksizex + 1
         dy = ysize - blocksizey + 1
-        # Get center points:
-        C = np.asarray(X[origy:origy+dy,origx:origx+dx], dtype=np.uint8)
         # Allocate memory for online variance calculation:
         mean = np.zeros((dy,dx), dtype=np.float32)
         delta = np.zeros((dy,dx), dtype=np.float32)
@@ -136,7 +134,7 @@ class VarLBP(LBPOperator):
         for i,p in enumerate(sample_points):
             # Get coordinate in the block:
             y,x = p + (origy, origx)
-s            # Calculate floors, ceils and rounds for the x and y:
+            # Calculate floors, ceils and rounds for the x and y:
             fx = np.floor(x)
             fy = np.floor(y)
             cx = np.ceil(x)
@@ -168,4 +166,5 @@ s            # Calculate floors, ceils and rounds for the x and y:
     
     def __repr__(self):
         return "VarLBP (neighbors=%s, radius=%s)" % (self._neighbors, self._radius)
+
 
