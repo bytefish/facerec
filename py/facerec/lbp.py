@@ -168,5 +168,4 @@ s            # Calculate floors, ceils and rounds for the x and y:
     
     def __repr__(self):
         return "VarLBP (neighbors=%s, radius=%s)" % (self._neighbors, self._radius)
-        
 
