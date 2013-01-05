@@ -356,6 +356,43 @@ generic_classifier_output = prediction[1]
 
 You have to read up the classifier output in the help section of each classifers predict method.
 
+#### Thresholding
+
+In OpenCV you can pass a decision threshold to the predict method, which a prediction is thresholded against. So how can you introduce a decision threshold in the facerec framework? I admit there isn't a convenient or obvious way to do so, but it's actually quite easy. Imagine your classifier is 1-Nearest Neighbor, then a prediciton is going to yield something like this:
+
+```
+>>> prediction = model.predict(X)
+[ 0,
+   { 'labels'    : [ 0 ],
+     'distances' : [ 12.345 ]
+   }
+]
+```
+
+Where
+
+```
+prediction[0]    -- Is the predicted label.
+predicition[1]   -- is the generic classifier output, the decision is based on.
+```
+
+Now let's say you have estimated, that every distance above `10.1` is nonsense and should be ignored. Then you could do something like this in your script, to threshold against the given value:
+
+```
+# This gets you the output:
+prediction = model.predict(X)
+predicted_label = prediction[0]
+classifier_output = prediction[1]|
+# Now let's get the distance from the assuming a 1-Nearest Neighbor.
+Since it's a 1-Nearest Neighbor only look take the zero-th element:
+distance = classifier_output['distances'][0]
+# Now you can easily threshold by it:
+if distance > 10.0:
+...   print "Unknown Person!"
+... else
+...   print "Person is known, with label %i" % (predicted_label) 
+```
+
 #### Image processing chains
 
 Sometimes it's also necessary to perform preprocessing on your images. This framework is quite advanced and makes it easy to experiment with algorithms. You can achieve image processing chains by using the [ChainOperator](https://github.com/bytefish/facerec/blob/master/py/facerec/operators.py). The ChainOperator computes a `feature1` and passes its output to a `feature2`. See the implementation of the `ChainOperator`, which is a `FeatureOperator`. The `FeatureOperator` in turn is an `AbstractFeature` again, so it can be the input for another `AbstractFeature`. Get it?
