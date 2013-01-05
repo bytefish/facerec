@@ -373,7 +373,7 @@ Where
 
 ```
 prediction[0]    -- Is the predicted label.
-predicition[1]   -- is the generic classifier output, the decision is based on.
+prediction[1]   -- is the generic classifier output, the decision is based on.
 ```
 
 Now let's say you have estimated, that every distance above `10.1` is nonsense and should be ignored. Then you could do something like this in your script, to threshold against the given value:
