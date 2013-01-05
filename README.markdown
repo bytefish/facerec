@@ -378,19 +378,19 @@ predicition[1]   -- is the generic classifier output, the decision is based on.
 
 Now let's say you have estimated, that every distance above `10.1` is nonsense and should be ignored. Then you could do something like this in your script, to threshold against the given value:
 
-```
+```python
 # This gets you the output:
 prediction = model.predict(X)
 predicted_label = prediction[0]
-classifier_output = prediction[1]|
+classifier_output = prediction[1]
 # Now let's get the distance from the assuming a 1-Nearest Neighbor.
-Since it's a 1-Nearest Neighbor only look take the zero-th element:
+# Since it's a 1-Nearest Neighbor only look take the zero-th element:
 distance = classifier_output['distances'][0]
 # Now you can easily threshold by it:
 if distance > 10.0:
-...   print "Unknown Person!"
-... else
-...   print "Person is known, with label %i" % (predicted_label) 
+  print "Unknown Person!"
+else
+  print "Person is known with label %i" % (predicted_label) 
 ```
 
 #### Image processing chains
