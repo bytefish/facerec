@@ -21,7 +21,7 @@ function model = lda(X, y, num_components)
   c = max(y); 
   
   if(nargin < 3)
-    num_components = c - 1
+    num_components = c - 1;
   end
   
   num_components = min(c-1,num_components);
@@ -45,9 +45,9 @@ function model = lda(X, y, num_components)
   [V, D] = eig(Sb,Sw);
   
   % sort eigenvectors descending by eigenvalue
-  [D,idx] = sort(diag(D),1,'descend');
-  V = V(:,idx);
+  [D,idx] = sort(diag(D), 1, 'descend');
   
+  V = V(:,idx);
   % build model
   model.name = 'lda';
   model.num_components = num_components;
