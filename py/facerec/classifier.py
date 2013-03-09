@@ -22,7 +22,7 @@ class NearestNeighbor(AbstractClassifier):
 
     def compute(self, X, y):
         self.X = X
-        self.y = y
+        self.y = np.asarray(y)
     
     def predict(self, q):
         """
