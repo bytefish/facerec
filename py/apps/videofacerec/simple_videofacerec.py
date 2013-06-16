@@ -31,7 +31,18 @@ from facerec.serialization import save_model, load_model
 # for face detection (you can also use OpenCV2 directly):
 from facedet.detector import CascadedDetector
 
-def get_model():
+class ExtendedPredictableModel(PredictableModel):
+    """ Subclasses the PredictableModel to store some more
+        information, so we don't need to pass the dataset
+        on each program call...
+    """
+
+    def __init__(self, feature, classifier, image_size, subject_names):
+        PredictableModel.__init__(self, feature=feature, classifier=classifier)
+        self.image_size = image_size
+        self.subject_names = subject_names
+
+def get_model(image_size, subject_names):
     """ This method returns the PredictableModel which is used to learn a model
         for possible further usage. If you want to define your own model, this
         is the method to return it from!
@@ -41,7 +52,7 @@ def get_model():
     # Define a 1-NN classifier with Euclidean Distance:
     classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
     # Return the model as the combination:
-    return PredictableModel(feature=feature, classifier=classifier)
+    return ExtendedPredictableModel(feature=feature, classifier=classifier, image_size=image_size, subject_names=subject_names)
 
 def read_subject_names(path):
     """Reads the folders of a given directory, which are used to display some
@@ -99,10 +110,9 @@ def read_images(path, image_size=None):
 
 
 class App(object):
-    def __init__(self, model, image_size, camera_id, cascade_filename, subject_names):
-        self.image_size = image_size
-        self.detector = CascadedDetector(cascade_fn=cascade_filename, minNeighbors=5, scaleFactor=1.1)
+    def __init__(self, model, camera_id, cascade_filename):
         self.model = model
+        self.detector = CascadedDetector(cascade_fn=cascade_filename, minNeighbors=5, scaleFactor=1.1)
         self.cam = create_capture(camera_id)
             
     def run(self):
@@ -116,13 +126,13 @@ class App(object):
                 # (1) Get face, (2) Convert to grayscale & (3) resize to image_size:
                 face = img[y0:y1, x0:x1]
                 face = cv2.cvtColor(face,cv2.COLOR_BGR2GRAY)
-                face = cv2.resize(face, self.image_size, interpolation = cv2.INTER_CUBIC)
+                face = cv2.resize(face, self.model.image_size, interpolation = cv2.INTER_CUBIC)
                 # Get a prediction from the model:
                 prediction = self.model.predict(face)[0]
                 # Draw the face area in image:
                 cv2.rectangle(imgout, (x0,y0),(x1,y1),(0,255,0),2)
                 # Draw the predicted name (folder name...):
-                draw_str(imgout, (x0-20,y0-20), subject_names[prediction])
+                draw_str(imgout, (x0-20,y0-20), self.model.subject_names[prediction])
             cv2.imshow('videofacerec', imgout)
             # Show image & exit on escape:
             ch = cv2.waitKey(10)
@@ -134,15 +144,15 @@ if __name__ == '__main__':
     # model.pkl is a pickled (hopefully trained) PredictableModel, which is
     # used to make predictions. You can learn a model yourself by passing the
     # parameter -d (or --dataset) to learn the model from a given dataset.
-    usage = "usage: %prog [options] model.pkl"
+    usage = "usage: %prog [options] dataset_path model_filename"
     # Add options for training, resizing, validation and setting the camera id:
     parser = OptionParser(usage=usage)
     parser.add_option("-r", "--resize", action="store", type="string", dest="size", default="100x100", 
         help="Resizes the given dataset to a given size in format [width]x[height] (default: 100x100).")
     parser.add_option("-v", "--validate", action="store", dest="validate", type="int", default=None, 
         help="Performs a k-fold cross validation on the dataset, if given (default: None).")
-    parser.add_option("-t", "--train", action="store_true", dest="train", default=False,
-        help="Trains the model given in the dataset.")
+    parser.add_option("-t", "--train", action="store", dest="dataset", type="string", default=None,
+        help="Trains the model on the given dataset.")
     parser.add_option("-i", "--id", action="store", dest="camera_id", type="int", default=0, 
         help="Sets the Camera Id to be used (default: 0).")
     parser.add_option("-c", "--cascade", action="store", dest="cascade_filename", default="haarcascade_frontalface_alt2.xml",
@@ -154,19 +164,13 @@ if __name__ == '__main__':
     # Parse arguments:
     (options, args) = parser.parse_args()
     # Check if a model name was passed:
-    if len(args) < 2:
-        print "[Error] No prediction model was given.", options.cascade_filename
+    if len(args) == 0:
+        print "[Error] No prediction model was given."
         sys.exit()
-    # This dataset was (or is going to be) used:
-    dataset_path = args[0]
     # This model will be used (or created if the training parameter (-t, --train) exists:
-    model_filename = args[1]
-    # Check if the given dataset exists:
-    if not os.path.exists(dataset_path):
-        print "[Error] No dataset found at '%s'." % dataset_path
-        sys.exit()    
+    model_filename = args[0]
     # Check if the given model exists, if no dataset was passed:
-    if (not options.train) and (not os.path.exists(model_filename)):
+    if (options.dataset is None) and (not os.path.exists(model_filename)):
         print "[Error] No prediction model found at '%s'." % model_filename
         sys.exit()
     # Check if the given (or default) cascade file exists:
@@ -183,13 +187,20 @@ if __name__ == '__main__':
         print "[Error] Unable to parse the given image size '%s'. Please pass it in the format [width]x[height]!" % options.size
         sys.exit()
     # We have got a dataset to learn a new model from:
-    if options.train:
+    if options.dataset:
+        # Check if the given dataset exists:
+        if not os.path.exists(options.dataset):
+            print "[Error] No dataset found at '%s'." % dataset_path
+            sys.exit()    
         # Reads the images, labels and folder_names from a given dataset. Images
         # are resized to given size on the fly:
         print "Loading dataset..."
-        [images, labels, subject_names] = read_images(dataset_path, image_size)
+        [images, labels, subject_names] = read_images(options.dataset, image_size)
+        # Zip us a {label, name} dict from the given data:
+        list_of_labels = list(xrange(max(labels)))
+        subject_dictionary = dict(zip(list_of_labels, subject_names))
         # Get the model we want to compute:
-        model = get_model()
+        model = get_model(image_size=image_size, subject_names=subject_dictionary)
         # Sometimes you want to know how good the model may perform on the data
         # given, the script allows you to perform a k-fold Cross Validation before
         # the Detection & Recognition part starts:
@@ -221,11 +232,15 @@ if __name__ == '__main__':
         subject_names = read_subject_names(dataset_path)
         print "Loading the model..."
         model = load_model(model_filename)
+    # We operate on an ExtendedPredictableModel. Quit the application if this
+    # isn't what we expect it to be:
+    if not isinstance(model, ExtendedPredictableModel):
+        print "[Error] The given model is not of type '%s'." % "ExtendedPredictableModel"
+        sys.exit()
     # Now it's time to finally start the Application! It simply get's the model
     # and the image size the incoming webcam or video images are resized to:
+    print model.subject_names
     print "Starting application..."
     App(model=model,
-        image_size=image_size,
         camera_id=options.camera_id,
-        cascade_filename=options.cascade_filename,
-        subject_names=subject_names).run()
+        cascade_filename=options.cascade_filename).run()
