@@ -1,8 +1,20 @@
+'''
+This module contais some common routines used by other samples.
+'''
+
 import numpy as np
 import cv2
 import os
+from contextlib import contextmanager
+import itertools as it
 
 image_extensions = ['.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff', '.pbm', '.pgm', '.ppm']
+
+class Bunch(object):
+    def __init__(self, **kw):
+        self.__dict__.update(kw)
+    def __str__(self):
+        return str(self.__dict__)
 
 def splitfn(fn):
     path, fn = os.path.split(fn)
@@ -55,8 +67,8 @@ def mtx2rvec(R):
     return axis * np.arctan2(s, c)
 
 def draw_str(dst, (x, y), s):
-    cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness = 2, linetype=cv2.CV_AA)
-    cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), linetype=cv2.CV_AA)
+    cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness = 2, lineType=cv2.CV_AA)
+    cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv2.CV_AA)
 
 class Sketcher:
     def __init__(self, windowname, dests, colors_func):
@@ -115,3 +127,90 @@ def nothing(*arg, **kw):
 
 def clock():
     return cv2.getTickCount() / cv2.getTickFrequency()
+
+@contextmanager
+def Timer(msg):
+    print msg, '...',
+    start = clock()
+    try:
+        yield
+    finally:
+        print "%.2f ms" % ((clock()-start)*1000)
+
+class StatValue:
+    def __init__(self, smooth_coef = 0.5):
+        self.value = None
+        self.smooth_coef = smooth_coef
+    def update(self, v):
+        if self.value is None:
+            self.value = v
+        else:
+            c = self.smooth_coef
+            self.value = c * self.value + (1.0-c) * v
+
+class RectSelector:
+    def __init__(self, win, callback):
+        self.win = win
+        self.callback = callback
+        cv2.setMouseCallback(win, self.onmouse)
+        self.drag_start = None
+        self.drag_rect = None
+    def onmouse(self, event, x, y, flags, param):
+        x, y = np.int16([x, y]) # BUG
+        if event == cv2.EVENT_LBUTTONDOWN:
+            self.drag_start = (x, y)
+        if self.drag_start:
+            if flags & cv2.EVENT_FLAG_LBUTTON:
+                xo, yo = self.drag_start
+                x0, y0 = np.minimum([xo, yo], [x, y])
+                x1, y1 = np.maximum([xo, yo], [x, y])
+                self.drag_rect = None
+                if x1-x0 > 0 and y1-y0 > 0:
+                    self.drag_rect = (x0, y0, x1, y1)
+            else:
+                rect = self.drag_rect
+                self.drag_start = None
+                self.drag_rect = None
+                if rect:
+                    self.callback(rect)
+    def draw(self, vis):
+        if not self.drag_rect:
+            return False
+        x0, y0, x1, y1 = self.drag_rect
+        cv2.rectangle(vis, (x0, y0), (x1, y1), (0, 255, 0), 2)
+        return True
+    @property
+    def dragging(self):
+        return self.drag_rect is not None
+
+
+def grouper(n, iterable, fillvalue=None):
+    '''grouper(3, 'ABCDEFG', 'x') --> ABC DEF Gxx'''
+    args = [iter(iterable)] * n
+    return it.izip_longest(fillvalue=fillvalue, *args)
+
+def mosaic(w, imgs):
+    '''Make a grid from images.
+
+    w    -- number of grid columns
+    imgs -- images (must have same size and format)
+    '''
+    imgs = iter(imgs)
+    img0 = imgs.next()
+    pad = np.zeros_like(img0)
+    imgs = it.chain([img0], imgs)
+    rows = grouper(w, imgs, pad)
+    return np.vstack(map(np.hstack, rows))
+
+def getsize(img):
+    h, w = img.shape[:2]
+    return w, h
+
+def mdot(*args):
+    return reduce(np.dot, args)
+
+def draw_keypoints(vis, keypoints, color = (0, 255, 255)):
+    for kp in keypoints:
+            x, y = kp.pt
+            cv2.circle(vis, (int(x), int(y)), 2, color)
+

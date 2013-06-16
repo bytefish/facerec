@@ -80,7 +80,6 @@ def read_images(path, image_size=None):
     for dirname, dirnames, filenames in os.walk(path):
         for subdirname in dirnames:
             folder_names.append(subdirname)
-            print subdirname
             subject_path = os.path.join(dirname, subdirname)
             for filename in os.listdir(subject_path):
                 try:
@@ -150,6 +149,7 @@ if __name__ == '__main__':
         help="Sets the path to the Haar Cascade used for the face detection part (default: haarcascade_frontalface_alt2.xml).")
     # Show the options to the user:
     parser.print_help()
+    print "Press [ESC] to exit the program!"
     print "Script output:"
     # Parse arguments:
     (options, args) = parser.parse_args()
@@ -177,14 +177,17 @@ if __name__ == '__main__':
     # the algorithms, some algorithms like LBPH don't have this requirement. To 
     # prevent problems from popping up, we resize them with a default value if none
     # was given:
-    image_size = (int(options.size.split("x")[0]), int(options.size.split("x")[1]))
+    try:
+        image_size = (int(options.size.split("x")[0]), int(options.size.split("x")[1]))
+    except:
+        print "[Error] Unable to parse the given image size '%s'. Please pass it in the format [width]x[height]!" % options.size
+        sys.exit()
     # We have got a dataset to learn a new model from:
     if options.train:
         # Reads the images, labels and folder_names from a given dataset. Images
         # are resized to given size on the fly:
         print "Loading dataset..."
-        [images, labels, folder_names] = read_images(options.dataset, image_size)
-        print folder_names
+        [images, labels, subject_names] = read_images(dataset_path, image_size)
         # Get the model we want to compute:
         model = get_model()
         # Sometimes you want to know how good the model may perform on the data
