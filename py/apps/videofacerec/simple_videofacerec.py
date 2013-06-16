@@ -22,14 +22,14 @@ from helper.video import *
 import sys
 sys.path.append("../..")
 # facerec imports
-from facerec.dataset import DataSet
-from facedet.detector import CascadedDetector
-from facerec.preprocessing import TanTriggsPreprocessing
-from facerec.feature import LBP
-from facerec.classifier import NearestNeighbor
-from facerec.operators import ChainOperator
 from facerec.model import PredictableModel
-from facerec.distance import ChiSquareDistance
+from facerec.feature import Fisherfaces
+from facerec.distance import EuclideanDistance
+from facerec.classifier import NearestNeighbor
+from facerec.validation import KFoldCrossValidation
+from facerec.serialization import save_model, load_model
+# for face detection (you can also use OpenCV2 directly):
+from facedet.detector import CascadedDetector
 
 def get_model():
     """ This method returns the PredictableModel which is used to learn a model
@@ -43,7 +43,23 @@ def get_model():
     # Return the model as the combination:
     return PredictableModel(feature=feature, classifier=classifier)
 
-def read_images(path, sz=None):
+def read_subject_names(path):
+    """Reads the folders of a given directory, which are used to display some
+        meaningful name instead of simply displaying a number.
+
+    Args:
+        path: Path to a folder with subfolders representing the subjects (persons).
+
+    Returns:
+        folder_names: The names of the folder, so you can display it in a prediction.
+    """
+    folder_names = []
+    for dirname, dirnames, filenames in os.walk(path):
+        for subdirname in dirnames:
+            folder_names.append(subdirname)
+    return folder_names
+
+def read_images(path, image_size=None):
     """Reads the images in a given folder, resizes images on the fly if size is given.
 
     Args:
@@ -58,18 +74,20 @@ def read_images(path, sz=None):
             folder_names: The names of the folder, so you can display it in a prediction.
     """
     c = 0
-    X,y,folder_names = [], []
+    X = []
+    y = []
+    folder_names = []
     for dirname, dirnames, filenames in os.walk(path):
         for subdirname in dirnames:
             folder_names.append(subdirname)
+            print subdirname
             subject_path = os.path.join(dirname, subdirname)
             for filename in os.listdir(subject_path):
                 try:
-                    im = Image.open(os.path.join(subject_path, filename))
-                    im = im.convert("L")
+                    im = cv2.imread(os.path.join(subject_path, filename), cv2.IMREAD_GRAYSCALE)
                     # resize to given size (if given)
-                    if (sz is not None):
-                        im = im.resize(self.sz, Image.ANTIALIAS)
+                    if (image_size is not None):
+                        im = cv2.resize(im, image_size)
                     X.append(np.asarray(im, dtype=np.uint8))
                     y.append(c)
                 except IOError, (errno, strerror):
@@ -83,8 +101,8 @@ def read_images(path, sz=None):
 
 class App(object):
     def __init__(self, model, image_size, camera_id, cascade_filename, subject_names):
-        self.face_sz = face_sz
-        self.detector = CascadedDetector(cascade_fn=cascade_fn, minNeighbors=5, scaleFactor=1.1)
+        self.image_size = image_size
+        self.detector = CascadedDetector(cascade_fn=cascade_filename, minNeighbors=5, scaleFactor=1.1)
         self.model = model
         self.cam = create_capture(camera_id)
             
@@ -124,9 +142,9 @@ if __name__ == '__main__':
         help="Resizes the given dataset to a given size in format [width]x[height] (default: 100x100).")
     parser.add_option("-v", "--validate", action="store", dest="validate", type="int", default=None, 
         help="Performs a k-fold cross validation on the dataset, if given (default: None).")
-    parser.add_option("-d", "--dataset", action="store", type="string", dest="dataset", default=None, 
-        help="Learns a new model, defined in get_model, from the given dataset (default: None).")
-    parser.add_option("-i", "--id", action="store", dest="camera", type="int", default=0, 
+    parser.add_option("-t", "--train", action="store_true", dest="train", default=False,
+        help="Trains the model given in the dataset.")
+    parser.add_option("-i", "--id", action="store", dest="camera_id", type="int", default=0, 
         help="Sets the Camera Id to be used (default: 0).")
     parser.add_option("-c", "--cascade", action="store", dest="cascade_filename", default="haarcascade_frontalface_alt2.xml",
         help="Sets the path to the Haar Cascade used for the face detection part (default: haarcascade_frontalface_alt2.xml).")
@@ -136,13 +154,19 @@ if __name__ == '__main__':
     # Parse arguments:
     (options, args) = parser.parse_args()
     # Check if a model name was passed:
-    if len(args) == 0:
+    if len(args) < 2:
         print "[Error] No prediction model was given.", options.cascade_filename
         sys.exit()
-    # This model will be used (or created if the dataset parameter (-d, --dataset) exists:
-    model_filename = args[0]
+    # This dataset was (or is going to be) used:
+    dataset_path = args[0]
+    # This model will be used (or created if the training parameter (-t, --train) exists:
+    model_filename = args[1]
+    # Check if the given dataset exists:
+    if not os.path.exists(dataset_path):
+        print "[Error] No dataset found at '%s'." % dataset_path
+        sys.exit()    
     # Check if the given model exists, if no dataset was passed:
-    if (options.dataset is None) and (not os.path.exists(model_filename)):
+    if (not options.train) and (not os.path.exists(model_filename)):
         print "[Error] No prediction model found at '%s'." % model_filename
         sys.exit()
     # Check if the given (or default) cascade file exists:
@@ -153,13 +177,14 @@ if __name__ == '__main__':
     # the algorithms, some algorithms like LBPH don't have this requirement. To 
     # prevent problems from popping up, we resize them with a default value if none
     # was given:
-    image_size = map(int, options.size.split("x"))
+    image_size = (int(options.size.split("x")[0]), int(options.size.split("x")[1]))
     # We have got a dataset to learn a new model from:
-    if options.dataset:
+    if options.train:
         # Reads the images, labels and folder_names from a given dataset. Images
         # are resized to given size on the fly:
         print "Loading dataset..."
-        [images, labels, folder_names] = read_images(options.dataset, sz=image_size)
+        [images, labels, folder_names] = read_images(options.dataset, image_size)
+        print folder_names
         # Get the model we want to compute:
         model = get_model()
         # Sometimes you want to know how good the model may perform on the data
@@ -179,15 +204,18 @@ if __name__ == '__main__':
             logger.addHandler(handler)
             logger.setLevel(logging.DEBUG)
             # Perform the validation & print results:
-            cv = KFoldCrossValidation(model, k=10)
-            cv.validate(X, y)
-            print cv
+            crossval = KFoldCrossValidation(model, k=10)
+            crossval.validate(images, labels)
+            print crossval
         # Compute the model:
         print "Computing the model..."
         model.compute(images, labels)
         # And save the model, which uses Pythons pickle module:
+        print "Saving the model..."
         save_model(model_filename, model)
     else:
+        print "Reading subject names..."
+        subject_names = read_subject_names(dataset_path)
         print "Loading the model..."
         model = load_model(model_filename)
     # Now it's time to finally start the Application! It simply get's the model
@@ -197,4 +225,4 @@ if __name__ == '__main__':
         image_size=image_size,
         camera_id=options.camera_id,
         cascade_filename=options.cascade_filename,
-        subject_names=folder_names).run()
+        subject_names=subject_names).run()
