@@ -144,12 +144,12 @@ if __name__ == '__main__':
     # model.pkl is a pickled (hopefully trained) PredictableModel, which is
     # used to make predictions. You can learn a model yourself by passing the
     # parameter -d (or --dataset) to learn the model from a given dataset.
-    usage = "usage: %prog [options] dataset_path model_filename"
+    usage = "usage: %prog [options] model_filename"
     # Add options for training, resizing, validation and setting the camera id:
     parser = OptionParser(usage=usage)
     parser.add_option("-r", "--resize", action="store", type="string", dest="size", default="100x100", 
         help="Resizes the given dataset to a given size in format [width]x[height] (default: 100x100).")
-    parser.add_option("-v", "--validate", action="store", dest="validate", type="int", default=None, 
+    parser.add_option("-v", "--validate", action="store", dest="numfolds", type="int", default=None, 
         help="Performs a k-fold cross validation on the dataset, if given (default: None).")
     parser.add_option("-t", "--train", action="store", dest="dataset", type="string", default=None,
         help="Trains the model on the given dataset.")
@@ -204,10 +204,8 @@ if __name__ == '__main__':
         # Sometimes you want to know how good the model may perform on the data
         # given, the script allows you to perform a k-fold Cross Validation before
         # the Detection & Recognition part starts:
-        if options.validate:
-            print "Validating model..."
-            # Number of folds to be used:
-            numFolds = options.validate
+        if options.numfolds:
+            print "Validating model with %s folds..." % options.numfolds
             # We want to have some log output, so set up a new logging handler
             # and point it to stdout:
             handler = logging.StreamHandler(sys.stdout)
@@ -218,7 +216,7 @@ if __name__ == '__main__':
             logger.addHandler(handler)
             logger.setLevel(logging.DEBUG)
             # Perform the validation & print results:
-            crossval = KFoldCrossValidation(model, k=10)
+            crossval = KFoldCrossValidation(model, k=options.numfolds)
             crossval.validate(images, labels)
             print crossval
         # Compute the model:
@@ -228,8 +226,6 @@ if __name__ == '__main__':
         print "Saving the model..."
         save_model(model_filename, model)
     else:
-        print "Reading subject names..."
-        subject_names = read_subject_names(dataset_path)
         print "Loading the model..."
         model = load_model(model_filename)
     # We operate on an ExtendedPredictableModel. Quit the application if this
@@ -239,7 +235,6 @@ if __name__ == '__main__':
         sys.exit()
     # Now it's time to finally start the Application! It simply get's the model
     # and the image size the incoming webcam or video images are resized to:
-    print model.subject_names
     print "Starting application..."
     App(model=model,
         camera_id=options.camera_id,
