@@ -492,9 +492,9 @@ Once you have created your model you can call `compute` to learn it. Please see 
 
 ## Face Recognition in Videos (or turning videofacerec.py into something useful) ##
 
-<table>
+<table style="border-style: none;">
     <tr>
-        <td style="border-style: none;"><img src="/static/images/blog/videofacerec/simple_videofacerec.png" class="medialeft" alt="simple_videofacerec.py in action" /></td> 
+        <td style="border-style: none;"><img src="https://raw.github.com/bytefish/facerec/master/py/apps/videofacerec/simple_videofacerec.png" alt="simple_videofacerec.py in action" /></td> 
         <td style="border-style: none;">
             <p><a href="https://github.com/bytefish/facerec/tree/master/py/apps/videofacerec">videofacerec</a> is a tiny Python script I wrote to perform face recognition in videos and to showcase some of the <a href="http://www.github.com/bytefish/facerec">facerec framework</a> features. It was a really quick hack and I've always told people, that I can't give much of a help. But since many people kept asking for it recently, I've finally decided to rewrite it into something more useful and robust. And this is also the perfect chance to add some more <a href="http://www.github.com/bytefish/facerec">facerec</a> features and write a new blog post.</p>
             <p>The screenshot shows you the final applications output, with my beautiful face of course. I've trained a model with the images of some celebrities and the application recognizes me as the <i>terrific</i> <a href="http://en.wikipedia.org/wiki/Patrick_Stewart">Sir Patrick Stewart</a>, which makes perfect sense if you have read <a href="http://www.bytefish.de/blog/fisherfaces">my article on the Fisherfaces algorithm</a>.</p></td>
