@@ -170,7 +170,12 @@ class VarLBP(LocalDescriptor):
         return "VarLBP (neighbors=%s, radius=%s)" % (self._neighbors, self._radius)
 
 class LPQ(LocalDescriptor):
-    """ This implementation of Local Phase Quantization (LPQ) is a 
+    """ This implementation of Local Phase Quantization (LPQ) is a 1:1 adaption of the 
+        original implementation by Ojansivu V & Heikkilä J, which is available at:
+        
+            * http://www.cse.oulu.fi/CMV/Downloads/LPQMatlab
+            
+        So all credit goes to them.
       
       Reference: 
         Ojansivu V & Heikkilä J (2008) Blur insensitive texture classification 
