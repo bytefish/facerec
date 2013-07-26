@@ -1,22 +1,8 @@
 import numpy as np
 
-class LBPOperator(object):
-    def __init__(self, neighbors):
-        self._neighbors = neighbors
-
-    def __call__(self,X):
-        raise NotImplementedError("Every LBPOperator must implement the __call__ method.")
-        
-    @property
-    def neighbors(self):
-        return self._neighbors
-        
-    def __repr__(self):
-        return "LBPOperator (neighbors=%s)" % (self._neighbors)
-
-class OriginalLBP(LBPOperator):
+class OriginalLBP(object):
     def __init__(self):
-        LBPOperator.__init__(self, neighbors=8)
+        self._neighbors = 8
     
     def __call__(self,X):
         X = np.asarray(X)
@@ -33,10 +19,10 @@ class OriginalLBP(LBPOperator):
     def __repr__(self):
         return "OriginalLBP (neighbors=%s)" % (self._neighbors)
 
-class ExtendedLBP(LBPOperator):
+class ExtendedLBP(object):
     def __init__(self, radius=1, neighbors=8):
-        LBPOperator.__init__(self, neighbors=neighbors)
         self._radius = radius
+        self._neighbors = neighbors
         
     def __call__(self,X):
         X = np.asanyarray(X)
@@ -97,10 +83,10 @@ class ExtendedLBP(LBPOperator):
     def __repr__(self):
         return "ExtendedLBP (neighbors=%s, radius=%s)" % (self._neighbors, self._radius)
         
-class VarLBP(LBPOperator):
+class VarLBP(object):
     def __init__(self, radius=1, neighbors=8):
-        LBPOperator.__init__(self, neighbors=neighbors)
         self._radius = radius
+        self._neighbors = neighbors
         
     def __call__(self,X):
         X = np.asanyarray(X)
@@ -166,5 +152,3 @@ class VarLBP(LBPOperator):
     
     def __repr__(self):
         return "VarLBP (neighbors=%s, radius=%s)" % (self._neighbors, self._radius)
-
-

@@ -85,7 +85,7 @@ class LPQ(object):
         B = np.reshape(B, np.shape(Fa))
         
         # And finally build the histogram:
-        h, b  = np.histogram(B, bins=256, range = (0,255))
+        h, b  = np.histogram(B, bins=256, range = (0,255), normed=True)
         
         return h
         
