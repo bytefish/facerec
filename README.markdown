@@ -14,6 +14,7 @@ This project implements a face recognition framework for Python with:
     * Local Binary Patterns Histograms (Ahonen, T., Hadid, A., and Pietikainen, M. "Face Recognition with Local Binary Patterns.". Computer Vision - ECCV 2004 (2004), 469–481.)
         * Original LBP
         * Extended LBP
+    * Local Phase Quantization (Ojansivu V & Heikkilä J. "Blur insensitive texture classification using local phase quantization." Proc. Image and Signal Processing (ICISP 2008), 5099:236-243.)
 * Classifier
     * k-Nearest Neighbor; available distance metrics
         * Euclidean Distance
