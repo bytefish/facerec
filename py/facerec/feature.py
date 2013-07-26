@@ -222,12 +222,14 @@ class Fisherfaces(AbstractFeature):
     def __repr__(self):
         return "Fisherfaces (num_components=%s)" % (self.num_components)
 
-from facerec.lbp import ExtendedLBP
+from facerec.lbp import LocalDescriptor, ExtendedLBP
 
-class LBP(AbstractFeature):
-    def __init__(self, local_operator=ExtendedLBP(), sz = (8,8)):
+class SpatialHistogram(AbstractFeature):
+    def __init__(self, lbp_operator=ExtendedLBP(), sz = (8,8)):
         AbstractFeature.__init__(self)
-        self.local_operator = local_operator
+        if not isinstance(lbp_operator, LocalDescriptor):
+            raise TypeError("Only an operator of type facerec.lbp.LocalDescriptor is a valid lbp_operator.")
+        self.lbp_operator = lbp_operator
         self.sz = sz
         
     def compute(self,X,y):
@@ -244,7 +246,7 @@ class LBP(AbstractFeature):
 
     def spatially_enhanced_histogram(self, X):
         # calculate the LBP image
-        L = self.local_operator(X)
+        L = self.lbp_operator(X)
         # calculate the grid geometry
         lbp_height, lbp_width = L.shape
         grid_rows, grid_cols = self.sz
@@ -260,4 +262,4 @@ class LBP(AbstractFeature):
         return np.asarray(E)
     
     def __repr__(self):
-        return "Local Binary Pattern (operator=%s, grid=%s)" % (repr(self.lbp_operator), str(self.sz))
+        return "SpatialHistogram (operator=%s, grid=%s)" % (repr(self.lbp_operator), str(self.sz))
