@@ -35,12 +35,26 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as np
+from scipy import ndimage
 import os
 import sys
-from facerec.feature import PCA, LDA, SpatialHistogram
+
+sys.path.append("../..")
+
+from PIL import Image
+import matplotlib.pyplot as plt
+
+import logging
+
+from facerec.feature import PCA, Fisherfaces, SpatialHistogram
+from facerec.distance import EuclideanDistance, ChiSquareDistance
 from facerec.classifier import NearestNeighbor
-from facerec.lbp import LPQ, LBP
-from facerec.validation import KFoldCrossValidation, precision
+from facerec.model import PredictableModel
+from facerec.lbp import LPQ, ExtendedLBP
+from facerec.validation import KFoldCrossValidation, ValidationResult, precision
+
+
+EXPERIMENT_NAME = "LocalPhaseQuantizationExperiment"
 
 def read_images(path, sz=None):
     """Reads the images in a given folder, resizes images on the fly if size is given.
@@ -89,6 +103,10 @@ def apply_gaussian(X, sigma):
     """
     return np.array([ndimage.gaussian_filter(x, sigma) for x in X])
 
+
+def results_to_list(validation_results):
+    return [precision(result.true_positives,result.false_positives) for result in validation_results]
+    
     
 if __name__ == "__main__":
     # This is where we write the results to, if an output_dir is given
@@ -98,7 +116,7 @@ if __name__ == "__main__":
     # the tutorial coming with this source code on how to prepare
     # your image data:
     if len(sys.argv) < 2:
-        print "USAGE: facerec_demo.py </path/to/images>"
+        print "USAGE: lpq_experiment.py </path/to/images>"
         sys.exit()
     # Now read in the image data. This must be a valid path!
     [X,y] = read_images(sys.argv[1])
@@ -128,9 +146,26 @@ if __name__ == "__main__":
     for sigma in sigmas:
         Xs = apply_gaussian(X, sigma)
         for validator in validators:
-            validator.validate(Xs,y)
+            experiment_description = "%s (sigma=%.2f)" % (EXPERIMENT_NAME, sigma)
+            validator.validate(Xs, y, experiment_description)
     # Print the results:
-    for pos in len(sigmas):
-        print validators[pos]
-    # Calculate the performance metrics for each run:
-    for pos in 
+    for validator in validators:
+        validator.print_results()
+    # Make a nice plot of this textual output:
+    fig = plt.figure()
+    fig.text(.5, .95, EXPERIMENT_NAME, horizontalalignment='center') 
+    # Add the Validation results:
+    plt.plot(
+        sigmas, results_to_list(cv0.validation_results), 'r--', 
+        sigmas, results_to_list(cv1.validation_results), 'bs',
+        sigmas, results_to_list(cv2.validation_results), 'g^',
+        sigmas, results_to_list(cv3.validation_results), 'k')
+    # Add a Legend:
+    plt.legend((cv0, cv1, cv2, cv3), 'lower right', shadow=True, fancybox=True)
+    # Scale Precision correctly:
+    plt.ylim(0,1)
+    # Finally add the labels:
+    plt.ylabel('Precision')
+    plt.xlabel('Sigma')
+    # Save the gifure and we are out of here!
+    fig.savefig("lpq_experiment.png")

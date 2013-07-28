@@ -123,6 +123,7 @@ class ValidationStrategy(object):
         """
         raise NotImplementedError("Every Validation module must implement the validate method!")
         
+    
     def print_results(self):
         for validation_result in self.validation_results:
             print validation_result
