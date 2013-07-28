@@ -218,7 +218,7 @@ if __name__ == '__main__':
             # Perform the validation & print results:
             crossval = KFoldCrossValidation(model, k=options.numfolds)
             crossval.validate(images, labels)
-            print crossval
+            crossval.print_results()
         # Compute the model:
         print "Computing the model..."
         model.compute(images, labels)

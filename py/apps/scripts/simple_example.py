@@ -34,8 +34,8 @@
 import sys, os
 sys.path.append("../..")
 # import facerec modules
-from facerec.feature import Fisherfaces
-from facerec.distance import EuclideanDistance
+from facerec.feature import Fisherfaces, SpatialHistogram, Identity
+from facerec.distance import EuclideanDistance, ChiSquareDistance
 from facerec.classifier import NearestNeighbor
 from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
@@ -47,6 +47,10 @@ import numpy as np
 from PIL import Image
 import matplotlib.cm as cm
 import logging
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from facerec.lbp import LPQ, ExtendedLBP
+
 
 def read_images(path, sz=None):
     """Reads the images in a given folder, resizes images on the fly if size is given.
@@ -126,4 +130,4 @@ if __name__ == "__main__":
     cv = KFoldCrossValidation(model, k=10)
     cv.validate(X, y)
     # And print the result:
-    print cv
+    cv.print_results()

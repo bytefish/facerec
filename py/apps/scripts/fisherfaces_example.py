@@ -46,4 +46,4 @@ subplot(title="Fisherfaces", images=E, rows=4, cols=4, sptitle="Fisherface", col
 # perform a 10-fold cross validation
 cv = KFoldCrossValidation(model, k=10)
 cv.validate(dataSet.data, dataSet.labels)
-print cv
+cv.print_results()

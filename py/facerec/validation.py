@@ -64,7 +64,7 @@ def precision(true_positives, false_positives):
     """
     return accuracy(true_positives, 0, false_positives, 0)
     
-def accuracy(true_positives, true_negatives, false_positives, false_negatives):
+def accuracy(true_positives, true_negatives, false_positives, false_negatives, description=None):
     """Returns the accuracy, calculated as:
     
         (true_positives+true_negatives)/(true_positives+false_positives+true_negatives+false_negatives)
@@ -81,26 +81,20 @@ def accuracy(true_positives, true_negatives, false_positives, false_negatives):
 class ValidationResult(object):
     """Holds a validation result.
     """
-    def __init__(self, true_positives, true_negatives, false_positives, false_negatives)
+    def __init__(self, true_positives, true_negatives, false_positives, false_negatives, description):
         self.true_positives = true_positives
         self.true_negatives = true_negatives
         self.false_positives = false_positives
         self.false_negatives = false_negatives
+        self.description = description
         
     def __repr__(self):
-        print "Precision = ", precision(self.true_positives, self.false_positives)
-        print "Accuracy = ", accuracy(self.true_positives, self.true_negatives, self.false_positives, self.false_negatives)
+        res_precision = precision(self.true_positives, self.false_positives) * 100
+        res_accuracy = accuracy(self.true_positives, self.true_negatives, self.false_positives, self.false_negatives) * 100
+        return "ValidationResult (Description=%s, Precision=%.2f%%, Accuracy=%.2f%%)" % (self.description, res_precision, res_accuracy)
     
 class ValidationStrategy(object):
     """ Represents a generic Validation kernel for all Validation strategies.
-    
-    Attributes:
-
-        (tp,...,fns)    [int]        Validation results
-        accuracy        [float]     Accuracy over all runs.
-        std_accuracy    [float]     stddev over all runs.
-        runs            [int]         Runs performed for this validation.
-        
     """
     def __init__(self, model):
         """    
@@ -118,7 +112,15 @@ class ValidationStrategy(object):
     def add(self, validation_result):
         self.validation_results.append(validation_result)
         
-    def validate(self, X, y):
+    def validate(self, X, y, description):
+        """
+        
+        Args:
+            X [list] Input Images
+            y [y] Class Labels
+            description [string] experiment description
+        
+        """
         raise NotImplementedError("Every Validation module must implement the validate method!")
         
     def print_results(self):
@@ -151,7 +153,7 @@ class KFoldCrossValidation(ValidationStrategy):
         self.k = k
         self.logger = logging.getLogger("facerec.validation.KFoldCrossValidation")
 
-    def validate(self, X, y):
+    def validate(self, X, y, description="ExperimentName"):
         """ Performs a k-fold cross validation
         
         Args:
@@ -207,7 +209,7 @@ class KFoldCrossValidation(ValidationStrategy):
                 else:
                     false_positives = false_positives + 1
                     
-        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives))
+        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives, description))
     
     def __repr__(self):
         return "k-Fold Cross Validation (model=%s, k=%s)" % (self.model, self.k)
@@ -234,7 +236,7 @@ class LeaveOneOutCrossValidation(ValidationStrategy):
         super(LeaveOneOutCrossValidation, self).__init__(model=model)
         self.logger = logging.getLogger("facerec.validation.LeaveOneOutCrossValidation")
         
-    def validate(self, X, y):
+    def validate(self, X, y, description="ExperimentName"):
         """ Performs a LOOCV.
         
         Args:
@@ -266,7 +268,8 @@ class LeaveOneOutCrossValidation(ValidationStrategy):
                 true_positives = true_positives + 1
             else:
                 false_positives = false_positives + 1
-        self.add([tp, fp, tn, fn])
+                
+        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives, description))
     
     def __repr__(self):
         return "Leave-One-Out Cross Validation (model=%s)" % (self.model)
@@ -293,8 +296,10 @@ class LeaveOneClassOutCrossValidation(ValidationStrategy):
         super(LeaveOneClassOutCrossValidation, self).__init__(model=model)
         self.logger = logging.getLogger("facerec.validation.LeaveOneClassOutCrossValidation")
         
-    def validate(self, X, y, g):
-        #(X,y) = shuffle(X,y)
+    def validate(self, X, y, g, description="ExperimentName"):
+        """
+        TODO Add example and refactor into proper interface declaration.
+        """
         true_positives, false_positives, true_negatives, false_negatives = (0,0,0,0)
         
         for i in range(0,len(np.unique(y))):
@@ -316,7 +321,7 @@ class LeaveOneClassOutCrossValidation(ValidationStrategy):
                     true_positives = true_positives + 1
                 else:
                     false_positives = false_positives + 1
-        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives))
+        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives, description))
     
     def __repr__(self):
         return "Leave-One-Class-Out Cross Validation (model=%s)" % (self.model)
@@ -332,7 +337,7 @@ class SimpleValidation(ValidationStrategy):
         super(SimpleValidation, self).__init__(model=model)
         self.logger = logging.getLogger("facerec.validation.SimpleValidation")
             
-    def validate(self, X, y, trainIndices, testIndices):
+    def validate(self, X, y, trainIndices, testIndices, description="ExperimentName"):
         """
         Performs a validation given training data and test data. User is responsible for non-overlapping assignment of indices.
 
@@ -359,7 +364,7 @@ class SimpleValidation(ValidationStrategy):
             else:
                 false_positives = false_positives + 1
             count = count + 1
-        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives))
+        self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives, description))
         
     def __repr__(self):
         return "Simple Validation (model=%s)" % (self.model)
