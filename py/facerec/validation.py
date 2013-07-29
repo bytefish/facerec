@@ -125,6 +125,7 @@ class ValidationStrategy(object):
         
     
     def print_results(self):
+        print self.model
         for validation_result in self.validation_results:
             print validation_result
 
