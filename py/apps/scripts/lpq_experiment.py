@@ -43,6 +43,7 @@ sys.path.append("../..")
 
 from PIL import Image
 import matplotlib.pyplot as plt
+import textwrap
 
 import logging
 
@@ -153,19 +154,25 @@ if __name__ == "__main__":
         validator.print_results()
     # Make a nice plot of this textual output:
     fig = plt.figure()
-    fig.text(.5, .95, EXPERIMENT_NAME, horizontalalignment='center') 
     # Add the Validation results:
-    plt.plot(
-        sigmas, results_to_list(cv0.validation_results), 'r--', 
-        sigmas, results_to_list(cv1.validation_results), 'bs',
-        sigmas, results_to_list(cv2.validation_results), 'g^',
-        sigmas, results_to_list(cv3.validation_results), 'k')
-    # Add a Legend:
-    plt.legend((cv0, cv1, cv2, cv3), 'lower right', shadow=True, fancybox=True)
+    plt.plot(sigmas, results_to_list(cv0.validation_results), linestyle='--', marker='*', color='r')
+    plt.plot(sigmas, results_to_list(cv1.validation_results), linestyle='--', marker='s', color='b')
+    plt.plot(sigmas, results_to_list(cv2.validation_results), linestyle='--', marker='^', color='g')
+    plt.plot(sigmas, results_to_list(cv3.validation_results), linestyle='--', marker='x', color='k')
+    # Put the legend below the plot:
+    plt.legend(
+        (
+            "\n".join(textwrap.wrap(repr(model0), 120)),
+            "\n".join(textwrap.wrap(repr(model1), 120)),
+            "\n".join(textwrap.wrap(repr(model2), 120)),
+            "\n".join(textwrap.wrap(repr(model3), 120))
+        ), prop={'size':6}, numpoints=1, loc='upper center', bbox_to_anchor=(0.5, -0.2),  fancybox=True, shadow=True, ncol=1)
     # Scale Precision correctly:
     plt.ylim(0,1)
     # Finally add the labels:
+    plt.title(EXPERIMENT_NAME)
     plt.ylabel('Precision')
     plt.xlabel('Sigma')
+    fig.subplots_adjust(bottom=0.5)
     # Save the gifure and we are out of here!
-    fig.savefig("lpq_experiment.png")
+    plt.savefig("lpq_experiment.png", bbox_inches='tight',dpi=100)
