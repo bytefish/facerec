@@ -197,7 +197,7 @@ if __name__ == '__main__':
         print "Loading dataset..."
         [images, labels, subject_names] = read_images(options.dataset, image_size)
         # Zip us a {label, name} dict from the given data:
-        list_of_labels = list(xrange(max(labels)))
+        list_of_labels = set(labels)
         subject_dictionary = dict(zip(list_of_labels, subject_names))
         # Get the model we want to compute:
         model = get_model(image_size=image_size, subject_names=subject_dictionary)
