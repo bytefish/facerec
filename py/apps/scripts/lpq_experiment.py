@@ -41,7 +41,12 @@ import sys
 
 sys.path.append("../..")
 
-from PIL import Image
+# try to import the PIL Image
+try:
+    from PIL import Image
+except ImportError:
+    import Image
+
 import matplotlib.pyplot as plt
 import textwrap
 

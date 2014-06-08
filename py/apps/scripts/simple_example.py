@@ -44,7 +44,11 @@ from facerec.util import minmax_normalize
 from facerec.serialization import save_model, load_model
 # import numpy, matplotlib and logging
 import numpy as np
-from PIL import Image
+# try to import the PIL Image module
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 import matplotlib.cm as cm
 import logging
 import matplotlib.pyplot as plt

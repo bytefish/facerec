@@ -4,8 +4,11 @@ import os as os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import PIL.Image as Image
-
+# try to import the PIL Image module
+try:
+    from PIL import Image
+except ImportError:
+    import Image
 import math as math
 
 
