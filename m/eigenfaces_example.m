@@ -7,6 +7,21 @@ addpath (genpath ('.'));
 % compute a model
 eigenface = eigenfaces(X,y,30);
 
+%% Plot eigenfaces reconstruction
+steps = 10:10: min (eigenface.num_components ,320) ;
+Q = X (:,1) ; % first image to reconstruct
+figure ; hold on ;
+title ( ' Reconstruction (AT&T Facedatabase) ' );
+for i =1: min (16 , length ( steps ))
+subplot (4 ,4 , i);
+numEvs = steps (i);
+P = project( Q,eigenface.W(:,1:numEvs), eigenface.mu);
+R = reconstruct(eigenface.W(:,1:numEvs),P,eigenface.mu);
+comp = cvtGray(R,width , height);
+imshow(comp);
+title ( sprintf ( ' % i Eigenvectors ' , numEvs ));
+end
+
 % plot the first (atmost) 16 eigenfaces
 figure; 
 title('Eigenfaces (AT&T Facedatabase)');
