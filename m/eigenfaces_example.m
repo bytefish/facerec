@@ -2,7 +2,7 @@
 addpath (genpath ('.'));
 
 % load data
-[X y width height names] = read_images('/home/philipp/facerec/data/at');
+[X y width height names] = read_images('/home/philipp/facerec/data/yalefaces_recognition');
 
 % compute a model
 eigenface = eigenfaces(X,y,300);
