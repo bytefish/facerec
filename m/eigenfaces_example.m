@@ -2,25 +2,10 @@
 addpath (genpath ('.'));
 
 % load data
-[X y width height names] = read_images('/home/philipp/facerec/data/yalefaces_recognition');
+[X y width height names] = read_images('E:\desktop\todo\PatternRecognition\Homework\FinalProject\src_ref\orl_faces');
 
 % compute a model
-eigenface = eigenfaces(X,y,30);
-
-%% Plot eigenfaces reconstruction
-steps = 10:10: min (eigenface.num_components ,320) ;
-Q = X (:,1) ; % first image to reconstruct
-figure ; hold on ;
-title ( ' Reconstruction (AT&T Facedatabase) ' );
-for i =1: min (16 , length ( steps ))
-subplot (4 ,4 , i);
-numEvs = steps (i);
-P = project( Q,eigenface.W(:,1:numEvs), eigenface.mu);
-R = reconstruct(eigenface.W(:,1:numEvs),P,eigenface.mu);
-comp = cvtGray(R,width , height);
-imshow(comp);
-title ( sprintf ( ' % i Eigenvectors ' , numEvs ));
-end
+eigenface = eigenfaces(X,y,300);
 
 % plot the first (atmost) 16 eigenfaces
 figure; 
@@ -41,13 +26,28 @@ for i = findclasses(eigenface.y, [1,2,3])
 end
 
 %% 3D plot of projection (first three classes, add those you want)
-if(rows(eigenface.P) >= 3)
+if(size((eigenface.P),2) >= 3)
   figure; hold on;
   for i = findclasses(eigenface.y, [1,2,3])
     % LineSpec: red dots 'r.'
     plot3(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), 'r.'), view(45,-45);
     text(eigenface.P(1,i), eigenface.P(2,i), eigenface.P(3,i), num2str(eigenface.y(i)));
   end
+end
+
+%% Plot eigenfaces reconstruction
+steps = 10:10: min (eigenface.num_components ,320) ;
+Q = X (:,1) ; % first image to reconstruct
+figure ; hold on ;
+title ( ' Reconstruction (AT&T Facedatabase) ' );
+for i =1: min (16 , length ( steps ))
+    subplot (4 ,4 , i);
+    numEvs = steps (i);
+    P = project( Q,eigenface.W(:,1:numEvs), eigenface.mu);
+    R = reconstruct(eigenface.W(:,1:numEvs),P,eigenface.mu);
+    comp = cvtGray(R,width , height);
+    imshow(comp);
+    title ( sprintf ( ' % i Eigenvectors ' , numEvs ));
 end
 
 pause;
