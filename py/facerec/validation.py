@@ -338,9 +338,10 @@ class SimpleValidation(ValidationStrategy):
         """
         super(SimpleValidation, self).__init__(model=model)
         self.logger = logging.getLogger("facerec.validation.SimpleValidation")
-            
-    def validate(self, X, y, trainIndices, testIndices, description="ExperimentName"):
+
+    def validate(self, Xtrain, ytrain, Xtest, ytest, description="ExperimentName"):
         """
+
         Performs a validation given training data and test data. User is responsible for non-overlapping assignment of indices.
 
         Args:
@@ -348,25 +349,22 @@ class SimpleValidation(ValidationStrategy):
             y [1 x num_data] classes
         """
         self.logger.info("Simple Validation.")
-        
-        Xtrain = [X[t] for t in trainIndices]
-        ytrain = y[trainIndices]
-        
+       
         self.model.compute(Xtrain, ytrain)
 
         self.logger.debug("Model computed.")
 
         true_positives, false_positives, true_negatives, false_negatives = (0,0,0,0)
         count = 0
-        for i in testIndices:
-            self.logger.debug("Predicting %s/%s." % (count, len(testIndices)))
-            prediction = self.model.predict(X[i])[0]
-            if prediction == y[i]:
+        for i in ytest:
+            self.logger.debug("Predicting %s/%s." % (count, len(ytest)))
+            prediction = self.model.predict(Xtest[i])[0]
+            if prediction == ytest[i]:
                 true_positives = true_positives + 1
             else:
                 false_positives = false_positives + 1
             count = count + 1
         self.add(ValidationResult(true_positives, true_negatives, false_positives, false_negatives, description))
-        
+
     def __repr__(self):
         return "Simple Validation (model=%s)" % (self.model)
