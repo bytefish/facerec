@@ -53,6 +53,7 @@ function [X y width height names] = read_images(path)
       
 			%% finally try to append data
 			try
+				%% Add image as a column vector:
 				X = [X, reshape(T,width*height,1)];
 				y = [y, n];
 				added = added + 1;
