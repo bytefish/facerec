@@ -2,7 +2,7 @@
 addpath (genpath ('.'));
 
 % load data
-[X y width height names] = read_images('E:\desktop\todo\PatternRecognition\Homework\FinalProject\src_ref\orl_faces');
+[X y width height names] = read_images('/home/philipp/facerec/data/at');
 
 % compute a model
 eigenface = eigenfaces(X,y,300);
