@@ -24,7 +24,7 @@ for i = findclasses(fisherface.y, [1,2,3])
 end
 
 %% 3D plot of projection (first three classes)
-if(rows(fisherface.P) >= 3)
+if(size((fisherface.P),2) >= 3)
   figure; hold on;
   for i = findclasses(fisherface.y, [1,2,3])
     % LineSpec: red dots 'r.'
