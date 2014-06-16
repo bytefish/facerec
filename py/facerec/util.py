@@ -79,3 +79,14 @@ def zscore(X):
 def shuffle(X,y):
     idx = np.argsort([random.random() for i in xrange(y.shape[0])])
     return X[:,idx], y[idx]
+
+def shuffle_array(X,y):
+    """ Shuffles two arrays!
+    """
+    idx = np.argsort([random.random() for i in xrange(len(y))])
+    X = [X[i] for i in idx]
+    y = [y[i] for i in idx]
+    return (X, y)
+    
+
+
