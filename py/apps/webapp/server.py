@@ -38,7 +38,7 @@ try:
 except ImportError:
     import Image
 # Flask imports:
-from flask import Flask, request, json, abort, make_response
+from flask import Flask, request, json, abort, make_response, Response, jsonify
 # facerec imports:
 import sys
 sys.path.append("../..")
@@ -141,21 +141,23 @@ def add():
             # And update the model:
             subject_name = values['name']
             model.update(image,subject_name)
-            resp = make_response('{"result": "ok"}')
-            resp.headers['Content-Type'] = "application/json"
-            return resp
+            return Response(status=201, mimetype='application/json')
         except:
-            abort(400)
+            return Response(status=400, mimetype='application/json')
         
 @app.route('/predict', methods=["POST"])
 def predict():
     if request.headers['Content-Type'] == 'application/json':
-        values = request.json
-        # Read the image:
-        image = read_image(values['image'])
-        image = resize_image(image, IMG_MAX_SIZE)
-        # Get the predicted name
-        return model.predict_image(image)
+        try:
+            values = request.json
+            # Read the image:
+            image = read_image(values['image'])
+            image = resize_image(image, IMG_MAX_SIZE)
+            # Get the predicted name
+            prediction = model.predict_image(image)
+            return jsonify(name = prediction) 
+        except:
+            return Response(status=400, mimetype='application/json')         
 
 if __name__ == '__main__':
 
