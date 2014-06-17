@@ -60,9 +60,6 @@ from facerec.lbp import LPQ, ExtendedLBP
 from facerec.validation import SimpleValidation, precision
 from facerec.util import shuffle_array
 
-from facerec.experiments import FileNameFilter, YaleBaseFilter
-
-
 EXPERIMENT_NAME = "LocalPhaseQuantizationExperiment"
 
 # ITER_MAX is the number of experimental runs, as described in the 
@@ -70,7 +67,6 @@ EXPERIMENT_NAME = "LocalPhaseQuantizationExperiment"
 # should be set to a higher value to get at least a little confidence
 # in the results.
 ITER_MAX = 1
-
 
 class FileNameFilter:
     """
@@ -225,12 +221,13 @@ if __name__ == "__main__":
     # the tutorial coming with this source code on how to prepare
     # your image data:
     if len(sys.argv) < 2:
+
         print "USAGE: lpq_experiment.py </path/to/images>"
         sys.exit()
     # Define filters for the Dataset:
     yale_subset_0_40 = YaleBaseFilter(0, 40, 0, 40)
     # Now read in the image data. Apply filters, scale to 128 x 128 pixel:
-    [X,y] = read_images(sys.argv[1], yale_subset_0_40, sz=(128,128))
+    [X,y] = read_images(sys.argv[1], yale_subset_0_40, sz=(64,64))
     # Set up a handler for logging:
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -243,12 +240,12 @@ if __name__ == "__main__":
     model0 = PredictableModel(feature=SpatialHistogram(lbp_operator=ExtendedLBP()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
     model1 = PredictableModel(feature=SpatialHistogram(lbp_operator=LPQ()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
     # The sigmas we'll apply for each run:
-    sigmas = [0, 1, 2]
+    sigmas = [0]
     print 'The experiment will be run %s times!' % ITER_MAX
     # Initialize experiments (with empty results):
     experiments = {}
-    experiments['lpq_model'] = { 'model': model0, 'results' : {}, 'color' : 'r', 'linestyle' : '--', 'marker' : '*'} 
-    experiments['lbp_model'] = { 'model': model1, 'results' : {}, 'color' : 'b', 'linestyle' : '--', 'marker' : 's'}
+    experiments['lbp_model'] = { 'model': model0, 'results' : {}, 'color' : 'r', 'linestyle' : '--', 'marker' : '*'} 
+    experiments['lpq_model'] = { 'model': model1, 'results' : {}, 'color' : 'b', 'linestyle' : '--', 'marker' : 's'}
     # Loop to acquire the results for each experiment:
     for sigma in sigmas:
         print "Setting sigma=%s" % sigma
@@ -276,22 +273,22 @@ if __name__ == "__main__":
 
     # Make a nice plot of this textual output:
     fig = plt.figure()
+    # Holds the legend items:
+    plot_legend = []
     # Add the Validation results:
     for experiment_name, experiment_definition in experiments.iteritems():
         print key, experiment_definition
         results = experiment_definition['results']
         (xvalues, yvalues) = zip(*[(k,v) for k,v in results.iteritems()])
+        # Add to the legend:
+        plot_legend.append(experiment_name)
         # Put the results into the plot:
         plot_color = experiment_definition['color']
         plot_linestyle = experiment_definition['linestyle']
         plot_marker = experiment_definition['marker']
         plt.plot(sigmas, yvalues, linestyle=plot_linestyle, marker=plot_marker, color=plot_color)
-        # Put the legend below the plot (TODO):
-        #experiment_model = experiment_definition['model']
-        #plt.legend(
-        #    (
-        #        "\n".join(textwrap.wrap(repr(experiment_model), 120)),
-        #    ), prop={'size':6}, numpoints=1, loc='upper center', bbox_to_anchor=(0.5, -0.2),  fancybox=True, shadow=True, ncol=1)
+    # Put the legend below the plot (TODO):
+    plt.legend(plot_legend, prop={'size':6}, numpoints=1, loc='upper center', bbox_to_anchor=(0.5, -0.2),  fancybox=True, shadow=True, ncol=1)
     # Scale y-axis between 0,1 to see the Precision:
     plt.ylim(0,1)
     plt.xlim(-0.2, max(sigmas) + 1)
