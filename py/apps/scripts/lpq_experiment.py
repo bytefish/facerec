@@ -52,17 +52,75 @@ import textwrap
 
 import logging
 
-from facerec.feature import PCA, Fisherfaces, SpatialHistogram
-from facerec.distance import EuclideanDistance, ChiSquareDistance
+from facerec.feature import SpatialHistogram
+from facerec.distance import ChiSquareDistance
 from facerec.classifier import NearestNeighbor
 from facerec.model import PredictableModel
 from facerec.lbp import LPQ, ExtendedLBP
-from facerec.validation import KFoldCrossValidation, ValidationResult, precision
+from facerec.validation import SimpleValidation, precision
+from facerec.util import shuffle_array
+
+from facerec.experiments import FileNameFilter, YaleBaseFilter
 
 
 EXPERIMENT_NAME = "LocalPhaseQuantizationExperiment"
 
-def read_images(path, sz=None):
+class FileNameFilter:
+    """
+    Base class used for filtering files.
+    """
+    def __init__(self, name):
+        self._name = name
+
+    def __call__(self, filename):
+        return True
+        
+    def __repr__(self):
+        return "FileNameFilter (name=%s)" % (self._name) 
+
+
+class YaleBaseFilter(FileNameFilter):
+    """
+    This Filter filters files, based on their filetype ending (.pgm) and
+    their azimuth and elevation. The higher the angle, the more shadows in
+    the face. This is useful for experiments with illumination and 
+    preprocessing. 
+    
+    """
+    def __init__(self, min_azimuth, max_azimuth, min_elevation, max_elevation):
+        FileNameFilter.__init__(self, "Filter YaleFDB Subset1")
+        self._min_azimuth = min_azimuth
+        self._max_azimuth = max_azimuth
+        self._min_elevation = min_elevation
+        self._max_elevation = max_elevation
+
+    def __call__(self, filename):
+        # We only want the PGM files:
+        
+        filetype = filename[-4:]
+        if filetype != ".pgm":
+            return False
+
+        # There are "Ambient" PGM files, ignore them:
+        if "Ambient" in filename:
+            return False
+        
+        azimuth = abs(int(filename[12:16]))
+        elevation = abs(int(filename[17:20]))
+
+        # Now filter based on angles:
+        if azimuth < self._min_azimuth or azimuth > self._max_azimuth:
+            return False
+        if elevation < self._min_elevation or elevation > self._max_elevation:
+            return False
+            
+        return True
+
+    def __repr__(self):
+        return "Yale FDB Filter (min_azimuth=%s, max_azimuth=%s, min_elevation=%s, max_elevation=%s)" % (min_azimuth, max_azimuth, min_elevation, max_elevation)
+
+
+def read_images(path, fileNameFilter=FileNameFilter("None"), sz=None):
     """Reads the images in a given folder, resizes images on the fly if size is given.
 
     Args:
@@ -81,19 +139,20 @@ def read_images(path, sz=None):
         for subdirname in dirnames:
             subject_path = os.path.join(dirname, subdirname)
             for filename in os.listdir(subject_path):
-                try:
-                    im = Image.open(os.path.join(subject_path, filename))
-                    im = im.convert("L")
-                    # resize to given size (if given)
-                    if (sz is not None):
-                        im = im.resize(self.sz, Image.ANTIALIAS)
-                    X.append(np.asarray(im, dtype=np.uint8))
-                    y.append(c)
-                except IOError, (errno, strerror):
-                    print "I/O error({0}): {1}".format(errno, strerror)
-                except:
-                    print "Unexpected error:", sys.exc_info()[0]
-                    raise
+                if fileNameFilter(filename):
+                    try:
+                        im = Image.open(os.path.join(subject_path, filename))
+                        im = im.convert("L")
+                        # resize to given size (if given)
+                        if (sz is not None):
+                            im = im.resize(sz, Image.ANTIALIAS)
+                        X.append(np.asarray(im, dtype=np.uint8))
+                        y.append(c)
+                    except IOError, (errno, strerror):
+                        print "I/O error({0}): {1}".format(errno, strerror)
+                    except:
+                        print "Unexpected error:", sys.exc_info()[0]
+                        raise         
             c = c+1
     return [X,y]
     
@@ -113,7 +172,44 @@ def apply_gaussian(X, sigma):
 def results_to_list(validation_results):
     return [precision(result.true_positives,result.false_positives) for result in validation_results]
     
+def partition_data(X, y):
+    """
+    Shuffles the input data and splits it into a new set of images. This resembles the experimental setup
+    used in the paper on the Local Phase Quantization descriptor in:
     
+        "Recognition of Blurred Faces Using Local Phase Quantization", Timo Ahonen, Esa Rahtu, Ville Ojansivu, Janne Heikkila
+
+    What it does is to build a subset for each class, so it has 1 image for training and the rest for testing. 
+    The original dataset is shuffled for each call, hence you always get a new partitioning.
+
+    """
+    Xs,ys = shuffle_array(X,y)
+    # Maps index to class:
+    mapping = {}
+    for i in xrange(len(y)):
+        yi = ys[i]
+        try:
+            mapping[yi].append(i)
+        except KeyError:
+            mapping[yi] = [i]
+    # Get one image for each subject:
+    Xtrain, ytrain = [], []
+    Xtest, ytest = [], []
+    # Finally build partition:
+    for key, indices in mapping.iteritems():
+        # Add images:
+        Xtrain.extend([ Xs[i] for i in indices[:1] ])
+        ytrain.extend([ ys[i] for i in indices[:1] ])
+        Xtest.extend([ Xs[i] for i in indices[1:20]])
+        ytest.extend([ ys[i] for i in indices[1:20]])
+    # Return shuffled partitions:
+    return Xtrain, ytrain, Xtest, ytest
+
+class ModelWrapper:
+    def __init__(model):
+        self.model = model
+        self.result = []
+
 if __name__ == "__main__":
     # This is where we write the results to, if an output_dir is given
     # in command line:
@@ -124,8 +220,10 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print "USAGE: lpq_experiment.py </path/to/images>"
         sys.exit()
-    # Now read in the image data. This must be a valid path!
-    [X,y] = read_images(sys.argv[1])
+    # Define filters for the Dataset:
+    yale_subset_0_40 = YaleBaseFilter(0, 40, 0, 40)
+    # Now read in the image data. Apply filters, scale to 128 x 128 pixel:
+    [X,y] = read_images(sys.argv[1], yale_subset_0_40, sz=(128,128))
     # Set up a handler for logging:
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -133,47 +231,64 @@ if __name__ == "__main__":
     # Add handler to facerec modules, so we see what's going on inside:
     logger = logging.getLogger("facerec")
     logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     # The models we want to evaluate:
-    model0 = PredictableModel(feature=PCA(num_components=50), classifier=NearestNeighbor(dist_metric=EuclideanDistance(), k=1))
-    model1 = PredictableModel(feature=Fisherfaces(), classifier=NearestNeighbor(dist_metric=EuclideanDistance(), k=1))
-    model2 = PredictableModel(feature=SpatialHistogram(lbp_operator=ExtendedLBP()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
-    model3 = PredictableModel(feature=SpatialHistogram(lbp_operator=LPQ()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
-    # I should rewrite the framework to offer a less memory-intense solution here:
-    cv0 = KFoldCrossValidation(model0, k=10)
-    cv1 = KFoldCrossValidation(model1, k=10)
-    cv2 = KFoldCrossValidation(model2, k=10)
-    cv3 = KFoldCrossValidation(model3, k=10)
-    # Make it a list, so we can iterate through:
-    validators = [cv0, cv1, cv2, cv3]
+    model0 = PredictableModel(feature=SpatialHistogram(lbp_operator=ExtendedLBP()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
+    model1 = PredictableModel(feature=SpatialHistogram(lbp_operator=LPQ()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
     # The sigmas we'll apply for each run:
-    sigmas = [0, 1, 2, 4]
-    # If everything went fine, we should have the results of each model:
+    sigmas = [0, 1, 2]
+    # Run the experimental setup 1000 times:
+    iter_max = 1
+    # Initialize experiments (with empty results):
+    experiments = {}
+    experiments['lpq_model'] = { 'model': model0, 'results' : {}, 'color' : 'r', 'linestyle' : '--', 'marker' : '*'} 
+    experiments['lbp_model'] = { 'model': model1, 'results' : {}, 'color' : 'b', 'linestyle' : '--', 'marker' : 's'}
+    # Loop to acquire the results for each experiment:
     for sigma in sigmas:
-        Xs = apply_gaussian(X, sigma)
-        for validator in validators:
-            experiment_description = "%s (sigma=%.2f)" % (EXPERIMENT_NAME, sigma)
-            validator.validate(Xs, y, experiment_description)
-    # Print the results:
-    for validator in validators:
-        validator.print_results()
+        print "Setting sigma=%s" % sigma
+        for key, value in experiments.iteritems():
+            print 'Running experiment for model=%s' % key
+            # Define the validators for the model:
+            cv0 = SimpleValidation(value['model'])
+            for iteration in xrange(iter_max):
+                print "Repeating experiment %s/%s." % (iteration + 1, iter_max)
+                # Split dataset according to the papers description:
+                Xtrain, ytrain, Xtest, ytest = partition_data(X,y)
+                # Apply a gaussian blur on the images:
+                Xs = apply_gaussian(Xtest, sigma)
+                # Run each validator with the given data:
+                experiment_description = "%s (iteration=%s, sigma=%.2f)" % (EXPERIMENT_NAME, iteration, sigma)
+                cv0.validate(Xtrain, ytrain, Xs, ytest, experiment_description)
+            # Get overall results:
+            true_positives = sum([validation_result.true_positives for validation_result in cv0.validation_results])
+            false_positives = sum([validation_result.false_positives for validation_result in cv0.validation_results])
+            # Calculate overall precision:
+            prec = precision(true_positives,false_positives)
+            # Store the result:
+            print key
+            experiments[key]['results'][sigma] = prec
+
     # Make a nice plot of this textual output:
     fig = plt.figure()
     # Add the Validation results:
-    plt.plot(sigmas, results_to_list(cv0.validation_results), linestyle='--', marker='*', color='r')
-    plt.plot(sigmas, results_to_list(cv1.validation_results), linestyle='--', marker='s', color='b')
-    plt.plot(sigmas, results_to_list(cv2.validation_results), linestyle='--', marker='^', color='g')
-    plt.plot(sigmas, results_to_list(cv3.validation_results), linestyle='--', marker='x', color='k')
-    # Put the legend below the plot:
-    plt.legend(
-        (
-            "\n".join(textwrap.wrap(repr(model0), 120)),
-            "\n".join(textwrap.wrap(repr(model1), 120)),
-            "\n".join(textwrap.wrap(repr(model2), 120)),
-            "\n".join(textwrap.wrap(repr(model3), 120))
-        ), prop={'size':6}, numpoints=1, loc='upper center', bbox_to_anchor=(0.5, -0.2),  fancybox=True, shadow=True, ncol=1)
-    # Scale Precision correctly:
+    for experiment_name, experiment_definition in experiments.iteritems():
+        print key, experiment_definition
+        results = experiment_definition['results']
+        (xvalues, yvalues) = zip(*[(k,v) for k,v in results.iteritems()])
+        # Put the results into the plot:
+        plot_color = experiment_definition['color']
+        plot_linestyle = experiment_definition['linestyle']
+        plot_marker = experiment_definition['marker']
+        plt.plot(sigmas, yvalues, linestyle=plot_linestyle, marker=plot_marker, color=plot_color)
+        # Put the legend below the plot (TODO):
+        #experiment_model = experiment_definition['model']
+        #plt.legend(
+        #    (
+        #        "\n".join(textwrap.wrap(repr(experiment_model), 120)),
+        #    ), prop={'size':6}, numpoints=1, loc='upper center', bbox_to_anchor=(0.5, -0.2),  fancybox=True, shadow=True, ncol=1)
+    # Scale y-axis between 0,1 to see the Precision:
     plt.ylim(0,1)
+    plt.xlim(-0.2, max(sigma) + 1)
     # Finally add the labels:
     plt.title(EXPERIMENT_NAME)
     plt.ylabel('Precision')
