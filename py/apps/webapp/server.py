@@ -38,7 +38,7 @@ try:
 except ImportError:
     import Image
 # Flask imports:
-from flask import Flask, request, json
+from flask import Flask, request, json, abort, make_response
 # facerec imports:
 import sys
 sys.path.append("../..")
@@ -65,13 +65,16 @@ app = Flask(__name__)
 # Limit the maximum image size:
 IMG_MAX_SIZE = (128,128)
 
-# Define a model, that supports updating itself. This is necessary,
-# so we don't need to retrain the entire model for each input image.
-# This is not suitable for all models, it may be limited to Local 
-# Binary Patterns for the current framework:
+
+""" Probably useful for Server exceptions, probably not
+"""
 class WebAppException(Exception):
     pass
     
+# Define a model, that supports updating itself. This is necessary,
+# so we don't need to retrain the entire model for each input image.
+# This is not suitable for all models, it may be limited to Local 
+# Binary Patterns for the current framework:    
 class UpdatableModel(PredictableModel):
     """ Subclasses the PredictableModel to store some more
         information, so we don't need to pass the dataset
@@ -105,7 +108,12 @@ class UpdatableModel(PredictableModel):
             raise WebAppException("No subjects available!")
         return self.subject_names[query_id]
 
+# Instantiate the model. This is horrible, because everything is lost with a Server restart. :-)
+model = UpdatableModel(feature=SpatialHistogram(lbp_operator=ExtendedLBP()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
+
 def read_image(base64_image):
+    """ Base64 decode the data, read it with PIL and convert it to grayscale.
+    """
     enc_data = base64.b64decode(base64_image)
     file_like = cStringIO.StringIO(enc_data)
     im = Image.open(file_like)
@@ -122,24 +130,25 @@ def resize_image(image, sz):
         image = image.resize(sz, Image.ANTIALIAS)
     return image
 
-model = UpdatableModel(feature=SpatialHistogram(lbp_operator=ExtendedLBP()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
-
-@app.route('/add', methods=["POST", "GET"])
+@app.route('/add', methods=["POST"])
 def add():
-    print "add"
     if request.headers['Content-Type'] == 'application/json':
-        values = request.json
-        # Read the image:
-        image = read_image(values['image'])
-        image = resize_image(image, IMG_MAX_SIZE)
-        # And update the model:
-        subject_name = values['name']
-        print "Model update."
-        model.update(image,subject_name)
+        try:
+            values = request.json
+            # Read the image:
+            image = read_image(values['image'])
+            image = resize_image(image, IMG_MAX_SIZE)
+            # And update the model:
+            subject_name = values['name']
+            model.update(image,subject_name)
+            resp = make_response('{"result": "ok"}')
+            resp.headers['Content-Type'] = "application/json"
+            return resp
+        except:
+            abort(400)
         
 @app.route('/predict', methods=["POST"])
 def predict():
-    print "predict"
     if request.headers['Content-Type'] == 'application/json':
         values = request.json
         # Read the image:
