@@ -5,11 +5,15 @@ import numpy as np
 import operator as op
 
 class AbstractClassifier(object):
+
     def compute(self,X,y):
         raise NotImplementedError("Every AbstractClassifier must implement the compute method.")
     
     def predict(self,X):
         raise NotImplementedError("Every AbstractClassifier must implement the predict method.")
+
+    def update(self,X,y):
+        raise NotImplementedError("This Classifier is cannot be updated.")
 
 class NearestNeighbor(AbstractClassifier):
     """
@@ -19,6 +23,15 @@ class NearestNeighbor(AbstractClassifier):
         AbstractClassifier.__init__(self)
         self.k = k
         self.dist_metric = dist_metric
+        self.X = []
+        self.y = np.array([], dtype=np.int32)
+
+    def update(self, X, y):
+        """
+        Updates the classifier.
+        """
+        self.X.append(X)
+        self.y = np.append(self.y, y)
 
     def compute(self, X, y):
         self.X = X
