@@ -65,6 +65,13 @@ from facerec.experiments import FileNameFilter, YaleBaseFilter
 
 EXPERIMENT_NAME = "LocalPhaseQuantizationExperiment"
 
+# ITER_MAX is the number of experimental runs, as described in the 
+# original paper. For testing purposes, it was set to 1, but it
+# should be set to a higher value to get at least a little confidence
+# in the results.
+ITER_MAX = 1
+
+
 class FileNameFilter:
     """
     Base class used for filtering files.
@@ -237,8 +244,7 @@ if __name__ == "__main__":
     model1 = PredictableModel(feature=SpatialHistogram(lbp_operator=LPQ()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
     # The sigmas we'll apply for each run:
     sigmas = [0, 1, 2]
-    # Run the experimental setup 1000 times:
-    iter_max = 1
+    print 'The experiment will be run %s times!' % ITER_MAX
     # Initialize experiments (with empty results):
     experiments = {}
     experiments['lpq_model'] = { 'model': model0, 'results' : {}, 'color' : 'r', 'linestyle' : '--', 'marker' : '*'} 
@@ -250,8 +256,8 @@ if __name__ == "__main__":
             print 'Running experiment for model=%s' % key
             # Define the validators for the model:
             cv0 = SimpleValidation(value['model'])
-            for iteration in xrange(iter_max):
-                print "Repeating experiment %s/%s." % (iteration + 1, iter_max)
+            for iteration in xrange(ITER_MAX):
+                print "Repeating experiment %s/%s." % (iteration + 1, ITER_MAX)
                 # Split dataset according to the papers description:
                 Xtrain, ytrain, Xtest, ytest = partition_data(X,y)
                 # Apply a gaussian blur on the images:
@@ -288,7 +294,7 @@ if __name__ == "__main__":
         #    ), prop={'size':6}, numpoints=1, loc='upper center', bbox_to_anchor=(0.5, -0.2),  fancybox=True, shadow=True, ncol=1)
     # Scale y-axis between 0,1 to see the Precision:
     plt.ylim(0,1)
-    plt.xlim(-0.2, max(sigma) + 1)
+    plt.xlim(-0.2, max(sigmas) + 1)
     # Finally add the labels:
     plt.title(EXPERIMENT_NAME)
     plt.ylabel('Precision')
