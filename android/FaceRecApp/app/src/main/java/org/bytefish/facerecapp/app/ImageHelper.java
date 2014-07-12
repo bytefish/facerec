@@ -56,7 +56,7 @@ public class ImageHelper {
 
     /**
      * @param originalBitmap Image to crop the face image from.
-     * @param face Landmarks found by Androids FaceDetector.
+     * @param face           Landmarks found by Androids FaceDetector.
      * @return
      */
     public static Bitmap cropFace(Bitmap originalBitmap, FaceDetector.Face face) {
@@ -92,8 +92,6 @@ public class ImageHelper {
     }
 
     /**
-     *
-     *
      * @param originalBitmap
      * @param x0
      * @param y0
@@ -117,7 +115,7 @@ public class ImageHelper {
     public static Bitmap rotateBitmap(Bitmap originalBitmap, int cx, int cy, int angle) {
         Matrix rotMatrix = new Matrix();
         rotMatrix.postRotate(angle, cx, cy);
-        return  Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.getWidth(), originalBitmap.getHeight(), rotMatrix, true);
+        return Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.getWidth(), originalBitmap.getHeight(), rotMatrix, true);
     }
 
     /**
@@ -125,7 +123,7 @@ public class ImageHelper {
      *
      * @return filename for the captured image
      */
-    public static Uri getOutputImageFileUri(){
+    public static Uri getOutputImageFileUri() {
         return Uri.fromFile(getOutputImageFile());
     }
 
@@ -146,20 +144,21 @@ public class ImageHelper {
 
     /**
      * Reads an image into a Bitmap.
+     *
      * @param fileName Filename of the given image
      * @return image in Bitmap representation
      */
     public static Bitmap readBitmapFromFile(String fileName) {
-        BitmapFactory.Options bitmapFatoryOptions=new BitmapFactory.Options();
-        bitmapFatoryOptions.inPreferredConfig=Bitmap.Config.RGB_565;
+        BitmapFactory.Options bitmapFatoryOptions = new BitmapFactory.Options();
+        bitmapFatoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
         return BitmapFactory.decodeFile(fileName, bitmapFatoryOptions);
     }
 
     /**
      * Saves a bitmap to the external storage. Please note, that you need the following
      * permission in your AndroidManifest.xml:
-     *
-     *  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+     * <p/>
+     * <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
      *
      * @param bitmap
      * @param fileName
@@ -174,7 +173,7 @@ public class ImageHelper {
     private static File getImageDirectory() {
         File root = Environment.getExternalStorageDirectory();
         File im_dir = new File(root, IM_DIR);
-        if(!im_dir.exists()) {
+        if (!im_dir.exists()) {
             im_dir.mkdir();
         }
         return im_dir;
@@ -186,8 +185,7 @@ public class ImageHelper {
      * on.
      *
      * @param bitmap Bitmap to store
-     * @param file File to store the image to
-     *
+     * @param file   File to store the image to
      * @return Returns the File
      */
     public static boolean saveBitmapAsJpeg(Bitmap bitmap, File file) {
@@ -197,15 +195,15 @@ public class ImageHelper {
             out = new FileOutputStream(file, false);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
-        } catch(IOException e) {
+        } catch (IOException e) {
             Log.e(TAG, "Could not save the image!", e);
             return false;
         } finally {
             // Be sure to close the IO handle:
-            if(out != null) {
+            if (out != null) {
                 try {
                     out.close();
-                } catch(IOException e) {
+                } catch (IOException e) {
                     // We can safely ignore this case!
                 }
             }
@@ -216,21 +214,20 @@ public class ImageHelper {
     /**
      * It's possible, that an image eats up so much memory, that the limits are exceeded and thus
      * our app is crashing. We want to prevent this by scaling the image down to a maximum size.
-     *
+     * <p/>
      * The approach is a simple one, taken from these two links:
-     *
-     *      http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap
-     *      http://stackoverflow.com/questions/17839388/creating-a-scaled-bitmap-with-createscaledbitmap-in-android
-     *
+     * <p/>
+     * http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap
+     * http://stackoverflow.com/questions/17839388/creating-a-scaled-bitmap-with-createscaledbitmap-in-android
+     * <p/>
      * The trick is to not load the entire file in memory (using inJustDecodeBounds), then caclulate
      * the sample size for the decoder (plus one, as we don't want a smaller image than we have requested)
      * and finally scale it down to the maximum of the requestedWidth/requestedHeight (as we want to
      * respect the ratio of the image).
      *
-     * @param fileName File to read
-     * @param reqWidth Maximum width allowed
+     * @param fileName  File to read
+     * @param reqWidth  Maximum width allowed
      * @param reqHeight Maximum height allowed
-     *
      * @return Scaled version without
      */
     public static Bitmap loadResizedBitmap(String fileName, int reqWidth, int reqHeight) {
@@ -258,7 +255,7 @@ public class ImageHelper {
         int outHeight;
         int inWidth = bitmap.getWidth();
         int inHeight = bitmap.getHeight();
-        if(inWidth > inHeight){
+        if (inWidth > inHeight) {
             outWidth = maxSize;
             outHeight = (inHeight * maxSize) / inWidth;
         } else {
@@ -270,7 +267,6 @@ public class ImageHelper {
     }
 
     /**
-     *
      * Calculates the sample size.
      *
      * @param options
@@ -319,7 +315,6 @@ public class ImageHelper {
      *
      * @param bitmap
      * @param quality
-     *
      * @return
      */
     public static String getBase64Jpeg(Bitmap bitmap, int quality) {
@@ -337,24 +332,23 @@ public class ImageHelper {
         ExifInterface exif = new ExifInterface(fileName);
         int rotation;
         switch (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)) {
-                case ExifInterface.ORIENTATION_NORMAL:
-                    rotation = 0;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    rotation = 90;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    rotation = 180;
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    rotation = 270;
-                    break;
-                default:
-                    rotation = 0;
-                    break;
-            }
-
-            return rotation;
+            case ExifInterface.ORIENTATION_NORMAL:
+                rotation = 0;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                rotation = 90;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                rotation = 180;
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                rotation = 270;
+                break;
+            default:
+                rotation = 0;
+                break;
         }
+
+        return rotation;
     }
 }
