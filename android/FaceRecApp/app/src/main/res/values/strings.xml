@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">FaceRecApp</string>
+
+    <string name="action_search">Search</string>
+    <string name="action_picture">Select Photo</string>
+    <string name="action_capture">Capture Photo</string>
+    <string name="action_Settings">Settings</string>
+
+    <string name="select_image">Select Image</string>
+    <string name="capture_image">Capture Image</string>
+
+</resources>
