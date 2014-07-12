@@ -29,6 +29,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.media.ExifInterface;
 import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.Environment;
@@ -241,6 +242,7 @@ public class ImageHelper {
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight) + 1;
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
         Bitmap scaledBitmap = BitmapFactory.decodeFile(fileName, options);
         if (scaledBitmap.getHeight() > reqHeight || scaledBitmap.getWidth() > reqWidth) {
             return createScaledBitmap(scaledBitmap, reqWidth, reqHeight);
@@ -322,5 +324,37 @@ public class ImageHelper {
      */
     public static String getBase64Jpeg(Bitmap bitmap, int quality) {
         return getBase64(bitmap, Bitmap.CompressFormat.JPEG, quality);
+    }
+
+    /**
+     * Returns the rotation an image was taken with based on the exif parameters.
+     *
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public static int getImageRotation(String fileName) throws IOException {
+        ExifInterface exif = new ExifInterface(fileName);
+        int rotation;
+        switch (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)) {
+                case ExifInterface.ORIENTATION_NORMAL:
+                    rotation = 0;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotation = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotation = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotation = 270;
+                    break;
+                default:
+                    rotation = 0;
+                    break;
+            }
+
+            return rotation;
+        }
     }
 }

@@ -26,7 +26,6 @@ package org.bytefish.facerecapp.app;
 
 public class Constants {
 
-    //
     public static String RECOGNIZE_ACTIVITY_IMAGE_PATH = "RECOGNIZE_ACTIVITY_IMAGE_PATH";
 
 }
