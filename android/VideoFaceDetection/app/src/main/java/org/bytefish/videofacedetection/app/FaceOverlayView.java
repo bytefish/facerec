@@ -29,24 +29,25 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.hardware.Camera.Face;
+import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
+import android.widget.Toast;
 
-
-public class CameraOverlayView extends View {
+/**
+ * This class is a simple View to display the faces.
+ */
+public class FaceOverlayView extends View {
 
     private Paint mPaint;
-    private int mRotation;
+    private int mDisplayOrientation;
+    private int mOrientation;
     private Face[] mFaces;
 
-    /**
-     * Face coordinates are given in a (-1000,1000) coordinate system. We need
-     * to normalize them to a value between (0,width) and (0,height).
-     */
-    public static final float COORDINATE_NORMALIZE = 2000;
-
-    public CameraOverlayView(Context context) {
+    public FaceOverlayView(Context context) {
         super(context);
         initialize();
     }
@@ -61,53 +62,33 @@ public class CameraOverlayView extends View {
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
     }
 
-    public void setFaces(Face[] faces) {
+    public void setFaces(Face[] faces, int orientation) {
         mFaces = faces;
+        mOrientation = orientation;
         invalidate();
     }
 
-    public void setRotation(int rotation) {
-        mRotation = rotation;
+    public void setDisplayOrientation(int displayOrientation) {
+        mDisplayOrientation = displayOrientation;
+        invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (mFaces == null) {
-            return;
-        }
-        for (Face face : mFaces) {
-            if (face == null) {
-                continue;
-            }
-            // Create the matrix for
+        if (mFaces != null && mFaces.length > 0) {
             Matrix matrix = new Matrix();
-            // Rotate the image according to the current screen orientation:
-            switch (mRotation) {
-                case Surface.ROTATION_0:
-                    matrix.postRotate(90);
-                    break;
-                case Surface.ROTATION_90:
-                    matrix.postRotate(0);
-                    break;
-                case Surface.ROTATION_180:
-                    matrix.postRotate(270);
-                    break;
-                case Surface.ROTATION_270:
-                    matrix.postRotate(180);
-                    break;
-                default:
-                    matrix.postRotate(0);
-                    break;
+            Util.prepareMatrix(matrix, false, mDisplayOrientation, getWidth(), getHeight());
+            canvas.save();
+            matrix.postRotate(mOrientation);
+            canvas.rotate(-mOrientation);
+            RectF rectF = new RectF();
+            for (Face face : mFaces) {
+                rectF.set(face.rect);
+                matrix.mapRect(rectF);
+                canvas.drawRect(rectF, mPaint);
             }
-            // Normalize the coordinates:
-            matrix.postScale(getWidth() / COORDINATE_NORMALIZE, getHeight() / COORDINATE_NORMALIZE);
-            matrix.postTranslate(getWidth() / 2f, getHeight() / 2f);
-            int saveCount = canvas.save();
-            canvas.concat(matrix);
-            canvas.drawRect(face.rect, mPaint);
-            canvas.restoreToCount(saveCount);
+            canvas.restore();
         }
     }
-
 }

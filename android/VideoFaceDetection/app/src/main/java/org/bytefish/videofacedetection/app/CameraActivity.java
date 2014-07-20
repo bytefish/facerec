@@ -31,103 +31,133 @@ import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
-import android.view.Surface;
+import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
 
 
-public class CameraActivity extends Activity {
+public class CameraActivity extends Activity
+        implements SurfaceHolder.Callback {
 
     public static final String TAG = CameraActivity.class.getSimpleName();
 
     private Camera mCamera;
+    private int mOrientation;
+    private OrientationEventListener mOrientationEventListener;
+    private int mDisplayRotation;
+    private int mDisplayOrientation;
     private SurfaceView mView;
-    private CameraOverlayView mCameraOverlayView;
+    private FaceOverlayView mFaceView;
+
+    /**
+     * Notifies the Surfaces on OrientationChanges.
+     */
+    private class SimpleOrientationEventListener extends OrientationEventListener {
+
+        public SimpleOrientationEventListener(Context context) {
+            super(context, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        @Override
+        public void onOrientationChanged(int orientation) {
+            mOrientation = orientation;
+        }
+    }
+
+    /**
+     * The FaceDetectionListener simply passes the faces to the OverlayView for now.
+     */
+    private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
+        @Override
+        public void onFaceDetection(Face[] faces, Camera camera) {
+            Log.d("onFaceDetection", "Number of Faces:" + faces.length);
+            mFaceView.setFaces(faces, mOrientation);
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mView = new SurfaceView(this);
         setContentView(mView);
-        // Draws the face onto the Surface:
-        mCameraOverlayView = new CameraOverlayView(this);
-        addContentView(mCameraOverlayView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        // Now create the OverlayView:
+        mFaceView = new FaceOverlayView(this);
+        addContentView(mFaceView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        // Create and Start the OrientationListener:
+        mOrientationEventListener = new SimpleOrientationEventListener(this);
+        mOrientationEventListener.enable();
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         SurfaceHolder holder = mView.getHolder();
-        holder.addCallback(surfaceHolderCallback);
+        holder.addCallback(this);
     }
 
-    private SurfaceHolder.Callback surfaceHolderCallback = new SurfaceHolder.Callback() {
+    @Override
+    protected void onPause() {
+        mOrientationEventListener.disable();
+        super.onPause();
+    }
 
-        @Override
-        public void surfaceCreated(SurfaceHolder holder) {
-            mCamera = Camera.open();
-            mCamera.setFaceDetectionListener(faceDetectionListener);
-            mCamera.startFaceDetection();
-            try {
-                mCamera.setPreviewDisplay(holder);
-            } catch (Exception e) {
-                Log.e(TAG, "Could not preview the image.", e);
-            }
+    @Override
+    protected void onResume() {
+        mOrientationEventListener.enable();
+        super.onResume();
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        mCamera = Camera.open();
+        mCamera.setFaceDetectionListener(faceDetectionListener);
+        mCamera.startFaceDetection();
+        try {
+            mCamera.setPreviewDisplay(surfaceHolder);
+        } catch (Exception e) {
+            Log.e(TAG, "Could not preview the image.", e);
         }
+    }
 
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                                   int height) {
-            // We have no surface, return immediately:
-            if (holder.getSurface() == null) {
-                return;
-            }
-            // Try to stop the current preview:
-            try {
-                mCamera.stopPreview();
-            } catch (Exception e) {
-                // Ignore...
-            }
-            // Get the supported preview sizes:
-            Camera.Parameters parameters = mCamera.getParameters();
-            List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
-            Camera.Size previewSize = previewSizes.get(0);
-            // And set them:
-            parameters.setPreviewSize(previewSize.width, previewSize.height);
-            mCamera.setParameters(parameters);
-            // Now set the display orientation for the camera. Can we do this differently?
-            Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-            if (display.getRotation() == Surface.ROTATION_0) {
-                mCamera.setDisplayOrientation(90);
-            } else if (display.getRotation() == Surface.ROTATION_270) {
-                mCamera.setDisplayOrientation(180);
-            }
-            // Set the rotation in the Overlay, so we can display the faces accordingly:
-            if (mCameraOverlayView != null) {
-                mCameraOverlayView.setRotation(display.getRotation());
-            }
-            // Finally start the camera preview again:
-            mCamera.startPreview();
+    @Override
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i2, int i3) {
+        // We have no surface, return immediately:
+        if (surfaceHolder.getSurface() == null) {
+            return;
         }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder holder) {
-            mCamera.release();
-            mCamera = null;
+        // Try to stop the current preview:
+        try {
+            mCamera.stopPreview();
+        } catch (Exception e) {
+            // Ignore...
         }
-
-    };
-
-    private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
-        @Override
-        public void onFaceDetection(Face[] faces, Camera camera) {
-            Log.d("onFaceDetection", "Number of Faces:" + faces.length);
-            mCameraOverlayView.setFaces(faces);
+        // Get the supported preview sizes:
+        Camera.Parameters parameters = mCamera.getParameters();
+        List<Camera.Size> previewSizes = parameters.getSupportedPreviewSizes();
+        Camera.Size previewSize = previewSizes.get(0);
+        // And set them:
+        parameters.setPreviewSize(previewSize.width, previewSize.height);
+        mCamera.setParameters(parameters);
+        // Now set the display orientation for the camera. Can we do this differently?
+        mDisplayRotation = Util.getDisplayRotation(CameraActivity.this);
+        mDisplayOrientation = Util.getDisplayOrientation(mDisplayRotation, 0);
+        mCamera.setDisplayOrientation(mDisplayOrientation);
+        if (mFaceView != null) {
+            mFaceView.setDisplayOrientation(mDisplayOrientation);
         }
-    };
+        // Finally start the camera preview again:
+        mCamera.startPreview();
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        mCamera.release();
+        mCamera.setFaceDetectionListener(null);
+        mCamera.setErrorCallback(null);
+        mCamera = null;
+    }
 }
