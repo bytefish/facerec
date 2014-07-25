@@ -28,16 +28,19 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Toast;
 
 
 public class CameraActivity extends Activity
@@ -46,15 +49,25 @@ public class CameraActivity extends Activity
     public static final String TAG = CameraActivity.class.getSimpleName();
 
     private Camera mCamera;
+
+    // We need the phone orientation to correctly draw the Overlay
     private int mOrientation;
+    private int mOrientationCompensation;
     private OrientationEventListener mOrientationEventListener;
+
+    // Also
     private int mDisplayRotation;
     private int mDisplayOrientation;
+
+    // The surface view for the camera data
     private SurfaceView mView;
+
+    // Draw rectangles and other fancy stuff:
     private FaceOverlayView mFaceView;
 
     /**
-     * Notifies the Surfaces on OrientationChanges.
+     * We need to react on OrientationEvents to rotate the screen and
+     * update the views.
      */
     private class SimpleOrientationEventListener extends OrientationEventListener {
 
@@ -64,18 +77,32 @@ public class CameraActivity extends Activity
 
         @Override
         public void onOrientationChanged(int orientation) {
-            mOrientation = orientation;
+            // We keep the last known orientation. So if the user first orient
+            // the camera then point the camera to floor or sky, we still have
+            // the correct orientation.
+            if (orientation == ORIENTATION_UNKNOWN) return;
+            mOrientation = Util.roundOrientation(orientation, mOrientation);
+            // When the screen is unlocked, display rotation may change. Always
+            // calculate the up-to-date orientationCompensation.
+            int orientationCompensation = mOrientation
+                    + Util.getDisplayRotation(CameraActivity.this);
+            if (mOrientationCompensation != orientationCompensation) {
+                mOrientationCompensation = orientationCompensation;
+                mFaceView.setOrientation(mOrientationCompensation);
+            }
         }
     }
 
     /**
-     * The FaceDetectionListener simply passes the faces to the OverlayView for now.
+     * Store the face data, so we can start the AsyncTask for the face recognition
+     * process instantly.
      */
     private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
         @Override
         public void onFaceDetection(Face[] faces, Camera camera) {
             Log.d("onFaceDetection", "Number of Faces:" + faces.length);
-            mFaceView.setFaces(faces, mOrientation);
+            // Update the view now!
+            mFaceView.setFaces(faces);
         }
     };
 
@@ -121,6 +148,26 @@ public class CameraActivity extends Activity
         } catch (Exception e) {
             Log.e(TAG, "Could not preview the image.", e);
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int x = (int)event.getX();
+        int y = (int)event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                break;
+            case MotionEvent.ACTION_MOVE:
+                break;
+            case MotionEvent.ACTION_UP:
+            {
+                if(mFaceView.touchIntersectsFace(x,y)) {
+                    Toast.makeText(getApplicationContext(), "(" + x + "," + y +")", Toast.LENGTH_LONG).show();
+                }
+            }
+            break;
+        }
+        return false;
     }
 
     @Override

@@ -31,10 +31,13 @@ import android.view.OrientationEventListener;
 import android.view.Surface;
 
 /**
- * This class uses some of the Utility functions for the Camera module.
+ * This class uses some of the Utility functions for the Camera module,
+ * partly taken from https://android.googlesource.com/platform/packages/apps/Camera/
  */
 public class Util {
 
+    // Orientation hysteresis amount used in rounding, in degrees
+    private static final int ORIENTATION_HYSTERESIS = 5;
     /**
      * Gets the current display rotation in angles.
      *
@@ -78,6 +81,21 @@ public class Util {
         // UI coordinates range from (0, 0) to (width, height).
         matrix.postScale(viewWidth / 2000f, viewHeight / 2000f);
         matrix.postTranslate(viewWidth / 2f, viewHeight / 2f);
+    }
+
+    public static int roundOrientation(int orientation, int orientationHistory) {
+        boolean changeOrientation = false;
+        if (orientationHistory == OrientationEventListener.ORIENTATION_UNKNOWN) {
+            changeOrientation = true;
+        } else {
+            int dist = Math.abs(orientation - orientationHistory);
+            dist = Math.min( dist, 360 - dist );
+            changeOrientation = ( dist >= 45 + ORIENTATION_HYSTERESIS );
+        }
+        if (changeOrientation) {
+            return ((orientation + 45) / 90 * 90) % 360;
+        }
+        return orientationHistory;
     }
 
 }
