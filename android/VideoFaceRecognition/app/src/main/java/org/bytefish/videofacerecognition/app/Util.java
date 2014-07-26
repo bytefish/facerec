@@ -31,13 +31,22 @@ import android.view.OrientationEventListener;
 import android.view.Surface;
 
 /**
- * This class uses some of the Utility functions for the Camera module,
- * partly taken from https://android.googlesource.com/platform/packages/apps/Camera/
+ * This class uses Utility functions written for the Camera module of Android.
+ * These snippets have been taken from:
+ *
+ *      https://android.googlesource.com/platform/packages/apps/Camera/
+ *
+ *  Android code is released under terms of the Apache 2.0 license. You can obtain the copy in
+ *  the assets folder coming with this project.
+ *
+ *  Copyright (C) 2011 The Android Open Source Project
+ *
  */
 public class Util {
 
     // Orientation hysteresis amount used in rounding, in degrees
     private static final int ORIENTATION_HYSTERESIS = 5;
+
     /**
      * Gets the current display rotation in angles.
      *

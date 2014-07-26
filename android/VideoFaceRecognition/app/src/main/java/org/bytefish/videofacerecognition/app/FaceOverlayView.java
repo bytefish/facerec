@@ -84,6 +84,13 @@ public class FaceOverlayView extends View {
         invalidate();
     }
 
+    /**
+     * Checks which face has been clicked in.
+     *
+     * @param x
+     * @param y
+     * @return
+     */
     public boolean touchIntersectsFace(int x, int y) {
         Matrix matrix = new Matrix();
         Util.prepareMatrix(matrix, false, mDisplayOrientation, getWidth(), getHeight());
