@@ -25,6 +25,7 @@
 package org.bytefish.videofacedetection.app;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -43,6 +44,7 @@ import android.widget.Toast;
 public class FaceOverlayView extends View {
 
     private Paint mPaint;
+    private Paint mTextPaint;
     private int mDisplayOrientation;
     private int mOrientation;
     private Face[] mFaces;
@@ -60,12 +62,22 @@ public class FaceOverlayView extends View {
         mPaint.setColor(Color.GREEN);
         mPaint.setAlpha(128);
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+        mTextPaint = new Paint();
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setDither(true);
+        mTextPaint.setTextSize(20);
+        mTextPaint.setColor(Color.GREEN);
+        mTextPaint.setStyle(Paint.Style.FILL);
     }
 
-    public void setFaces(Face[] faces, int orientation) {
+    public void setFaces(Face[] faces) {
         mFaces = faces;
-        mOrientation = orientation;
         invalidate();
+    }
+
+    public void setOrientation(int orientation) {
+        mOrientation = orientation;
     }
 
     public void setDisplayOrientation(int displayOrientation) {
@@ -87,6 +99,7 @@ public class FaceOverlayView extends View {
                 rectF.set(face.rect);
                 matrix.mapRect(rectF);
                 canvas.drawRect(rectF, mPaint);
+                canvas.drawText("Score " + face.score, rectF.right, rectF.top, mTextPaint);
             }
             canvas.restore();
         }

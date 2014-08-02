@@ -24,20 +24,38 @@
 
 package org.bytefish.videofacedetection.app;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Toast;
 
 
 public class CameraActivity extends Activity
@@ -46,15 +64,28 @@ public class CameraActivity extends Activity
     public static final String TAG = CameraActivity.class.getSimpleName();
 
     private Camera mCamera;
+
+    // We need the phone orientation to correctly draw the overlay:
     private int mOrientation;
+    private int mOrientationCompensation;
     private OrientationEventListener mOrientationEventListener;
+
+    // Let's keep track of the display rotation and orientation also:
     private int mDisplayRotation;
     private int mDisplayOrientation;
+
+    // Holds the Face Detection result:
+    private Camera.Face[] mFaces;
+
+    // The surface view for the camera data
     private SurfaceView mView;
+
+    // Draw rectangles and other fancy stuff:
     private FaceOverlayView mFaceView;
 
     /**
-     * Notifies the Surfaces on OrientationChanges.
+     * We need to react on OrientationEvents to rotate the screen and
+     * update the views.
      */
     private class SimpleOrientationEventListener extends OrientationEventListener {
 
@@ -64,18 +95,32 @@ public class CameraActivity extends Activity
 
         @Override
         public void onOrientationChanged(int orientation) {
-            mOrientation = orientation;
+            // We keep the last known orientation. So if the user first orient
+            // the camera then point the camera to floor or sky, we still have
+            // the correct orientation.
+            if (orientation == ORIENTATION_UNKNOWN) return;
+            mOrientation = Util.roundOrientation(orientation, mOrientation);
+            // When the screen is unlocked, display rotation may change. Always
+            // calculate the up-to-date orientationCompensation.
+            int orientationCompensation = mOrientation
+                    + Util.getDisplayRotation(CameraActivity.this);
+            if (mOrientationCompensation != orientationCompensation) {
+                mOrientationCompensation = orientationCompensation;
+                mFaceView.setOrientation(mOrientationCompensation);
+            }
         }
     }
 
     /**
-     * The FaceDetectionListener simply passes the faces to the OverlayView for now.
+     * Store the face data, so we can start the AsyncTask for the face recognition
+     * process instantly.
      */
     private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
         @Override
         public void onFaceDetection(Face[] faces, Camera camera) {
             Log.d("onFaceDetection", "Number of Faces:" + faces.length);
-            mFaceView.setFaces(faces, mOrientation);
+            // Update the view now!
+            mFaceView.setFaces(faces);
         }
     };
 
@@ -83,6 +128,7 @@ public class CameraActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mView = new SurfaceView(this);
+
         setContentView(mView);
         // Now create the OverlayView:
         mFaceView = new FaceOverlayView(this);
@@ -123,6 +169,7 @@ public class CameraActivity extends Activity
         }
     }
 
+
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i2, int i3) {
         // We have no surface, return immediately:
@@ -146,18 +193,21 @@ public class CameraActivity extends Activity
         mDisplayRotation = Util.getDisplayRotation(CameraActivity.this);
         mDisplayOrientation = Util.getDisplayOrientation(mDisplayRotation, 0);
         mCamera.setDisplayOrientation(mDisplayOrientation);
+
         if (mFaceView != null) {
             mFaceView.setDisplayOrientation(mDisplayOrientation);
         }
+
         // Finally start the camera preview again:
         mCamera.startPreview();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        mCamera.release();
+        mCamera.setPreviewCallback(null);
         mCamera.setFaceDetectionListener(null);
         mCamera.setErrorCallback(null);
+        mCamera.release();
         mCamera = null;
     }
 }
