@@ -65,15 +65,25 @@ IMG_MAX_SIZE = (128, 128)
 #   { "status" : failed, "message" : "IMAGE_DECODE_ERROR", "code" : 10 }
 #
 # If there are multiple errors, only the first error is considered.
+
+IMAGE_DECODE_ERROR = 10
+IMAGE_RESIZE_ERROR = 11
+SERVICE_TEMPORARY_UNAVAILABLE = 20
+UNKNOWN_ERROR = 21
+INVALID_FORMAT = 30
+INVALID_API_KEY = 31
+INVALID_API_TOKEN = 32
+MISSING_ARGUMENTS = 40
+
 errors = {
-    10 : "IMAGE_DECODE_ERROR",
-    11  : "IMAGE_RESIZE_ERROR",
-    20	: "SERVICE_TEMPORARILY_UNAVAILABLE",
-    21 : "UNKNOWN_ERROR",
-    30 : "INVALID_FORMAT",
-    31 : "INVALID_API_KEY",
-    32 : "INVALID_API_TOKEN",
-    40 : "MISSING_ARGUMENTS"
+    IMAGE_DECODE_ERROR : "IMAGE_DECODE_ERROR",
+    IMAGE_RESIZE_ERROR  : "IMAGE_RESIZE_ERROR",
+    SERVICE_TEMPORARY_UNAVAILABLE	: "SERVICE_TEMPORARILY_UNAVAILABLE",
+    UNKNOWN_ERROR : "UNKNOWN_ERROR",
+    INVALID_FORMAT : "INVALID_FORMAT",
+    INVALID_API_KEY : "INVALID_API_KEY",
+    INVALID_API_TOKEN : "INVALID_API_TOKEN",
+    MISSING_ARGUMENTS : "MISSING_ARGUMENTS"
 }
 
 # Initializes the Flask application, which is going to 
@@ -114,7 +124,7 @@ class WebAppException(Exception):
         try:
             self.message = errors[error_code]
         except:
-            self.error_code = 107
+            self.error_code = UNKNOWN_ERROR
             self.message = errors[error_code]
         if status_code is not None:
             self.status_code = status_code
@@ -157,7 +167,7 @@ def handle_exception(error):
 # Now finally add the methods needed for our FaceRecognition API!
 # Right now there is no rate limiting, no auth tokens and so on.
 # 
-@ThrowsWebAppException(error_code = 10)
+@ThrowsWebAppException(error_code = IMAGE_DECODE_ERROR)
 def decodeBase64Image(base64_image):
     """ Decodes Base64 image data, reads it with PIL and converts it into grayscale.
 
@@ -171,7 +181,7 @@ def decodeBase64Image(base64_image):
     im = im.convert("L")
     return im
 
-@ThrowsWebAppException(error_code = 11)
+@ThrowsWebAppException(error_code = IMAGE_RESIZE_ERROR )
 def resize_image(image, max_width, max_height):
     """ Resizes an image to the maximum width and height given.
 
@@ -197,41 +207,51 @@ def resize_image(image, max_size):
     """
     return resize_image(image, max_size[0], max_size[1])
 
+def preprocess_image(image_data):
+    image = read_image(image_data)
+    image = resize_image(image, IMG_MAX_SIZE)
+    return image
+
+def get_prediction(image_data):
+    image = preprocess_image(image_data)
+    prediction = model.predict_image(image)
+    return prediction
+
 # Now add the API endpoints for recognizing, learning and 
 # so on. If you want to use this in any public setup, you
 # should add rate limiting, auth tokens and so on.
 @app.route('/api/recognize', methods=['GET', 'POST'])
 def identify():
     if request.headers['Content-Type'] == 'application/json':
-            # Get the data from JSON:
-            image_data = request.json['image']
-            # Read and resize the image:
-            image = read_image(image_data)
-            image = resize_image(image, IMG_MAX_SIZE)
-            # Now get the prediction from the facerec model:
-            prediction = model.predict_image(image)
-            # And we are out!
-            return jsonify(name = prediction) 
-        except:
-            raise WebAppException(error_code=30)
+            try:
+                image_data = request.json['image']
+            raise WebAppException(error_code=MISSING_ARGUMENTS)
+            prediction = get_prediction(image_data)
+            response = jsonify(name = prediction) 
+            return response
+    else:
+        raise WebAppException(error_code=INVALID_FORMAT)
 
+# And now let's do this!
 if __name__ == '__main__':
+    usage = "usage: %prog [options] model_filename"
+    print usage
+
+    # Parse the command line:    
     from optparse import OptionParser
 
-    usage = "usage: %prog [options] model_filename"
-    # Add options for training, resizing, validation and setting the camera id:
     parser = OptionParser(usage=usage)
-    parser.add_option("-r", "--resize", action="store", type="string", dest="size", default=IMG_MAX_SIZE, 
-        help="Resizes the given image to a given size in format [width]x[height] (default: 100x100).")
     parser.add_option("-t", "--train", action="store", type="string", dest="dataset", default=None, 
         help="Calculates a new model from a given CSV filename. The CSV format is explained in the comments.")
-    # Parse arguments:
+        
     (options, args) = parser.parse_args()
-    # Check if a model name was passed:
+    
+    # Check if a model filename was passed:
     if len(args) == 0:
         print "[Error] No prediction model was given."
         sys.exit()
     if options.dataset:
-        pass
+        # Learn the new model with the dataset given:
+        
 
     app.run(host="0.0.0.0", port=int("5000"), debug=True, use_reloader=False)
