@@ -49,9 +49,7 @@ from facerec.serialization import save_model, load_model
 # A simple wrapper works around a limitation of the current framework, 
 # because as time of writing this only integer labels can be passed into 
 # the classifiers of the facerec framework. 
-#
-#
-#
+
 # First of all define a model, that supports updating itself. This 
 # is necessary, so we don't need to retrain the entire model for each 
 # input image. This is not suitable for all models, it may be limited 
@@ -82,45 +80,52 @@ class PredictableModelWrapper(object):
         class_label = self.numeric_dataset.resolve_by_str(name)
         extracted_feature = self.feature.extract(image)
         self.classifier.update(extracted_feature, class_label)
-        
-# To abstract the dirty things away, we are going to use a 
-# new class, which we call a NumericDataSet. This NumericDataSet
-# allows us to add images and turn them into a facerec compatible
-# representation.
-class NumericDataSet(object):
-    def __init__(self):
-        self.data = {}
-        self.str_to_num_mapping = {}
-        self.num_to_str_mapping = {}
 
-    def add(self, identifier, image):
-        numeric_identifier = self.__resolve_subject_id(identifier)
+
+# Now define a method to get a model trained on a NumericDataSet,
+# which should also store the model into a file if filename is given.
+def get_model(numeric_dataset, model_filename=None):
+    feature = ChainOperator(Resize(128,128), Fisherfaces())
+    classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
+    model = PredictableModelWrapper(feature=feature, classifier=classifier)
+    model.set_data(numeric_dataset)
+    model.compute()
+    if not model_filename is None:
+        save_model(model_filename, model)
+
+# Now a method to read images from a folder. It's pretty simple,
+# since we can pass a numeric_dataset into the read_images  method 
+# and just add the files as we read them. 
+def read_images(path, identifier, numeric_dataset):
+    for filename in os.listdir(subject_path):
         try:
-            self.data[identifier].append(image)
+            img = Image.open(os.path.join(subject_path, filename))
+            img = img.convert("L")
+            numeric_dataset.add(identifier, img)
+        except IOError, (errno, strerror):
+            print "I/O error({0}): {1}".format(errno, strerror)
         except:
-            self.data[identifier] = [image]
-            numerical_identifier = len(self.str_to_num_mapping)
-            # Store in mapping tables:
-            self.str_to_num_mapping[identifier] = numerical_identifier
-            self.num_to_str_mapping[numerical_identifier] = identifier
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
 
-    def get(self):
-        X = []
-        y = []
-        for name, num in self.str_to_num_mapping:
-            for image in self.data[name]:
-                X.append(image)
-                y.append(num)
-        return X,y
+# read_csv is a tiny little method, that takes a csv file defined
+# like this:
+#
+#   Philipp Wagner;D:/images/philipp
+#   Another Name;D:/images/another_name
+#   ...
+#
+def read_from_csv(filename):
+    numeric_dataset = NumericDataSet()
+    with open(filename, 'rb') as csvfile:
+        datasetfilename = csv.reader(csvfile, delimiter=';', quotechar='#')
+        for row in spamreader:
+            identifier = row[0]
+            path = row[1]
+            read_images(path, identifier, numeric_dataset)
+    return numeric_dataset
 
-    def resolve_by_str(self, identifier):
-        return self.str_num_mapping[identifier]
-
-    def resolve_by_num(self, numerical_identifier):
-        return self.num_to_str_mapping[numerical_identifier]
-
-    def length(self):
-        return len(self.data)
-
-    def __repr__(self):
-        print "TODO"
+# Just some sugar on top...
+def get_model_from_csv(filename, out_model_filename):
+    numeric_dataset = read_from_csv(filename)
+    return get_model(numeric_dataset, out_model_filename)
