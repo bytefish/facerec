@@ -1,59 +1,75 @@
-import os as os
-import numpy as np
-import PIL.Image as Image
-import random
-import csv
+#!/usr/bin/env python
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2014, Philipp Wagner <bytefish[at]gmx[dot]de>.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#  * Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials provided
+#    with the distribution.
+#  * Neither the name of the author nor the names of its
+#    contributors may be used to endorse or promote products derived
+#    from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
-class DataSet(object):
-    def __init__(self, filename=None, sz=None):
-        self.labels = []
-        self.groups = []
-        self.names = {}
-        self.data = []
-        self.sz = sz
-        if filename is not None:
-            self.load(filename)
 
-    def shuffle(self):
-        idx = np.argsort([random.random() for i in xrange(len(self.labels))])
-        self.data = [self.data[i] for i in idx]
-        self.labels = self.labels[idx]
-        if len(self.groups) == len(self.labels):
-            self.groups = self.groups[idx]
+# To abstract the dirty things away, we are going to use a 
+# new class, which we call a NumericDataSet. This NumericDataSet
+# allows us to add images and turn them into a facerec compatible
+# representation.
+class NumericDataSet(object):
+    def __init__(self):
+        self.data = {}
+        self.str_to_num_mapping = {}
+        self.num_to_str_mapping = {}
 
-    def load(self, path):
-        c = 0
-        for dirname, dirnames, filenames in os.walk(path):
-            for subdirname in dirnames:
-                subject_path = os.path.join(dirname, subdirname)
-                for filename in os.listdir(subject_path):
-                    try:
-                        im = Image.open(os.path.join(subject_path, filename))
-                        im = im.convert("L")
-                        # resize to given size (if given)
-                        if (self.sz is not None) and isinstance(self.sz, tuple) and (len(self.sz) == 2):
-                            im = im.resize(self.sz, Image.ANTIALIAS)
-                        self.data.append(np.asarray(im, dtype=np.uint8))
-                        self.labels.append(c)
-                    except IOError:
-                        pass
-                self.names[c] = subdirname
-                c = c+1
-        self.labels = np.array(self.labels, dtype=np.int)
-        
-    def readFromCSV(self, filename):
-        # <filename>;<classId>;<groupId>
-        data = [ [str(line[0]), int(line[1]),int(line[2])] for line in csv.reader(open(filename, 'rb'), delimiter=";")]
-        self.labels = np.array([item[1] for item in data])
-        self.groups = np.array([item[2] for item in data])
-        print self.labels
-        print self.groups
-        for item in data:
-            im_filename = item[0]
-            print im_filename
-            im = Image.open(os.path.join(im_filename))
-            im = im.convert("L")
-            # resize to given size (if given)
-            if (self.sz is not None) and isinstance(self.sz, tuple) and (len(self.sz) == 2):
-                im = im.resize(self.sz, Image.ANTIALIAS)
-            self.data.append(np.asarray(im, dtype=np.uint8))
+    def add(self, identifier, image):
+        numeric_identifier = self.__resolve_subject_id(identifier)
+        try:
+            self.data[identifier].append(image)
+        except:
+            self.data[identifier] = [image]
+            numerical_identifier = len(self.str_to_num_mapping)
+            # Store in mapping tables:
+            self.str_to_num_mapping[identifier] = numerical_identifier
+            self.num_to_str_mapping[numerical_identifier] = identifier
+
+    def get(self):
+        X = []
+        y = []
+        for name, num in self.str_to_num_mapping:
+            for image in self.data[name]:
+                X.append(image)
+                y.append(num)
+        return X,y
+
+    def resolve_by_str(self, identifier):
+        return self.str_num_mapping[identifier]
+
+    def resolve_by_num(self, numerical_identifier):
+        return self.num_to_str_mapping[numerical_identifier]
+
+    def length(self):
+        return len(self.data)
+
+    def __repr__(self):
+        print "NumericDataSet"
