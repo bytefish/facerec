@@ -119,7 +119,7 @@ def init_app(app):
 
 @app.before_request
 def log_request():
-    app.logger.debug("Request: %s %s", flask.request.method, flask.request.url)
+    app.logger.debug("Request: %s %s", request.method, request.url)
     
 # The WebAppException might be useful. It enables us to 
 # throw exceptions at any place in the application and give the user
@@ -177,7 +177,7 @@ def handle_exception(error):
 # Right now there is no rate limiting, no auth tokens and so on.
 # 
 @ThrowsWebAppException(error_code = IMAGE_DECODE_ERROR)
-def decodeBase64Image(base64_image):
+def read_image(base64_image):
     """ Decodes Base64 image data, reads it with PIL and converts it into grayscale.
 
     Args:
@@ -190,40 +190,13 @@ def decodeBase64Image(base64_image):
     im = im.convert("L")
     return im
 
-@ThrowsWebAppException(error_code = IMAGE_RESIZE_ERROR )
-def resize_image(image, max_width, max_height):
-    """ Resizes an image to the maximum width and height given.
-
-    Args:
-
-        image [image] A PIL Image object
-        max_width [int] The maximum width of the result
-        max_height [int] The maximum height of the result
-        
-    """
-    (width, height) = image.size
-    if width > max_width or height > max_height:
-        image.thumbnail((max_width,max_height), Image.ANTIALIAS)
-    return image
-
-def resize_image(image, max_size):
-    """ Resizes an image to the maximum size given.
-
-    Args:
-
-        image [image] A PIL Image object
-        max_size [int] The maximum size
-    """
-    return resize_image(image, max_size[0], max_size[1])
-
 def preprocess_image(image_data):
     image = read_image(image_data)
-    image = resize_image(image, IMG_MAX_SIZE)
     return image
 
 def get_prediction(image_data):
     image = preprocess_image(image_data)
-    prediction = model.predict_image(image)
+    prediction = model.predict(image)
     return prediction
 
 # Now add the API endpoints for recognizing, learning and 
@@ -244,9 +217,19 @@ def identify():
 
 # And now let's do this!
 if __name__ == '__main__':
-    usage = "usage: %prog [options] model_filename"
-    print usage
+    # A long description:
+    long_description = ("server.py is a simple facerec webservice. It provides "
+        "you with a simple RESTful API to recognize faces from a "
+        "computed model. Please don't use this server in a production"
+        "environment, as it provides no security and there might be "
+        "ugly concurrency issues with the global state of the model." )
+    usage = "server.py <options> <model_filename.pkl>"
 
+    print "=== Description ==="
+    print long_description
+    print "=== Usage ==="
+    print "Usage:", usage
+    print "=== Server Log (also in %s) ===" % (LOG_FILENAME)
     # Parse the command line:    
     from optparse import OptionParser
 
@@ -257,11 +240,10 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     # Check if a model filename was passed:
     if len(args) == 0:
-        print "Expected a facerec model to use for recognition."
+        print "Expected a facerec model to use for recognition!"
         sys.exit()    
     # The filename of the model:
     model_filename = args[0]
-    
     # Uh, this is ugly...
     global model
     # If a DataSet is given, we want to work with it:
@@ -271,4 +253,4 @@ if __name__ == '__main__':
     else:
         model = recognition.load_model_file(model_filename)
     # Finally start the server:        
-    app.run(host="0.0.0.0", port=int("5000"), debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=int("5000"), debug=True, use_reloader=False, threaded=False)

@@ -78,14 +78,20 @@ class PredictableModelWrapper(object):
         self.numeric_dataset = numeric_dataset
 
     def predict(self, image):
-        class_label = self.model.predict(image)
-        return self.numeric_dataset.resolve_by_num(class_label)
+        prediction_result = self.model.predict(image)
+        # Only take label right now:
+        num_label = prediction_result[0]
+        str_label = self.numeric_dataset.resolve_by_num(num_label)
+        return str_label
 
     def update(self, name, image):
         self.numeric_dataset.add(name, image)
         class_label = self.numeric_dataset.resolve_by_str(name)
         extracted_feature = self.feature.extract(image)
         self.classifier.update(extracted_feature, class_label)
+
+    def __repr__(self):
+        return "PredictableModelWrapper (Inner Model=%s)" % (str(self.model))
 
 
 # Now define a method to get a model trained on a NumericDataSet,
@@ -99,6 +105,7 @@ def get_model(numeric_dataset, model_filename=None):
     model.compute()
     if not model_filename is None:
         save_model(model_filename, model)
+    return model
 
 # Now a method to read images from a folder. It's pretty simple,
 # since we can pass a numeric_dataset into the read_images  method 
@@ -136,7 +143,8 @@ def read_from_csv(filename):
 # Just some sugar on top...
 def get_model_from_csv(filename, out_model_filename):
     numeric_dataset = read_from_csv(filename)
-    return get_model(numeric_dataset, out_model_filename)
+    model = get_model(numeric_dataset, out_model_filename)
+    return model
 
 def load_model_file(model_filename):
     load_model(model_filename)
