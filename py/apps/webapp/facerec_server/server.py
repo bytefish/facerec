@@ -61,11 +61,8 @@ import recognition
 # The main application: 
 app = Flask(__name__)
 
-# Limit the maximum image size:
-IMG_MAX_SIZE = (128, 128)
-
 # This is a list of errors the Webservice returns. You can come up
-# with new error codes 
+# with new error codes and plug them into the API.
 #
 # An example JSON response for an error looks like this:
 #
@@ -75,6 +72,7 @@ IMG_MAX_SIZE = (128, 128)
 
 IMAGE_DECODE_ERROR = 10
 IMAGE_RESIZE_ERROR = 11
+PREDICTION_ERROR = 12
 SERVICE_TEMPORARY_UNAVAILABLE = 20
 UNKNOWN_ERROR = 21
 INVALID_FORMAT = 30
@@ -86,6 +84,7 @@ errors = {
     IMAGE_DECODE_ERROR : "IMAGE_DECODE_ERROR",
     IMAGE_RESIZE_ERROR  : "IMAGE_RESIZE_ERROR",
     SERVICE_TEMPORARY_UNAVAILABLE	: "SERVICE_TEMPORARILY_UNAVAILABLE",
+    PREDICTION_ERROR : "PREDICTION_ERROR",
     UNKNOWN_ERROR : "UNKNOWN_ERROR",
     INVALID_FORMAT : "INVALID_FORMAT",
     INVALID_API_KEY : "INVALID_API_KEY",
@@ -103,7 +102,9 @@ LOG_FILE_SIZE_BYTES = 50 * 1024 * 1024
 def init_logger(app):
     handler = RotatingFileHandler(LOG_FILENAME, maxBytes=LOG_FILE_SIZE_BYTES, backupCount=LOG_BACKUP_COUNT)
     handler.setLevel(logging.DEBUG)
-    loggers = [app.logger, logging.getLogger("facerec")]
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    loggers = [app.logger, logging.getLogger('facerec')]
     for logger in loggers:
         logger.addHandler(handler)
 
@@ -117,6 +118,8 @@ def init_logger(app):
 def init_app(app):
     init_logger(app)
 
+init_app(app)
+
 @app.before_request
 def log_request():
     app.logger.debug("Request: %s %s", request.method, request.url)
@@ -125,16 +128,17 @@ def log_request():
 # throw exceptions at any place in the application and give the user
 # a 400 error code.
 class WebAppException(Exception):
-    status_code = 400
 
     def __init__(self, error_code, exception, status_code=None):
         Exception.__init__(self)
+        self.status_code = 400
         self.exception = exception
+        self.error_code = error_code
         try:
-            self.message = errors[error_code]
+            self.message = errors[self.error_code]
         except:
             self.error_code = UNKNOWN_ERROR
-            self.message = errors[error_code]
+            self.message = errors[self.error_code]
         if status_code is not None:
             self.status_code = status_code
 
@@ -159,7 +163,7 @@ class ThrowsWebAppException(object):
          try:
             return function(*args, **kwargs)
          except Exception as e:
-            raise WebAppException(error_code, e)
+            raise WebAppException(self.error_code, e)
       return returnfunction
 
 # Register an error handler on the WebAppException, so we
@@ -194,6 +198,8 @@ def preprocess_image(image_data):
     image = read_image(image_data)
     return image
 
+# Get the prediction from the global model.
+@ThrowsWebAppException(error_code = PREDICTION_ERROR)
 def get_prediction(image_data):
     image = preprocess_image(image_data)
     prediction = model.predict(image)
