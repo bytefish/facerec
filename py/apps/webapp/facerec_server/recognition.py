@@ -31,12 +31,18 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-# append facerec
-sys.path.append("../..")
-
+import csv, os, sys
+# Import PIL
+try:
+    from PIL import Image
+except ImportError:
+    import Image
+# Import numpy:
+import numpy as np
+# Import facerec:
 from facerec.feature import ChainOperator, Fisherfaces
 from facerec.preprocessing import Resize
+from facerec.dataset import NumericDataSet
 from facerec.distance import EuclideanDistance
 from facerec.classifier import NearestNeighbor
 from facerec.model import PredictableModel
@@ -85,9 +91,10 @@ class PredictableModelWrapper(object):
 # Now define a method to get a model trained on a NumericDataSet,
 # which should also store the model into a file if filename is given.
 def get_model(numeric_dataset, model_filename=None):
-    feature = ChainOperator(Resize(128,128), Fisherfaces())
+    feature = ChainOperator(Resize((128,128)), Fisherfaces())
     classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
-    model = PredictableModelWrapper(feature=feature, classifier=classifier)
+    inner_model = PredictableModel(feature=feature, classifier=classifier)
+    model = PredictableModelWrapper(inner_model)
     model.set_data(numeric_dataset)
     model.compute()
     if not model_filename is None:
@@ -97,10 +104,11 @@ def get_model(numeric_dataset, model_filename=None):
 # since we can pass a numeric_dataset into the read_images  method 
 # and just add the files as we read them. 
 def read_images(path, identifier, numeric_dataset):
-    for filename in os.listdir(subject_path):
+    for filename in os.listdir(path):
         try:
-            img = Image.open(os.path.join(subject_path, filename))
+            img = Image.open(os.path.join(path, filename))
             img = img.convert("L")
+            img = np.asarray(img, dtype=np.uint8)
             numeric_dataset.add(identifier, img)
         except IOError, (errno, strerror):
             print "I/O error({0}): {1}".format(errno, strerror)
@@ -118,8 +126,8 @@ def read_images(path, identifier, numeric_dataset):
 def read_from_csv(filename):
     numeric_dataset = NumericDataSet()
     with open(filename, 'rb') as csvfile:
-        datasetfilename = csv.reader(csvfile, delimiter=';', quotechar='#')
-        for row in spamreader:
+        reader = csv.reader(csvfile, delimiter=';', quotechar='#')
+        for row in reader:
             identifier = row[0]
             path = row[1]
             read_images(path, identifier, numeric_dataset)
@@ -129,3 +137,6 @@ def read_from_csv(filename):
 def get_model_from_csv(filename, out_model_filename):
     numeric_dataset = read_from_csv(filename)
     return get_model(numeric_dataset, out_model_filename)
+
+def load_model_file(model_filename):
+    load_model(model_filename)

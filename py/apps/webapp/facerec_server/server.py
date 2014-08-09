@@ -30,6 +30,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 import cStringIO
 import base64
 # try to import the PIL Image
@@ -37,19 +38,25 @@ try:
     from PIL import Image
 except ImportError:
     import Image
+
 # Flask imports:
-from flask import Flask, request, request_finished json, abort, make_response, Response, jsonify
+from flask import Flask, request, request_finished, json, abort, make_response, Response, jsonify
+# facerec imports
 # facerec imports:
 import sys
-sys.path.append("../..")
-# facerec imports
+sys.path.append("../../..")
 from facerec.model import PredictableModel
 from facerec.lbp import ExtendedLBP
 from facerec.feature import SpatialHistogram
 from facerec.distance import ChiSquareDistance
 from facerec.classifier import NearestNeighbor
+
 # logging
 import logging
+from logging.handlers import RotatingFileHandler
+
+# the webserver recognition module
+import recognition
 
 # The main application: 
 app = Flask(__name__)
@@ -86,14 +93,6 @@ errors = {
     MISSING_ARGUMENTS : "MISSING_ARGUMENTS"
 }
 
-# Initializes the Flask application, which is going to 
-# add the loggers, load the initial facerec model and 
-# all of this.
-def init_app(app):
-    init_logger(app)
-
-init_app(app)
-
 # Setup the logging for the server, so we can log all exceptions
 # away. We also want to acquire a logger for the facerec framework,
 # so we can be sure, that all logging goes into one place.
@@ -107,6 +106,16 @@ def init_logger(app):
     loggers = [app.logger, logging.getLogger("facerec")]
     for logger in loggers:
         logger.addHandler(handler)
+
+# Bring the model variable into global scope. This might be
+# dangerous in Flask, I am trying to figure out, which is the
+# best practice here. 
+
+# Initializes the Flask application, which is going to 
+# add the loggers, load the initial facerec model and 
+# all of this.
+def init_app(app):
+    init_logger(app)
 
 @app.before_request
 def log_request():
@@ -142,7 +151,7 @@ class WebAppException(Exception):
 # to minimize error handling code in our server.
 class ThrowsWebAppException(object):
    def __init__(self, error_code, status_code=None):
-      self.error_code
+      self.error_code = error_code
       self.status_code = status_code
 
    def __call__(self, function):
@@ -225,7 +234,8 @@ def identify():
     if request.headers['Content-Type'] == 'application/json':
             try:
                 image_data = request.json['image']
-            raise WebAppException(error_code=MISSING_ARGUMENTS)
+            except:
+                raise WebAppException(error_code=MISSING_ARGUMENTS)
             prediction = get_prediction(image_data)
             response = jsonify(name = prediction) 
             return response
@@ -242,16 +252,23 @@ if __name__ == '__main__':
 
     parser = OptionParser(usage=usage)
     parser.add_option("-t", "--train", action="store", type="string", dest="dataset", default=None, 
-        help="Calculates a new model from a given CSV filename. The CSV format is explained in the comments.")
-        
+        help="Calculates a new model from a given CSV file. CSV format: <person>;</path/to/image/folder>.")
+     # Split between options and arguments
     (options, args) = parser.parse_args()
-    
     # Check if a model filename was passed:
     if len(args) == 0:
-        print "[Error] No prediction model was given."
-        sys.exit()
+        print "Expected a facerec model to use for recognition."
+        sys.exit()    
+    # The filename of the model:
+    model_filename = args[0]
+    
+    # Uh, this is ugly...
+    global model
+    # If a DataSet is given, we want to work with it:
     if options.dataset:
         # Learn the new model with the dataset given:
-        
-
+        model = recognition.get_model_from_csv(filename=options.dataset,out_model_filename=model_filename)
+    else:
+        model = recognition.load_model_file(model_filename)
+    # Finally start the server:        
     app.run(host="0.0.0.0", port=int("5000"), debug=True, use_reloader=False)

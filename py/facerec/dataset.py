@@ -43,7 +43,6 @@ class NumericDataSet(object):
         self.num_to_str_mapping = {}
 
     def add(self, identifier, image):
-        numeric_identifier = self.__resolve_subject_id(identifier)
         try:
             self.data[identifier].append(image)
         except:
@@ -56,7 +55,7 @@ class NumericDataSet(object):
     def get(self):
         X = []
         y = []
-        for name, num in self.str_to_num_mapping:
+        for name, num in self.str_to_num_mapping.iteritems():
             for image in self.data[name]:
                 X.append(image)
                 y.append(num)
