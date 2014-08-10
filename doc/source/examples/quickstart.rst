@@ -1,37 +1,6 @@
 Quickstart
 ==========
 
-Features
-********
-
-The implements a face recognition framework for Python (and MATLAB/GNU Octave) with:
-
-* Preprocessing
-    * Histogram Equalization
-    * Local Binary Patterns
-    * TanTriggsPreprocessing (Tan, X., and Triggs, B. *"Enhanced local texture feature sets for face recognition under difficult lighting conditions."*. IEEE Transactions on Image Processing 19 (2010), 1635–650.)
-* Feature Extraction
-    * Eigenfaces (Turk, M., and Pentland, A. "Eigenfaces for recognition.". Journal of Cognitive Neuroscience 3 (1991), 71–86.)
-    * Fisherfaces (Belhumeur, P. N., Hespanha, J., and Kriegman, D. *"Eigenfaces vs. Fisherfaces: Recognition using class specific linear projection."*. IEEE Transactions on Pattern Analysis and Machine Intelligence 19, 7 (1997), 711–720.)
-    * Local Binary Patterns Histograms (Ahonen, T., Hadid, A., and Pietikainen, M. *"Face Recognition with Local Binary Patterns."*. Computer Vision - ECCV 2004 (2004), 469–481.)
-        * Original LBP
-        * Extended LBP
-    * Local Phase Quantization (Ojansivu V & Heikkilä J. *"Blur insensitive texture classification using local phase quantization."* Proc. Image and Signal Processing (ICISP 2008), 5099:236-243.)
-* Classifier
-    * k-Nearest Neighbor; available distance metrics
-        * Euclidean Distance
-        * Cosine Distance
-        * ChiSquare Distance
-        * Bin Ratio Distance
-    * Support Vector Machines; using libsvm bindings. (Vapnik, V. *"Statistical Learning Theory."*. John Wiley and Sons, New York, 1998.)
-* Cross Validation
-    * k-fold Cross Validation
-    * Leave-One-Out Cross Validation
-    * Leave-One-Class-Out Cross Validation
-    
-Using the Framework
-*******************
-
 In this chapter we will write a script to perform face recognition from a set of images. We assume, 
 that the images are given in folders, which we will read and learn a face recognition model with them.
 
@@ -40,7 +9,7 @@ You can obtain the code in this section from:
 * `facerec/py/apps/scripts/simple_example.py <https://github.com/bytefish/facerec/blob/master/py/apps/scripts/simple_example.py>`_
 
 Getting the data right
-----------------------
+**********************
 
 We aren't doing a toy example, so you'll need some image data. For sake of simplicity I have assumed, that the images (the faces, persons you want to recognize) are given in folders. So imagine I have a folder ``images`` (the dataset!), with the subfolders person1, person2 and so on:
 
@@ -95,7 +64,7 @@ Once unpacked it is going to look like this (on my filesystem it is unpacked to 
 That's all that needs to be done.
 
 What is a PredictableModel?
----------------------------
+***************************
 
 Basically all face recognition algorithms are the combination of a `feature extraction <https://github.com/bytefish/facerec/blob/master/py/facerec/feature.py>`_
 and a `classifier <https://github.com/bytefish/facerec/blob/master/py/facerec/classifier.py>`_. The Eigenfaces method for example is a Principal Component Analysis 
@@ -105,13 +74,13 @@ the classifier (which must be an `AbstractClassifier <https://github.com/bytefis
 
 So! If you want to use the `Fisherfaces method <http://bytefish.de/blog/fisherfaces/>`_ for feature extraction you would do:
 
-```
-from facerec.feature import Fisherfaces
-from facerec.classifier import NearestNeighbor
-from facerec.model import PredictableModel
+.. code-block:: python
 
-model = PredictableModel(Fisherfaces(), NearestNeighbor())
-```
+    from facerec.feature import Fisherfaces
+    from facerec.classifier import NearestNeighbor
+    from facerec.model import PredictableModel
+
+    model = PredictableModel(Fisherfaces(), NearestNeighbor())
 
 Once you have created your model you can call `compute(data,labels)` to learn it on given image `data` and their labels. There's nothing like a Dataset structure I enforce: You pass the images as a list of NumPy arrays (or something that could be converted into NumPy arrays), the labels are again a NumPy arrays of integer numbers (corresponding to a person).
 
@@ -153,13 +122,15 @@ Once you have created your model you can call `compute(data,labels)` to learn it
         return [X,y]
 
 Reading in the image data is then as easy as calling:
-```python
-# Read in the image data:
-[X,y] = read_images("/path/to/your/image/data")
-```
+
+.. code-block:: python
+
+    # Read in the image data:
+    [X,y] = read_images("/path/to/your/image/data")
+
 
 The full example
-----------------
+****************
 
 .. code-block:: python
 
@@ -290,7 +261,7 @@ The full example
         print cv
 
 Results
--------
+*******
 
 Since the AT&T Facedatabase is a fairly easy database we have got a `95.5%` recognition rate with the Fisherfaces method (with a 10-fold cross validation):
 

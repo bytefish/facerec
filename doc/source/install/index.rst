@@ -1,5 +1,4 @@
-.. _`Installation`:
-
+============
 Installation
 ============
 
@@ -24,6 +23,6 @@ Dependencies
 * `SciPy <http://www.scipy.org/>`_
 * `matplotlib <http://matplotlib.org/>`_
 
-All of these packages can be obtained with `pip <http://pip.readthedocs.org/en/latest/>`_
+All of these packages can be obtained with `pip <http://pip.readthedocs.org/en/latest/>`_ or follow the installation guide of the projects.
 
 My current Windows setup uses PIL 1.1.7, NumPy 1.8.1, SciPy 0.14.0, matplotlib 1.2.0.
