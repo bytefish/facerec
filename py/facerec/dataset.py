@@ -36,6 +36,11 @@
 # new class, which we call a NumericDataSet. This NumericDataSet
 # allows us to add images and turn them into a facerec compatible
 # representation.
+#
+# This DataSet does not provide a method for removing entities yet,
+# because this would render the ordering of the labels useless. 
+# This is caused by a severe limitation of the framework right now,
+# because it would make algorithms like LDA and PCA fail.
 class NumericDataSet(object):
     def __init__(self):
         self.data = {}
