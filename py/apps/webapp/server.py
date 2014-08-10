@@ -126,7 +126,7 @@ def log_request():
     
 # The WebAppException might be useful. It enables us to 
 # throw exceptions at any place in the application and give the user
-# a 400 error code.
+# a custom error code.
 class WebAppException(Exception):
 
     def __init__(self, error_code, exception, status_code=None):
