@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Face Recognition in Videos (or turning videofacerec.py into something useful) &mdash; facerec dev documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="facerec dev documentation" href="../index.html" />
+    <link rel="up" title="Examples" href="index.html" />
+    <link rel="prev" title="Quickstart" href="quickstart.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="quickstart.html" title="Quickstart"
+             accesskey="P">previous</a></li>
+        <li><a href="../index.html">facerec dev documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Examples</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Face Recognition in Videos (or turning videofacerec.py into something useful)</a><ul>
+<li><a class="reference internal" href="#usage">usage</a></li>
+<li><a class="reference internal" href="#working-with-the-script">working with the script</a><ul>
+<li><a class="reference internal" href="#getting-the-image-data-right">getting the image data right</a></li>
+<li><a class="reference internal" href="#learning-and-validating-a-model">learning and validating a model</a></li>
+<li><a class="reference internal" href="#validating-the-model">validating the model</a></li>
+<li><a class="reference internal" href="#defining-your-own-model">defining your own model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quickstart.html"
+                        title="previous chapter">Quickstart</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="face-recognition-in-videos-or-turning-videofacerec-py-into-something-useful">
+<h1>Face Recognition in Videos (or turning videofacerec.py into something useful)<a class="headerlink" href="#face-recognition-in-videos-or-turning-videofacerec-py-into-something-useful" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://github.com/bytefish/facerec/tree/master/py/apps/videofacerec">videofacerec</a> is a tiny Python script I wrote to perform face recognition in videos and to showcase some features of the <a class="reference external" href="http://www.github.com/bytefish/facerec">facerec framework</a>. Many people kept asking for it recently, so I&#8217;ve finally decided to rewrite it into something more useful and robust. And this is also the perfect chance to add some more features and write a new blog post.</p>
+<div class="align-center figure">
+<img alt="Screenshot" src="../_images/simple_videofacerec.png" />
+<p class="caption">A screenshot of the final application.</p>
+</div>
+<p>The screenshot shows you the final applications output, with my beautiful face of course. I&#8217;ve trained a model with the images of some celebrities and the application recognizes me as the <em>terrific</em> <a class="reference external" href="http://en.wikipedia.org/wiki/Patrick_Stewart">Sir Patrick Stewart</a>, which makes perfect sense if you have read <a class="reference external" href="http://www.bytefish.de/blog/fisherfaces">my article on the Fisherfaces algorithm</a>.</p>
+<p>You can find the script and resources at:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/bytefish/facerec/tree/master/py/apps/videofacerec">https://github.com/bytefish/facerec/tree/master/py/apps/videofacerec</a></li>
+</ul>
+<div class="section" id="usage">
+<h2>usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>The old script was hard to use and since the new one is easy to use I&#8217;ve called it <tt class="docutils literal"><span class="pre">simple_videofacerec.py</span></tt>. Basically the script allows you to compute, save and load models for face recognition in videos (e.g. webcam feeds). Moreover you can optionally validate your model to see the performance you can expect. <a class="reference external" href="http://www.opencv.org">OpenCV</a>, which is a great Open Source project, is used for the face detection part and you can use all the available cascades coming with <a class="reference external" href="http://www.opencv.org">OpenCV</a> for face detection.</p>
+<p>Here is the usage and help message you get by calling <tt class="docutils literal"><span class="pre">simple_videofacerec.py</span> <span class="pre">-h</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre>philipp@mango:~/github/facerec/py/apps/videofacerec$ ./simple_videofacerec.py -h
+Usage: simple_videofacerec.py [options] model_filename
+
+Options:
+  -h, --help            show this help message and exit
+  -r SIZE, --resize=SIZE
+                        Resizes the given dataset to a given size in format
+                        [width]x[height] (default: 100x100).
+  -v NUMFOLDS, --validate=NUMFOLDS
+                        Performs a k-fold cross validation on the dataset, if
+                        given (default: None).
+  -t DATASET, --train=DATASET
+                        Trains the model on the given dataset.
+  -i CAMERA_ID, --id=CAMERA_ID
+                        Sets the Camera Id to be used (default: 0).
+  -c CASCADE_FILENAME, --cascade=CASCADE_FILENAME
+                        Sets the path to the Haar Cascade used for the face
+                        detection part (default:
+                        haarcascade_frontalface_alt2.xml).
+</pre></div>
+</div>
+<p>As you can see, the name for the recognition model (called <tt class="docutils literal"><span class="pre">model_filename</span></tt> above) is required. I don&#8217;t think everything in the help message is self-explaining, so here is an in-depth summary:</p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">-r</span> <span class="pre">SIZE,</span> <span class="pre">--resize=SIZE</span></tt></dt>
+<dd><ul class="first last simple">
+<li>Some of the algorithms I have implemented in the framework only work on images with the same dimension. So if you learn a model, you probably need to resize the images to equal length. Moreover the images used in the prediction need to be resized to the training sets size, else the whole thing crashes with cryptic error messages. In the script you can pass the size with the <tt class="docutils literal"><span class="pre">-r</span></tt> or <tt class="docutils literal"><span class="pre">--resize</span></tt> switch and the size in format <tt class="docutils literal"><span class="pre">[width]x[height]</span></tt>, so valid arguments are for example <tt class="docutils literal"><span class="pre">70x70</span></tt> or <tt class="docutils literal"><span class="pre">130x100</span></tt>.</li>
+<li>Example: <tt class="docutils literal"><span class="pre">python</span> <span class="pre">simple_videofacerec.py</span> <span class="pre">-t</span> <span class="pre">/path/to/some/dataset</span> <span class="pre">-r</span> <span class="pre">130x100</span> <span class="pre">model_filename.pkl</span></tt></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">-v</span> <span class="pre">NUMFOLDS,</span> <span class="pre">--validate=NUMFOLDS</span></tt></dt>
+<dd><ul class="first last simple">
+<li>You really want to validate a model before using it, so you are able to estimate the performance you can expect from it. The script only supports a simple k-Fold Cross Validation and outputs the &lt;i&gt;precision&lt;/i&gt; of the model. If you want to use other estimates I suggest reading &lt;a href=&#8221;<a class="reference external" href="http://bytefish.de/blog/validating_algorithms/">http://bytefish.de/blog/validating_algorithms/</a>&#8220;&gt;my post on validating algorithms&lt;/a&gt;, which uses the great <a class="reference external" href="https://github.com/scikit-learn/scikit-learn">scikit-learn</a> project. The following example performs a 10-fold Cross Validation on a given dataset and stores the computed model to <tt class="docutils literal"><span class="pre">model_filename.pkl</span></tt>.</li>
+<li>Example: <tt class="docutils literal"><span class="pre">python</span> <span class="pre">simple_videofacerec.py</span> <span class="pre">-t</span> <span class="pre">/path/to/some/dataset</span> <span class="pre">-v</span> <span class="pre">10</span> <span class="pre">model_filename.pkl</span></tt></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">-t</span> <span class="pre">DATASET,</span> <span class="pre">--train=DATASET</span></tt></dt>
+<dd><p class="first last"><a href="#id2"><span class="problematic" id="id3">*</span></a>For performing face recognition, you&#8217;ll need to learn a model first. This is done by passing the <tt class="docutils literal"><span class="pre">-t</span></tt> or <tt class="docutils literal"><span class="pre">--train</span></tt> parameter and the path to a dataset to the script (you&#8217;ve seen this above already). The script has a method <tt class="docutils literal"><span class="pre">get_model</span></tt>, which defines the <tt class="docutils literal"><span class="pre">PredictableModel</span></tt> (please see the &lt;a href=&#8221;<a class="reference external" href="https://github.com/bytefish/facerec/blob/master/README.markdown">https://github.com/bytefish/facerec/blob/master/README.markdown</a>&#8220;&gt;README&lt;/a&gt; of facerec for full examples and explanation. The following example reads the dataset from <tt class="docutils literal"><span class="pre">/path/to/your/dataset</span></tt> and stores it to <tt class="docutils literal"><span class="pre">model_filename.pkl</span></tt>
+* Example: <tt class="docutils literal"><span class="pre">python</span> <span class="pre">simple_videofacerec.py</span> <span class="pre">-t</span> <span class="pre">/path/to/your/dataset</span> <span class="pre">model_filename.pkl</span></tt></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">-i</span> <span class="pre">CAMERA_ID,</span> <span class="pre">--id=CAMERA_ID</span></tt></dt>
+<dd><ul class="first last simple">
+<li>OpenCV assigns a number to each of your devices, starting with <tt class="docutils literal"><span class="pre">0</span></tt> (used per default). So if you have multiple cameras and want to use another one, the <tt class="docutils literal"><span class="pre">-i</span></tt> or <tt class="docutils literal"><span class="pre">--id</span></tt> switch is the way to go! The following example uses the camera with id <tt class="docutils literal"><span class="pre">1</span></tt> and <tt class="docutils literal"><span class="pre">model_filename.pkl</span></tt> for recognition.</li>
+<li>Example: <tt class="docutils literal"><span class="pre">python</span> <span class="pre">simple_videofacerec.py</span> <span class="pre">-c</span> <span class="pre">1</span> <span class="pre">model_filename.pkl</span></tt></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">-c</span> <span class="pre">CASCADE_FILENAME</span></tt></dt>
+<dd><ul class="first last simple">
+<li>The OpenCV library includes &lt;a href=&#8221;<a class="reference external" href="http://docs.opencv.org/modules/objdetect/doc/cascade_classification.html">http://docs.opencv.org/modules/objdetect/doc/cascade_classification.html</a>&#8220;&gt;Cascade Classification&lt;/a&gt; for object recognition, which can be used for realtime face detection. We are going to use the OpenCV Python bindings to &lt;a href=&#8221;<a class="reference external" href="http://docs.opencv.org/modules/objdetect/doc/cascade_classification.html">http://docs.opencv.org/modules/objdetect/doc/cascade_classification.html</a>&#8220;&gt;cv::CascadeClassifier&lt;/a&gt; for the face detection part of the application. You can find all available cascades in the &lt;a href=&#8221;<a class="reference external" href="https://github.com/Itseez/opencv/tree/master/data">https://github.com/Itseez/opencv/tree/master/data</a>&#8220;&gt;data folder of your OpenCV installation&lt;/a&gt;. I&#8217;ve added a Cascaded to the repository, you probably want to experiment with other ones. The following examples uses the model in <tt class="docutils literal"><span class="pre">model_filename.pkl</span></tt> for recognition and the cascade in <tt class="docutils literal"><span class="pre">haarcascade_frontalface_alt2.xml</span></tt> for face detection.</li>
+<li>Example: <tt class="docutils literal"><span class="pre">python</span> <span class="pre">-c</span> <span class="pre">haarcascade_frontalface_alt2.xml</span> <span class="pre">model_filename.pkl</span></tt></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="working-with-the-script">
+<h2>working with the script<a class="headerlink" href="#working-with-the-script" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="getting-the-image-data-right">
+<h3>getting the image data right<a class="headerlink" href="#getting-the-image-data-right" title="Permalink to this headline">¶</a></h3>
+<p>All of my recent tutorials include the same part, that explains how to prepare the image data for my scripts. It&#8217;s not because I love repeating myself, but because readers almost always ask this question, so I am copy and pasting it to avoid the confusion. For sake of simplicity I have assumed in the script, that the images (the <em>faces</em>, the <em>persons you want to recognize</em>) are given in folders. One folder per person. So imagine I have a folder (a dataset) called <tt class="docutils literal"><span class="pre">celebrities</span></tt> with the subfolders <tt class="docutils literal"><span class="pre">tom_hanks</span></tt>, <tt class="docutils literal"><span class="pre">philipp_wagner</span></tt>, <tt class="docutils literal"><span class="pre">angelina_jolie</span></tt> and so on.</p>
+<p>The folder (stored at <tt class="docutils literal"><span class="pre">~/facerec/data/celebrities</span></tt> in this example) will look like this</p>
+<dl class="docutils">
+<dt>::</dt>
+<dd><a class="reference external" href="mailto:philipp&#37;&#52;&#48;mango">philipp<span>&#64;</span>mango</a>:~/facerec/data/celebrities$ tree -L 2
+.
+<a href="#id4"><span class="problematic" id="id5">|</span></a>&#8211; tom_hanks
+|   <a href="#id6"><span class="problematic" id="id7">|</span></a>&#8211; 1.jpg
+|   <a href="#id8"><span class="problematic" id="id9">|</span></a>&#8211; 2.jpg
+|   <a href="#id10"><span class="problematic" id="id11">|</span></a>&#8211; 3.jpg
+|   <a href="#id12"><span class="problematic" id="id13">|</span></a>&#8211; 4.jpg
+...
+<a href="#id14"><span class="problematic" id="id15">|</span></a>&#8211; philipp_wagner
+|   <a href="#id16"><span class="problematic" id="id17">|</span></a>&#8211; 1.jpg
+|   <a href="#id18"><span class="problematic" id="id19">|</span></a>&#8211; 2.jpg
+|   <a href="#id20"><span class="problematic" id="id21">|</span></a>&#8211; 3.jpg
+|   <a href="#id22"><span class="problematic" id="id23">|</span></a>&#8211; 4.jpg
+...
+<a href="#id24"><span class="problematic" id="id25">|</span></a>&#8211; angelina_jolie
+|   <a href="#id26"><span class="problematic" id="id27">|</span></a>&#8211; 1.jpg
+|   <a href="#id28"><span class="problematic" id="id29">|</span></a>&#8211; 2.jpg
+|   <a href="#id30"><span class="problematic" id="id31">|</span></a>&#8211; 3.jpg
+|   <a href="#id32"><span class="problematic" id="id33">|</span></a>&#8211; 4.jpg
+[...]</dd>
+</dl>
+<p>If you pass a dataset with a similar hierarchie to <tt class="docutils literal"><span class="pre">simple_videofacerec.py</span></tt>, it is able to read the images and use the folder names for identification.</p>
+</div>
+<div class="section" id="learning-and-validating-a-model">
+<h3>learning and validating a model<a class="headerlink" href="#learning-and-validating-a-model" title="Permalink to this headline">¶</a></h3>
+<p>Imagine I have prepared some images of celebrities and stored them in <tt class="docutils literal"><span class="pre">/home/philipp/facerec/data/celebrities</span></tt>, of course in the hierarchie as described above. The images are all aligned at the eyes, as most of the algorithms need aligned images to learn a good model, similar to my set of <a class="reference external" href="http://en.wikipedia.org/wiki/George_Clooney">George Clooney</a> images (he was so amazing in <em>Batman &amp; Robin</em>!):</p>
+<img alt="examples\images/videofacerec/clooney_set.png&quot;" src="examples\images/videofacerec/clooney_set.png&quot;" />
+<p>Initially you don&#8217;t have a computed mode to perform the face recognition yet. This predicition model has to be trained on the set of images we&#8217;ve prepared. This is done by passing the <tt class="docutils literal"><span class="pre">-t</span></tt> or <tt class="docutils literal"><span class="pre">--train</span></tt> parameter, the path to our dataset (<tt class="docutils literal"><span class="pre">/home/philipp/facerec/data/celebrities</span></tt>) and the model filename (e.g. <a href="#id34"><span class="problematic" id="id35">``</span></a>my_model.pkl) to the script. So you would start the script with the following call:</p>
+<div class="highlight-python"><div class="highlight"><pre>python simple_videofacerec.py -t /home/philipp/facerec/data/celebrities my_model.pkl
+</pre></div>
+</div>
+<p>If you run the script, you&#8217;ll see an output similar to this:</p>
+<dl class="docutils">
+<dt>::</dt>
+<dd><p class="first"><a class="reference external" href="mailto:philipp&#37;&#52;&#48;mango">philipp<span>&#64;</span>mango</a>:~/github/facerec/py/apps/videofacerec$ python simple_videofacerec.py -t /home/philipp/facerec/data/celebrities my_model.pkl</p>
+<p class="last">Press [ESC] to exit the program!
+Script output:
+Loading dataset...
+Computing the model...
+Saving the model...
+Starting application...</p>
+</dd>
+</dl>
+<p>This line (1) reads the image data in the given folder, (2) computes the model, (3) saves the model to <tt class="docutils literal"><span class="pre">my_model.pkl</span></tt> and finally starts grabbing images from the webcam. And you can see, that Python serializes you the learnt model to disk:</p>
+<div class="highlight-python"><div class="highlight"><pre>philipp@mango:~/github/facerec/py/apps/videofacerec$ du -sh my_model.pkl
+2.0M    my_model.pkl
+</pre></div>
+</div>
+<p>You can easily reuse the model and don&#8217;t need to learn it from the dataset all over again. This can be done by simply don&#8217;t passing the <tt class="docutils literal"><span class="pre">-t</span></tt> or <tt class="docutils literal"><span class="pre">--train</span></tt> parameter, but only passing the model filename:</p>
+<div class="highlight-python"><div class="highlight"><pre>python simple_videofacerec.py my_model.pkl
+</pre></div>
+</div>
+<p>And the script output is much shorter:</p>
+<div class="highlight-python"><div class="highlight"><pre>philipp@mango:~/github/facerec/py/apps/videofacerec$ python simple_videofacerec.py my_model.pkl
+
+Press [ESC] to exit the program!
+Script output:
+Loading the model...
+Starting application...
+</pre></div>
+</div>
+</div>
+<div class="section" id="validating-the-model">
+<h3>validating the model<a class="headerlink" href="#validating-the-model" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes you want to know, which performance to expect from the model given the data available. The script optionally performs a k-Fold Cross Validation to estimate the <em>precision</em> of the model. This is done by passing the <tt class="docutils literal"><span class="pre">-v</span></tt> or <tt class="docutils literal"><span class="pre">--validate</span></tt> switch with the number of folds as parameter. The validation is ignored, if it is not used with the <tt class="docutils literal"><span class="pre">-t</span></tt> or <tt class="docutils literal"><span class="pre">--train</span></tt> switch:</p>
+<div class="highlight-python"><div class="highlight"><pre>python simple_videofacerec.py -t /home/philipp/facerec/data/celebrities -v 10 my_model.pkl
+</pre></div>
+</div>
+<p>The scripts output then includes some log output and prints the cross validation result:</p>
+<div class="highlight-python"><div class="highlight"><pre>philipp@mango:~/github/facerec/py/apps/videofacerec$ python simple_videofacerec.py -t /home/philipp/facerec/data/celebrities -v 10 my_model.pkl
+
+Usage: simple_videofacerec.py [options] model_filename
+
+Press [ESC] to exit the program!
+Script output:
+Loading dataset...
+Validating model with 10 folds...
+2013-06-17 23:18:40,873 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 1/10.
+2013-06-17 23:18:42,218 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 2/10.
+2013-06-17 23:18:43,561 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 3/10.
+2013-06-17 23:18:44,895 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 4/10.
+2013-06-17 23:18:46,269 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 5/10.
+2013-06-17 23:18:47,605 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 6/10.
+2013-06-17 23:18:48,976 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 7/10.
+2013-06-17 23:18:50,336 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 8/10.
+2013-06-17 23:18:51,694 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 9/10.
+2013-06-17 23:18:53,048 - facerec.validation.KFoldCrossValidation - INFO - Processing fold 10/10.
+k-Fold Cross Validation (model=PredictableModel (feature=Fisherfaces (num_components=9), classifier=NearestNeighbor (k=1, dist_metric=EuclideanDistance)), k=10, runs=1, accuracy=96.00%, std(accuracy)=0.00%, tp=96, fp=4, tn=0, fn=0)
+Computing the model...
+Saving the model...
+Starting application...
+</pre></div>
+</div>
+</div>
+<div class="section" id="defining-your-own-model">
+<h3>defining your own model<a class="headerlink" href="#defining-your-own-model" title="Permalink to this headline">¶</a></h3>
+<p>If you are experimenting with the framework, you probably don&#8217;t want to stick to the <a class="reference external" href="http://www.bytefish.de/blog/fisherfaces">Fisherfaces</a> algorithm used as default. Instead of coming up with an own language for defining a model or using a XML configuration (<em>please not!</em>), there&#8217;s simply a method which returns the model definition. Sometimes a method is totally sufficient in programming:</p>
+<div class="highlight-html"><div class="highlight"><pre>def get_model(image_size, subject_names):
+    &quot;&quot;&quot; This method returns the PredictableModel which is used to learn a model
+        for possible further usage. If you want to define your own model, this
+        is the method to return it from!
+    &quot;&quot;&quot;
+    # Define the Fisherfaces Method as Feature Extraction method:
+    feature = Fisherfaces()
+    # Define a 1-NN classifier with Euclidean Distance:
+    classifier = NearestNeighbor(dist_metric=EuclideanDistance(), k=1)
+    # Return the model as the combination:
+    return ExtendedPredictableModel(feature=feature, classifier=classifier, image_size=image_size, subject_names=subject_names)
+</pre></div>
+</div>
+<p>So if you want to define your own algorithms, this is place to overwrite. You need to return an <tt class="docutils literal"><span class="pre">ExtendedPredictableModel</span></tt> for the script to work (<tt class="docutils literal"><span class="pre">ExtendedPredictableModel</span></tt> is defined in the script).</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>This was my first blog post for a long time, and I hope you had as much fun reading it as I had writing it. If there&#8217;s anything you&#8217;d like to see in the script, then let me know and I&#8217;ll be happy to add it. Before you comment below and ask about the recognition performance of the implemented algorithms: they do not work perfect on not preprocessed input images. In order to create a more robust recognition, your input images should be aligned in the same manner as we did for the training set.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="quickstart.html" title="Quickstart"
+             >previous</a></li>
+        <li><a href="../index.html">facerec dev documentation</a> &raquo;</li>
+          <li><a href="index.html" >Examples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Philipp Wagner.
+      Last updated on Aug 10, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

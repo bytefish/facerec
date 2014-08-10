@@ -1,4 +1,3 @@
 *.pyc
 *.pkl
-build
 serverlog.log

@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &mdash; facerec dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="facerec dev documentation" href="index.html" />
+    <link rel="next" title="Installation" href="install/index.html" />
+    <link rel="prev" title="facerec" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="install/index.html" title="Installation"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="facerec"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">facerec dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">facerec</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install/index.html"
+                        title="next chapter">Installation</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>This project implements a face recognition framework for Python (and MATLAB/GNU Octave) with:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Preprocessing</dt>
+<dd><ul class="first last simple">
+<li>Histogram Equalization</li>
+<li>Local Binary Patterns</li>
+<li>TanTriggsPreprocessing <a class="reference internal" href="#tt2010" id="id1">[TT2010]</a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Feature Extraction</dt>
+<dd><ul class="first last">
+<li><p class="first">Eigenfaces <a class="reference internal" href="#tp1991" id="id2">[TP1991]</a></p>
+</li>
+<li><p class="first">Fisherfaces <a class="reference internal" href="#bhk1997" id="id3">[BHK1997]</a></p>
+</li>
+<li><dl class="first docutils">
+<dt>Local Binary Patterns Histograms <a class="reference internal" href="#ahp2004" id="id4">[AHP2004]</a></dt>
+<dd><ul class="first last simple">
+<li>Original LBP</li>
+<li>Extended LBP</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Local Phase Quantization <a class="reference internal" href="#ho2008" id="id5">[HO2008]</a></p>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Classifier</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>k-Nearest Neighbor; available distance metrics</dt>
+<dd><ul class="first last simple">
+<li>Euclidean Distance</li>
+<li>Cosine Distance</li>
+<li>ChiSquare Distance</li>
+<li>Bin Ratio Distance</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Support Vector Machines; using libsvm bindings. <a class="reference internal" href="#vapnik1998" id="id6">[Vapnik1998]</a></p>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Cross Validation</dt>
+<dd><ul class="first last simple">
+<li>k-fold Cross Validation</li>
+<li>Leave-One-Out Cross Validation</li>
+<li>Leave-One-Class-Out Cross Validation</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="tt2010" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[TT2010]</a></td><td>Tan, X., and Triggs, B. <em>&#8220;Enhanced local texture feature sets for face recognition under difficult lighting conditions.&#8221;</em>. IEEE Transactions on Image Processing 19 (2010), 1635?650.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="tp1991" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[TP1991]</a></td><td>Turk, M., and Pentland, A. &#8220;Eigenfaces for recognition.&#8221;. Journal of Cognitive Neuroscience 3 (1991), 71?86.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="bhk1997" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[BHK1997]</a></td><td>Belhumeur, P. N., Hespanha, J., and Kriegman, D. <em>&#8220;Eigenfaces vs. Fisherfaces: Recognition using class specific linear projection.&#8221;</em>. IEEE Transactions on Pattern Analysis and Machine Intelligence 19, 7 (1997), 711?720.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ahp2004" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[AHP2004]</a></td><td>Ahonen, T., Hadid, A., and Pietikainen, M. <em>&#8220;Face Recognition with Local Binary Patterns.&#8221;</em>. Computer Vision - ECCV 2004 (2004), 469?481.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="ho2008" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[HO2008]</a></td><td>Ojansivu V &amp; Heikkil? J. <em>&#8220;Blur insensitive texture classification using local phase quantization.&#8221;</em> Proc. Image and Signal Processing (ICISP 2008), 5099:236-243.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="vapnik1998" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[Vapnik1998]</a></td><td>Vapnik, V. <em>&#8220;Statistical Learning Theory.&#8221;</em>. John Wiley and Sons, New York, 1998.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="install/index.html" title="Installation"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="facerec"
+             >previous</a> |</li>
+        <li><a href="index.html">facerec dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Philipp Wagner.
+      Last updated on Aug 10, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

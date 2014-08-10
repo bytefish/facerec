@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Features &mdash; facerec dev documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="facerec dev documentation" href="../index.html" />
+    <link rel="up" title="Concepts" href="index.html" />
+    <link rel="next" title="Classifiers" href="classifiers.html" />
+    <link rel="prev" title="Concepts" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="classifiers.html" title="Classifiers"
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Concepts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">facerec dev documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Features</a><ul>
+<li><a class="reference internal" href="#available-feature-extraction-algorithms">Available Feature Extraction Algorithms</a><ul>
+<li><a class="reference internal" href="#facerec-feature">facerec.feature</a></li>
+<li><a class="reference internal" href="#facerec-preprocessing">facerec.preprocessing</a></li>
+<li><a class="reference internal" href="#facerec-operators">facerec.operators</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#image-processing-chains">Image processing chains</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Concepts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="classifiers.html"
+                        title="next chapter">Classifiers</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="features">
+<h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="available-feature-extraction-algorithms">
+<h2>Available Feature Extraction Algorithms<a class="headerlink" href="#available-feature-extraction-algorithms" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="section" id="facerec-feature">
+<h3>facerec.feature<a class="headerlink" href="#facerec-feature" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Identity</li>
+<li>PCA</li>
+<li>LDA</li>
+<li>Fisherfaces</li>
+<li>SpatialHistogram</li>
+</ul>
+</div>
+<div class="section" id="facerec-preprocessing">
+<h3>facerec.preprocessing<a class="headerlink" href="#facerec-preprocessing" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Resize</p>
+</li>
+<li><p class="first">HistogramEqualization</p>
+</li>
+<li><p class="first">TanTriggsPreprocessing</p>
+</li>
+<li><dl class="first docutils">
+<dt>LBPPreprocessing (with a <tt class="docutils literal"><span class="pre">LocalDescriptor</span></tt> from <tt class="docutils literal"><span class="pre">facerec.lbp</span></tt>)</dt>
+<dd><ul class="first last simple">
+<li>ExtendedLBP</li>
+<li>VarLBP</li>
+<li>LPQ</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">MinMaxNormalizePreprocessing</p>
+</li>
+<li><p class="first">ZScoreNormalizePreprocessing</p>
+</li>
+</ul>
+</div>
+<div class="section" id="facerec-operators">
+<h3>facerec.operators<a class="headerlink" href="#facerec-operators" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>ChainOperator</li>
+<li>CombineOperator</li>
+<li>CombineOperatorND</li>
+</ul>
+</div>
+</div>
+<div class="section" id="image-processing-chains">
+<h2>Image processing chains<a class="headerlink" href="#image-processing-chains" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes it&#8217;s also necessary to perform preprocessing on your images. The framework makes it easy to experiment with algorithms. You can achieve image processing chains by using the <a class="reference external" href="https://github.com/bytefish/facerec/blob/master/py/facerec/operators.py">ChainOperator</a>. The <tt class="docutils literal"><span class="pre">ChainOperator</span></tt> computes a <tt class="docutils literal"><span class="pre">feature1</span></tt> and passes its output to a <tt class="docutils literal"><span class="pre">feature2</span></tt>. Any Operator coming with the framework basically is an <tt class="docutils literal"><span class="pre">AbstractFeature</span></tt>, so it can be used like any other feature extraction algorithm.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">FeatureOperator</span><span class="p">(</span><span class="n">AbstractFeature</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A FeatureOperator operates on two feature models.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model1 [AbstractFeature]</span>
+<span class="sd">        model2 [AbstractFeature]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model1</span><span class="p">,</span><span class="n">model2</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model1</span><span class="p">,</span><span class="n">AbstractFeature</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model2</span><span class="p">,</span><span class="n">AbstractFeature</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;A FeatureOperator only works on classes implementing an AbstractFeature!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model1</span> <span class="o">=</span> <span class="n">model1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model2</span> <span class="o">=</span> <span class="n">model2</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;FeatureOperator(&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model2</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+
+<span class="k">class</span> <span class="nc">ChainOperator</span><span class="p">(</span><span class="n">FeatureOperator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The ChainOperator chains two feature extraction modules:</span>
+<span class="sd">        model2.compute(model1.compute(X,y),y)</span>
+<span class="sd">    Where X can be generic input data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model1 [AbstractFeature]</span>
+<span class="sd">        model2 [AbstractFeature]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model1</span><span class="p">,</span><span class="n">model2</span><span class="p">):</span>
+        <span class="n">FeatureOperator</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">model1</span><span class="p">,</span><span class="n">model2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model1</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model2</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model1</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model2</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;ChainOperator(&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model1</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;,&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model2</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;)&quot;</span>
+</pre></div>
+</div>
+<p>Imagine we want to perform a TanTriggs preprocessing, before applying a Fisherfaces algorithm. The TanTriggs Preprocessing is a simple illumination normalization algorithm, which was first proposed in <a class="reference internal" href="#tantriggs" id="id1">[TanTriggs]</a>. Now what you would do is using the output of the <tt class="docutils literal"><span class="pre">TanTriggsPreprocessing</span></tt> feature extraction as input for the <tt class="docutils literal"><span class="pre">Fisherfaces</span></tt> feature extraction. We can express this with a <cite>ChainOperator</cite> in facerec:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">facerec.preprocessing</span> <span class="kn">import</span> <span class="n">TanTriggsPreprocessing</span>
+<span class="kn">from</span> <span class="nn">facerec.feature</span> <span class="kn">import</span> <span class="n">Fisherfaces</span>
+<span class="kn">from</span> <span class="nn">facerec.operators</span> <span class="kn">import</span> <span class="n">ChainOperator</span>
+<span class="kn">from</span> <span class="nn">facerec.model</span> <span class="kn">import</span> <span class="n">PredictableModel</span>
+
+
+<span class="n">feature</span> <span class="o">=</span> <span class="n">ChainOperator</span><span class="p">(</span><span class="n">TanTriggsPreprocessing</span><span class="p">(),</span> <span class="n">Fisherfaces</span><span class="p">())</span>
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">NearestNeighbor</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">PredictableModel</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="tantriggs" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[TanTriggs]</a></td><td>Tan, X., and Triggs, B. <em>&#8220;Enhanced local texture feature sets for face recognition under difficult lighting conditions.&#8221;</em>. IEEE Transactions on Image Processing 19 (2010), 1635?650.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="classifiers.html" title="Classifiers"
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="Concepts"
+             >previous</a> |</li>
+        <li><a href="../index.html">facerec dev documentation</a> &raquo;</li>
+          <li><a href="index.html" >Concepts</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Philipp Wagner.
+      Last updated on Aug 10, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
