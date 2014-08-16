@@ -240,7 +240,7 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--address", action="store", dest="host", default="0.0.0.0", 
         help="Sets the endpoint for this server.", required=False)
     parser.add_argument("-p", "--port", action="store", dest="port", default=5000, 
-        help="Sets the endpoint for this server.", required=False)
+        help="Sets the port for this server.", required=False)
     parser.add_argument('model_filename', nargs='?', help="Filename of the model to use or store")
     # Print Usage:
     print "=== Usage ==="

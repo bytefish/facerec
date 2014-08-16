@@ -35,7 +35,7 @@ import json
 import base64
 import urllib2
 
-SERVER_ADDRESS = "http://localhost:8000/api/recognize"
+SERVER_ADDRESS = "http://localhost:5000"
 
 class FaceRecClient(object):
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("-s", "--server", action="store", dest="host", default=SERVER_ADDRESS, 
         help="Sets the endpoint for the server to call.", required=False)
-    parser.add_argument('images', nargs='+', help="Images to call the server with.")
+    parser.add_argument('image', nargs='+', help="Images to call the server with.")
     
     print "=== Usage ==="
     parser.print_help()
@@ -74,5 +74,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print "=== Predictions ==="       
     faceRecClient = FaceRecClient(args.host)
-    for image in args.images:
+    for image in args.image:
         faceRecClient.recognize(image)
