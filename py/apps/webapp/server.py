@@ -226,37 +226,35 @@ if __name__ == '__main__':
     # A long description:
     long_description = ("server.py is a simple facerec webservice. It provides "
         "you with a simple RESTful API to recognize faces from a "
-        "computed model. Please don't use this server in a production"
+        "computed model. Please don't use this server in a production "
         "environment, as it provides no security and there might be "
         "ugly concurrency issues with the global state of the model." )
-    usage = "server.py <options> <model_filename.pkl>"
-
     print "=== Description ==="
     print long_description
-    print "=== Usage ==="
-    print "Usage:", usage
-    print "=== Server Log (also in %s) ===" % (LOG_FILENAME)
     # Parse the command line:    
-    from optparse import OptionParser
+    from argparse import ArgumentParser
 
-    parser = OptionParser(usage=usage)
-    parser.add_option("-t", "--train", action="store", type="string", dest="dataset", default=None, 
-        help="Calculates a new model from a given CSV file. CSV format: <person>;</path/to/image/folder>.")
-     # Split between options and arguments
-    (options, args) = parser.parse_args()
-    # Check if a model filename was passed:
-    if len(args) == 0:
-        print "Expected a facerec model to use for recognition!"
-        sys.exit()    
-    # The filename of the model:
-    model_filename = args[0]
+    parser = ArgumentParser()
+    parser.add_argument("-t", "--train", action="store", dest="dataset", default=None, 
+        help="Calculates a new model from a given CSV file. CSV format: <person>;</path/to/image/folder>.", required=False)
+    parser.add_argument("-a", "--address", action="store", dest="host", default="0.0.0.0", 
+        help="Sets the endpoint for this server.", required=False)
+    parser.add_argument("-p", "--port", action="store", dest="port", default=5000, 
+        help="Sets the endpoint for this server.", required=False)
+    parser.add_argument('model_filename', nargs='?', help="Filename of the model to use or store")
+    # Print Usage:
+    print "=== Usage ==="
+    parser.print_help()
+    # Parse the Arguments:
+    args = parser.parse_args()
     # Uh, this is ugly...
     global model
     # If a DataSet is given, we want to work with it:
-    if options.dataset:
+    if args.dataset:
         # Learn the new model with the dataset given:
-        model = recognition.get_model_from_csv(filename=options.dataset,out_model_filename=model_filename)
+        model = recognition.get_model_from_csv(filename=args.dataset,out_model_filename=args.model_filename)
     else:
-        model = recognition.load_model_file(model_filename)
+        model = recognition.load_model_file(args.model_filename)
     # Finally start the server:        
-    app.run(host="0.0.0.0", port=int("5000"), debug=True, use_reloader=False, threaded=False)
+    print "=== Server Log (also in %s) ===" % (LOG_FILENAME)
+    app.run(host=args.host, port=args.port, debug=True, use_reloader=False, threaded=False)

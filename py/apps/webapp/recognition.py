@@ -56,14 +56,9 @@ from facerec.serialization import save_model, load_model
 # because as time of writing this only integer labels can be passed into 
 # the classifiers of the facerec framework. 
 
-# First of all define a model, that supports updating itself. This 
-# is necessary, so we don't need to retrain the entire model for each 
-# input image. This is not suitable for all models, it may be limited 
-# to Local Binary Patterns for the current framework.
-#
-# Moreover it hides the complexity of dealing with integer labels for
-# the faces (or objects) to identify.
-#
+# This wrapper hides the complexity of dealing with integer labels for
+# the training labels. It also supports updating a model, instead of 
+# re-training it. 
 class PredictableModelWrapper(object):
 
     def __init__(self, model):
