@@ -24,16 +24,31 @@
 
 package org.bytefish.videofacerecognition.app;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -44,7 +59,7 @@ import android.widget.Toast;
 
 
 public class CameraActivity extends Activity
-        implements SurfaceHolder.Callback {
+        implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     public static final String TAG = CameraActivity.class.getSimpleName();
 
@@ -59,11 +74,29 @@ public class CameraActivity extends Activity
     private int mDisplayRotation;
     private int mDisplayOrientation;
 
+    // Holds the Face Detection result:
+    private Camera.Face[] mFaces;
+
     // The surface view for the camera data
     private SurfaceView mView;
 
     // Draw rectangles and other fancy stuff:
     private FaceOverlayView mFaceView;
+
+    // Holds the current frame, so we can react on a click event:
+    private final Lock lock = new ReentrantLock();
+    private byte[] mPreviewFrameBuffer;
+
+
+    @Override
+    public void onPreviewFrame(byte[] bytes, Camera camera) {
+        try {
+            lock.lock();
+            mPreviewFrameBuffer = bytes;
+        } finally {
+            lock.unlock();
+        }
+    }
 
     /**
      * We need to react on OrientationEvents to rotate the screen and
@@ -110,6 +143,7 @@ public class CameraActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mView = new SurfaceView(this);
+
         setContentView(mView);
         // Now create the OverlayView:
         mFaceView = new FaceOverlayView(this);
@@ -145,6 +179,7 @@ public class CameraActivity extends Activity
         mCamera.startFaceDetection();
         try {
             mCamera.setPreviewDisplay(surfaceHolder);
+            mCamera.setPreviewCallback(this);
         } catch (Exception e) {
             Log.e(TAG, "Could not preview the image.", e);
         }
@@ -161,14 +196,25 @@ public class CameraActivity extends Activity
                 break;
             case MotionEvent.ACTION_UP:
             {
-                if(mFaceView.touchIntersectsFace(x,y)) {
+                Face face = mFaceView.touchIntersectsFace(x,y);
+                if(face != null) {
                     Toast.makeText(getApplicationContext(), "(" + x + "," + y +")", Toast.LENGTH_LONG).show();
+                    try {
+                        lock.lock();
+                        // Process the buffered frame! This is safe, because we have locked the access
+                        // to the resource we are going to work on. This task should be a background
+                        // task, in case it takes too long.
+
+                    } finally {
+                        lock.unlock();
+                    }
                 }
             }
             break;
         }
         return false;
     }
+
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i2, int i3) {
@@ -193,18 +239,29 @@ public class CameraActivity extends Activity
         mDisplayRotation = Util.getDisplayRotation(CameraActivity.this);
         mDisplayOrientation = Util.getDisplayOrientation(mDisplayRotation, 0);
         mCamera.setDisplayOrientation(mDisplayOrientation);
+
         if (mFaceView != null) {
             mFaceView.setDisplayOrientation(mDisplayOrientation);
         }
+
         // Finally start the camera preview again:
+        mCamera.setPreviewCallback(this);
         mCamera.startPreview();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        mCamera.release();
+        mCamera.setPreviewCallback(null);
         mCamera.setFaceDetectionListener(null);
         mCamera.setErrorCallback(null);
+        mCamera.release();
         mCamera = null;
     }
+
+    Camera.PictureCallback photoCallback = new Camera.PictureCallback() {
+        public void onPictureTaken(byte[] data, Camera camera) {
+
+            camera.startPreview();
+        }
+    };
 }

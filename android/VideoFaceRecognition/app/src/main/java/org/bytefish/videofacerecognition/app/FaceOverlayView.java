@@ -25,6 +25,7 @@
 package org.bytefish.videofacerecognition.app;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -91,7 +92,7 @@ public class FaceOverlayView extends View {
      * @param y
      * @return
      */
-    public boolean touchIntersectsFace(int x, int y) {
+    public Face touchIntersectsFace(int x, int y) {
         Matrix matrix = new Matrix();
         Util.prepareMatrix(matrix, false, mDisplayOrientation, getWidth(), getHeight());
         RectF rectF = new RectF();
@@ -99,10 +100,10 @@ public class FaceOverlayView extends View {
             rectF.set(face.rect);
             matrix.mapRect(rectF);
             if(rectF.contains(x, y)) {
-                return true;
+                return face;
             }
         }
-        return false;
+        return null;
     }
 
     @Override

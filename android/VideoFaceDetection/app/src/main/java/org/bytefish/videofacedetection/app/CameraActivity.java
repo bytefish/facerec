@@ -84,36 +84,8 @@ public class CameraActivity extends Activity
     private FaceOverlayView mFaceView;
 
     /**
-     * We need to react on OrientationEvents to rotate the screen and
-     * update the views.
-     */
-    private class SimpleOrientationEventListener extends OrientationEventListener {
-
-        public SimpleOrientationEventListener(Context context) {
-            super(context, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-
-        @Override
-        public void onOrientationChanged(int orientation) {
-            // We keep the last known orientation. So if the user first orient
-            // the camera then point the camera to floor or sky, we still have
-            // the correct orientation.
-            if (orientation == ORIENTATION_UNKNOWN) return;
-            mOrientation = Util.roundOrientation(orientation, mOrientation);
-            // When the screen is unlocked, display rotation may change. Always
-            // calculate the up-to-date orientationCompensation.
-            int orientationCompensation = mOrientation
-                    + Util.getDisplayRotation(CameraActivity.this);
-            if (mOrientationCompensation != orientationCompensation) {
-                mOrientationCompensation = orientationCompensation;
-                mFaceView.setOrientation(mOrientationCompensation);
-            }
-        }
-    }
-
-    /**
-     * Store the face data, so we can start the AsyncTask for the face recognition
-     * process instantly.
+     * Sets the faces for the overlay view, so it can be updated
+     * and the face overlays will be drawn again.
      */
     private FaceDetectionListener faceDetectionListener = new FaceDetectionListener() {
         @Override
@@ -209,5 +181,33 @@ public class CameraActivity extends Activity
         mCamera.setErrorCallback(null);
         mCamera.release();
         mCamera = null;
+    }
+
+    /**
+     * We need to react on OrientationEvents to rotate the screen and
+     * update the views.
+     */
+    private class SimpleOrientationEventListener extends OrientationEventListener {
+
+        public SimpleOrientationEventListener(Context context) {
+            super(context, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        @Override
+        public void onOrientationChanged(int orientation) {
+            // We keep the last known orientation. So if the user first orient
+            // the camera then point the camera to floor or sky, we still have
+            // the correct orientation.
+            if (orientation == ORIENTATION_UNKNOWN) return;
+            mOrientation = Util.roundOrientation(orientation, mOrientation);
+            // When the screen is unlocked, display rotation may change. Always
+            // calculate the up-to-date orientationCompensation.
+            int orientationCompensation = mOrientation
+                    + Util.getDisplayRotation(CameraActivity.this);
+            if (mOrientationCompensation != orientationCompensation) {
+                mOrientationCompensation = orientationCompensation;
+                mFaceView.setOrientation(mOrientationCompensation);
+            }
+        }
     }
 }

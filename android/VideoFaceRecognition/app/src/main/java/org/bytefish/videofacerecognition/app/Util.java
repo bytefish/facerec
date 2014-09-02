@@ -25,10 +25,17 @@
 package org.bytefish.videofacerecognition.app;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.util.Base64;
 import android.view.OrientationEventListener;
 import android.view.Surface;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * This class uses Utility functions written for the Camera module of Android.
@@ -63,6 +70,40 @@ public class Util {
             case Surface.ROTATION_270: return 270;
         }
         return 0;
+    }
+
+    /**
+     * Returns the Base64 representation of a Bitmap, which is compressed with the given format
+     * and quality.
+     *
+     * @param bitmap
+     * @param quality
+     * @return
+     */
+    public static String getBase64(Bitmap bitmap, Bitmap.CompressFormat format, int quality) {
+        ByteArrayOutputStream full_stream = new ByteArrayOutputStream();
+        bitmap.compress(format, quality, full_stream);
+        byte[] full_bytes = full_stream.toByteArray();
+        return Base64.encodeToString(full_bytes, Base64.DEFAULT);
+    }
+
+    /**
+     * Converts a YUV image into a Jpeg Bitmap. This is because the Camera Preview returns
+     * a YUV Image, from which we are going to build a JPEG image from. It's better to use
+     * Androids converter, instead of rolling our own.
+     *
+     * @param data Image in YUV.
+     * @param camera
+     * @return
+     */
+    public static Bitmap convertYuvByteArrayToBitmap(byte[] data, Camera camera) {
+        Camera.Parameters parameters = camera.getParameters();
+        Camera.Size size = parameters.getPreviewSize();
+        YuvImage image = new YuvImage(data, parameters.getPreviewFormat(), size.width, size.height, null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        image.compressToJpeg(new Rect(0, 0, size.width, size.height), 100, out);
+        byte[] imageBytes = out.toByteArray();
+        return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }
 
     public static int getDisplayOrientation(int degrees, int cameraId) {
