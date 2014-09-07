@@ -41,7 +41,7 @@ import org.json.JSONObject;
  * Uses the BaseServiceClient to implement the RESTful API used for the Flask facerec service.
  *
  */
-public abstract class FaceRecServiceClient {
+public class FaceRecServiceClient {
 
     private static final String TAG = "FaceRecServiceClient";
 

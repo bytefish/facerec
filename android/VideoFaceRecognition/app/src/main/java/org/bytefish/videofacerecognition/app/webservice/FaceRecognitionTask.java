@@ -41,11 +41,10 @@ import java.util.UUID;
  * This implementation is problematic, because orientation changes (which are not  unlikely)
  * might kill the poor AsyncTask.
  */
-public class FaceRecognitionTask extends AsyncTask<RecognitionInputData, Void, AsyncTaskResult<String>> {
+public class FaceRecognitionTask extends AsyncTask<FaceRecognitionRequest, Void, AsyncTaskResult<FaceRecognitionResult>> {
 
     private static final String TAG = "FaceRecognitionTask";
 
-    private UUID 
     private FaceRecognitionCallback mFaceRecognitionListener;
     private FaceRecServiceClient mServiceClient;
 
@@ -55,17 +54,19 @@ public class FaceRecognitionTask extends AsyncTask<RecognitionInputData, Void, A
     }
 
     @Override
-    protected AsyncTaskResult<String> doInBackground(RecognitionInputData... params) {
-        RecognitionInputData inputData = params[0];
-        String result;
+    protected AsyncTaskResult<FaceRecognitionResult> doInBackground(FaceRecognitionRequest... params) {
+        FaceRecognitionRequest request = params[0];
+
+        UUID requestIdentifier = request.getmRequestIdentifier();
+        String serviceResult;
         try {
-        Bitmap faceBitmap = extractFace(inputData);
-        result = mServiceClient.recognize(faceBitmap);
+            Bitmap faceBitmap = extractFace(request);
+            serviceResult = mServiceClient.recognize(faceBitmap);
         } catch(Exception e) {
             Log.e(TAG, "Web service exception.", e);
-            return new AsyncTaskResult<String>(e);
+            return new AsyncTaskResult<FaceRecognitionResult>(e);
         }
-        return new AsyncTaskResult<String>(result);
+        return new AsyncTaskResult<FaceRecognitionResult>(new FaceRecognitionResult(requestIdentifier, serviceResult));
     }
 
     /**
@@ -74,7 +75,7 @@ public class FaceRecognitionTask extends AsyncTask<RecognitionInputData, Void, A
      * @param recognitionInputData
      * @return
      */
-    private Bitmap extractFace(RecognitionInputData recognitionInputData) {
+    private Bitmap extractFace(FaceRecognitionRequest recognitionInputData) {
         Bitmap bitmap = recognitionInputData.getBitmap();
         Camera.Face face = recognitionInputData.getFace();
 
@@ -82,15 +83,15 @@ public class FaceRecognitionTask extends AsyncTask<RecognitionInputData, Void, A
     }
 
     @Override
-    protected void onPostExecute(AsyncTaskResult<String> result) {
+    protected void onPostExecute(AsyncTaskResult<FaceRecognitionResult> asyncResult) {
         if(isCancelled()) {
             mFaceRecognitionListener.OnCanceled();
-        } else if(result.failed()) {
-            Exception exception = result.getException();
+        } else if(asyncResult.failed()) {
+            Exception exception = asyncResult.getException();
             mFaceRecognitionListener.OnFailed(exception);
         } else {
-            String name = result.getResult();
-            mFaceRecognitionListener.OnCompleted(name);
+            FaceRecognitionResult result = asyncResult.getResult();
+            mFaceRecognitionListener.OnCompleted(result);
         }
     }
 }

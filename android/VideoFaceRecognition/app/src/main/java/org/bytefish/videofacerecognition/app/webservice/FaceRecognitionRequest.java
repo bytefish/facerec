@@ -24,16 +24,40 @@
 
 package org.bytefish.videofacerecognition.app.webservice;
 
-import org.bytefish.videofacerecognition.app.task.AsyncTaskResult;
+import android.graphics.Bitmap;
+import android.hardware.Camera;
+
+import org.bytefish.videofacerecognition.app.util.Util;
+
+import java.util.UUID;
 
 /**
- * The Callback, which
+ * This is the data structure used for input and output
+ * of a FaceRecognition AsyncTask.
  */
-public interface FaceRecognitionCallback {
+public class FaceRecognitionRequest {
 
-    void OnCompleted(FaceRecognitionResult result);
+    private UUID mRequestIdentifier;
+    private Bitmap mBitmap;
+    private Camera.Face mFace;
 
-    void OnFailed(Exception exception);
+    public FaceRecognitionRequest(UUID requestIdentifier, Bitmap bitmap, Camera.Face face) {
+        mRequestIdentifier = requestIdentifier;
+        mBitmap = bitmap;
+        mFace = face;
+    }
 
-    void OnCanceled();
+    public Camera.Face getFace() {
+        return mFace;
+    }
+
+    public Bitmap getBitmap() {
+        return mBitmap;
+    }
+
+    public UUID getmRequestIdentifier() {
+        return mRequestIdentifier;
+    }
 }
+
+

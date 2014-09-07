@@ -25,11 +25,13 @@
 package org.bytefish.videofacerecognition.app;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
@@ -43,8 +45,11 @@ import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
 
+import org.bytefish.videofacerecognition.api.client.FaceRecServiceClient;
 import org.bytefish.videofacerecognition.app.task.AsyncTaskResult;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionCallback;
+import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionRequest;
+import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionResult;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionTask;
 import org.bytefish.videofacerecognition.app.util.Util;
 import org.bytefish.videofacerecognition.app.view.FaceOverlayView;
@@ -66,9 +71,6 @@ public class CameraActivity extends Activity
     private int mDisplayRotation;
     private int mDisplayOrientation;
 
-    // Holds the Face Detection result:
-    private Camera.Face[] mFaces;
-
     // The surface view for the camera data
     private SurfaceView mView;
 
@@ -79,6 +81,8 @@ public class CameraActivity extends Activity
     private final Lock lock = new ReentrantLock();
     private byte[] mPreviewFrameBuffer;
 
+    // FaceRecognition Service:
+    FaceRecServiceClient mFaceRecServiceClient;
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
@@ -88,17 +92,6 @@ public class CameraActivity extends Activity
         } finally {
             lock.unlock();
         }
-    }
-
-    @Override
-    public void OnCompleted(AsyncTaskResult<String> result) {
-        if(result.failed()) {
-            Log.e(TAG, "Face recognition has failed!", result.getException());
-            // TODO Inform the User
-            return;
-        }
-        // Show the Recognition result:
-
     }
 
     /**
@@ -154,6 +147,8 @@ public class CameraActivity extends Activity
         // Create and Start the OrientationListener:
         mOrientationEventListener = new SimpleOrientationEventListener(this);
         mOrientationEventListener.enable();
+        // Create a new FaceRecService Client:
+        mFaceRecServiceClient = new FaceRecServiceClient("http://localhost:5050", null, null);
     }
 
     @Override
@@ -166,12 +161,16 @@ public class CameraActivity extends Activity
     @Override
     protected void onPause() {
         mOrientationEventListener.disable();
+        mCamera.stopPreview();
+
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         mOrientationEventListener.enable();
+        mCamera.startPreview();
+
         super.onResume();
     }
 
@@ -207,8 +206,12 @@ public class CameraActivity extends Activity
                         // Process the buffered frame! This is safe, because we have locked the access
                         // to the resource we are going to work on. This task should be a background
                         // task, in case it takes too long.
-
-
+                        UUID requestIdentifier = UUID.randomUUID();
+                        Bitmap bitmap = Util.convertYuvByteArrayToBitmap(mPreviewFrameBuffer, mCamera);
+                        // Create the Request Object:
+                        FaceRecognitionRequest request = new FaceRecognitionRequest(requestIdentifier, bitmap, face);
+                        // Execute a FaceRecognitionRequest:
+                        new FaceRecognitionTask(faceRecognitionCallback, mFaceRecServiceClient).execute(request);
                     } finally {
                         lock.unlock();
                     }
@@ -262,27 +265,22 @@ public class CameraActivity extends Activity
         mCamera = null;
     }
 
-    Camera.PictureCallback photoCallback = new Camera.PictureCallback() {
-        public void onPictureTaken(byte[] data, Camera camera) {
-
-            camera.startPreview();
-        }
-    };
-
     FaceRecognitionCallback faceRecognitionCallback = new FaceRecognitionCallback() {
         @Override
-        public void OnCompleted(String result) {
+        public void OnCompleted(FaceRecognitionResult result) {
+            Log.i(TAG, "Face Recognition completed (uuid=" + result.getRequestIdentifier() + ", result=" + result.getResult());
+
 
         }
 
         @Override
         public void OnFailed(Exception exception) {
-
+            Log.e(TAG, "Face recognition has failed!", exception);
         }
 
         @Override
         public void OnCanceled() {
-
+            Log.e(TAG, "Face recognition was canceled!");
         }
     };
 }
