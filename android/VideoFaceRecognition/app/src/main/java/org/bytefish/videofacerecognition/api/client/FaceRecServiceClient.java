@@ -27,28 +27,15 @@ package org.bytefish.videofacerecognition.api.client;
 import android.graphics.Bitmap;
 import android.util.Log;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.bytefish.videofacerecognition.api.constants.Constants;
 import org.bytefish.videofacerecognition.api.exceptions.AccessDeniedException;
 import org.bytefish.videofacerecognition.api.exceptions.InternalServerErrorException;
 import org.bytefish.videofacerecognition.api.exceptions.ResourceNotFoundException;
 import org.bytefish.videofacerecognition.api.exceptions.RestClientException;
 import org.bytefish.videofacerecognition.api.exceptions.WebAppException;
-import org.bytefish.videofacerecognition.api.interceptor.LoggingRequestInterceptor;
-import org.bytefish.videofacerecognition.api.interceptor.LoggingResponseInterceptor;
-import org.bytefish.videofacerecognition.app.Util;
+import org.bytefish.videofacerecognition.app.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Uses the BaseServiceClient to implement the RESTful API used for the Flask facerec service.

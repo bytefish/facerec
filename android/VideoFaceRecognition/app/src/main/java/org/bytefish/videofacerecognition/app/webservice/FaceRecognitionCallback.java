@@ -22,34 +22,18 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.bytefish.videofacerecognition.api;
+package org.bytefish.videofacerecognition.app.webservice;
 
-import android.graphics.Bitmap;
-import android.hardware.Camera;
-import android.os.AsyncTask;
+import org.bytefish.videofacerecognition.app.task.AsyncTaskResult;
+
 /**
- *
- * Performs the FaceDetection part in Background, because it might be a long running Task.
- * This implementation is problematic, because orientation changes (which are not  unlikely)
- * might kill the poor AsyncTask.
+ * Created by philipp on 9/7/14.
  */
-public class FaceRecognitionTask extends AsyncTask<Void, String, String> {
+public interface FaceRecognitionCallback {
 
-    private Bitmap mImage;
-    private Camera.Face mFace;
+    void OnCompleted(String result);
 
-    public FaceRecognitionTask(Bitmap image, Camera.Face face) {
-        mImage = image;
-        mFace = face;
-    }
+    void OnFailed(Exception exception);
 
-    @Override
-    protected String doInBackground(Void... params) {
-        return new String();
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        // ...
-    }
+    void OnCanceled();
 }

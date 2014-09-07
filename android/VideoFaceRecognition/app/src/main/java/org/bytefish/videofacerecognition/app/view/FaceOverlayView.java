@@ -22,21 +22,18 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.bytefish.videofacerecognition.app;
+package org.bytefish.videofacerecognition.app.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.hardware.Camera.Face;
-import android.view.MotionEvent;
-import android.view.OrientationEventListener;
-import android.view.Surface;
 import android.view.View;
-import android.widget.Toast;
+
+import org.bytefish.videofacerecognition.app.util.Util;
 
 /**
  * This class is a simple View to display the faces.

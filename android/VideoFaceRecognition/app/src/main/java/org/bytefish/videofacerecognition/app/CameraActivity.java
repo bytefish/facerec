@@ -24,31 +24,17 @@
 
 package org.bytefish.videofacerecognition.app;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -56,6 +42,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
+
+import org.bytefish.videofacerecognition.app.task.AsyncTaskResult;
+import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionCallback;
+import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionTask;
+import org.bytefish.videofacerecognition.app.util.Util;
+import org.bytefish.videofacerecognition.app.view.FaceOverlayView;
 
 
 public class CameraActivity extends Activity
@@ -96,6 +88,17 @@ public class CameraActivity extends Activity
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public void OnCompleted(AsyncTaskResult<String> result) {
+        if(result.failed()) {
+            Log.e(TAG, "Face recognition has failed!", result.getException());
+            // TODO Inform the User
+            return;
+        }
+        // Show the Recognition result:
+
     }
 
     /**
@@ -205,6 +208,7 @@ public class CameraActivity extends Activity
                         // to the resource we are going to work on. This task should be a background
                         // task, in case it takes too long.
 
+
                     } finally {
                         lock.unlock();
                     }
@@ -262,6 +266,23 @@ public class CameraActivity extends Activity
         public void onPictureTaken(byte[] data, Camera camera) {
 
             camera.startPreview();
+        }
+    };
+
+    FaceRecognitionCallback faceRecognitionCallback = new FaceRecognitionCallback() {
+        @Override
+        public void OnCompleted(String result) {
+
+        }
+
+        @Override
+        public void OnFailed(Exception exception) {
+
+        }
+
+        @Override
+        public void OnCanceled() {
+
         }
     };
 }

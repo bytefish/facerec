@@ -22,13 +22,15 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.bytefish.videofacerecognition.app;
+package org.bytefish.videofacerecognition.app.util;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.util.Base64;
@@ -85,6 +87,41 @@ public class Util {
         bitmap.compress(format, quality, full_stream);
         byte[] full_bytes = full_stream.toByteArray();
         return Base64.encodeToString(full_bytes, Base64.DEFAULT);
+    }
+
+    /**
+     * Extracts a Rectangle given by a Camera.Face from a given Bitmap.
+     *
+     * @param bitmap Input Source Image
+     * @param face Face Detection result
+     * @return Cropped face
+     */
+    public static Bitmap extract(Bitmap bitmap, Camera.Face face) {
+        // The coordinates of the Camera.Face are given in a range of (-1000,1000),
+        // so let's scale them to the Bitmap coordinate system:
+        Matrix matrix = new Matrix();
+        matrix.postScale(bitmap.getWidth() / 2000f, bitmap.getHeight() / 2000f);
+        matrix.postTranslate(bitmap.getWidth() / 2f, bitmap.getHeight() / 2f);
+        // Now translate the Camera.Face coordinates into the
+        // Bitmap coordinate system:
+        RectF scaledRect = new RectF(face.rect);
+        matrix.mapRect(scaledRect);
+        // And make a Rect again, we need it later. It's the source we want
+        // to crop from:
+        Rect srcRect = new Rect((int) scaledRect.left, (int) scaledRect.top, (int)scaledRect.right, (int) scaledRect.bottom );
+        // This is the destination rectangle, we want it to have the width
+        // and height of the scaled rect:
+        int width = (int) scaledRect.width();
+        int height = (int) scaledRect.height();
+        Rect dstRect = new Rect(0, 0, width, height);
+        // This is the output image, which is going to store the Camera.Face:
+        Bitmap croppedImage = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        // And finally crop the image, which is a simple drawBitmap call on the
+        // Canvas:
+        Canvas canvas = new Canvas(croppedImage);
+        canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+
+        return croppedImage;
     }
 
     /**
@@ -147,5 +184,4 @@ public class Util {
         }
         return orientationHistory;
     }
-
 }
