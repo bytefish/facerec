@@ -54,6 +54,8 @@ import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionTask;
 import org.bytefish.videofacerecognition.app.util.Util;
 import org.bytefish.videofacerecognition.app.view.FaceOverlayView;
 
+import javax.xml.datatype.Duration;
+
 
 public class CameraActivity extends Activity
         implements SurfaceHolder.Callback, Camera.PreviewCallback {
@@ -148,7 +150,7 @@ public class CameraActivity extends Activity
         mOrientationEventListener = new SimpleOrientationEventListener(this);
         mOrientationEventListener.enable();
         // Create a new FaceRecService Client:
-        mFaceRecServiceClient = new FaceRecServiceClient("http://localhost:5050", null, null);
+        mFaceRecServiceClient = new FaceRecServiceClient("http://192.168.178.21:5000", null, null);
     }
 
     @Override
@@ -169,8 +171,6 @@ public class CameraActivity extends Activity
     @Override
     protected void onResume() {
         mOrientationEventListener.enable();
-        mCamera.startPreview();
-
         super.onResume();
     }
 
@@ -200,7 +200,7 @@ public class CameraActivity extends Activity
             {
                 Face face = mFaceView.touchIntersectsFace(x,y);
                 if(face != null) {
-                    Toast.makeText(getApplicationContext(), "(" + x + "," + y +")", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getApplicationContext(), "(" + x + "," + y +")", Toast.LENGTH_LONG).show();
                     try {
                         lock.lock();
                         // Process the buffered frame! This is safe, because we have locked the access
@@ -269,18 +269,19 @@ public class CameraActivity extends Activity
         @Override
         public void OnCompleted(FaceRecognitionResult result) {
             Log.i(TAG, "Face Recognition completed (uuid=" + result.getRequestIdentifier() + ", result=" + result.getResult());
-
-
+            Toast.makeText(getApplicationContext(), "Name: " + result.getResult(), Toast.LENGTH_LONG).show();
         }
 
         @Override
         public void OnFailed(Exception exception) {
             Log.e(TAG, "Face recognition has failed!", exception);
+            Toast.makeText(getApplicationContext(), "Face Recognition failed.", Toast.LENGTH_LONG).show();
         }
 
         @Override
         public void OnCanceled() {
             Log.e(TAG, "Face recognition was canceled!");
+            Toast.makeText(getApplicationContext(), "Face Recognition failed.", Toast.LENGTH_LONG).show();
         }
     };
 }

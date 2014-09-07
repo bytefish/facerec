@@ -67,15 +67,17 @@ public class BaseServiceClient {
         mHost = removeTrailingSlash(host);
 
         mHttpClient = new DefaultHttpClient();
+
         setCredentials(username, password);
 
         // Let's add some logging:
         mHttpClient.addRequestInterceptor(new LoggingRequestInterceptor());
         mHttpClient.addResponseInterceptor(new LoggingResponseInterceptor());
+
     }
 
     private void setCredentials(String username, String password) {
-        if(!username.isEmpty() && !password.isEmpty()) {
+        if(username != null && password != null) {
             mHttpClient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));
         }
     }
@@ -95,7 +97,7 @@ public class BaseServiceClient {
     }
 
     private String getFullUrl(final String relativePath) {
-         return mHost + removeLeadingSlash(relativePath);
+         return mHost + "/" + removeLeadingSlash(relativePath);
     }
 
     protected JSONObject post(String relativePath, JSONObject jsonObject)
@@ -136,8 +138,8 @@ public class BaseServiceClient {
             int httpStatusCode = httpResponse.getStatusLine().getStatusCode();
             if(httpStatusCode != HttpStatus.SC_OK) {
                 checkHttpStatus(httpMethod, httpStatusCode);
-                resultJson = Common.getJsonFromResponse(httpResponse);
             }
+            resultJson = Common.getJsonFromResponse(httpResponse);
         } catch(IOException e) {
             Log.e(TAG, "Unable to execute HTTP Method.", e);
         } catch (JSONException e) {

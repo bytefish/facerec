@@ -49,6 +49,13 @@ public class Common {
 
     public static final String CONTENT_TYPE_JSON = "application/json";
 
+    public static boolean isNullOrWhiteSpace(String str) {
+        if(str == null || str.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Turns the response of an HTTP request into a JSON Object.
      *
