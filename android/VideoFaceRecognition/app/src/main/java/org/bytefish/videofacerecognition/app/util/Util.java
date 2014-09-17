@@ -134,11 +134,19 @@ public class Util {
      * @return
      */
     public static Bitmap convertYuvByteArrayToBitmap(byte[] data, Camera camera) {
-        Camera.Parameters parameters = camera.getParameters();
-        Camera.Size size = parameters.getPreviewSize();
-        YuvImage image = new YuvImage(data, parameters.getPreviewFormat(), size.width, size.height, null);
+        Bitmap result = null;
+        if(camera != null) {
+            Camera.Parameters parameters = camera.getParameters();
+            Camera.Size size = parameters.getPreviewSize();
+            result = convertYuvByteArrayToBitmap(data, parameters, size);
+        }
+        return result;
+    }
+
+    private static Bitmap convertYuvByteArrayToBitmap(byte[] data, Camera.Parameters cameraParameters, Camera.Size cameraSize) {
+        YuvImage image = new YuvImage(data, cameraParameters.getPreviewFormat(), cameraSize.width, cameraSize.height, null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        image.compressToJpeg(new Rect(0, 0, size.width, size.height), 100, out);
+        image.compressToJpeg(new Rect(0, 0, cameraSize.width, cameraSize.height), 100, out);
         byte[] imageBytes = out.toByteArray();
         return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
     }

@@ -31,29 +31,20 @@ import org.bytefish.videofacerecognition.app.util.Util;
 
 import java.util.UUID;
 
-/**
- * This is the data structure used for input and output
- * of a FaceRecognition AsyncTask.
- */
-public abstract class FaceRecognitionRequest {
+public class FaceRecognitionRequestYuv extends FaceRecognitionRequest {
 
-    private UUID mRequestIdentifier;
-    private Camera.Face mFace;
+    private byte[] mYuvData;
+    private Camera mCamera;
 
-    public FaceRecognitionRequest(UUID requestIdentifier, Camera.Face face) {
-        mRequestIdentifier = requestIdentifier;
-        mFace = face;
+    public FaceRecognitionRequestYuv(UUID requestIdentifier, byte[] yuvData, Camera camera, Camera.Face face) {
+        super(requestIdentifier, face);
+        mCamera = camera;
+        mYuvData = yuvData;
+    }
+    
+    @Override
+    public Bitmap getBitmap() {
+        return Util.convertYuvByteArrayToBitmap(mYuvData, mCamera);
     }
 
-    public abstract Bitmap getBitmap();
-
-    public UUID getmRequestIdentifier() {
-        return mRequestIdentifier;
-    }
-
-    public Camera.Face getFace() {
-        return mFace;
-    }
 }
-
-

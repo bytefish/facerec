@@ -27,33 +27,20 @@ package org.bytefish.videofacerecognition.app.webservice;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 
-import org.bytefish.videofacerecognition.app.util.Util;
-
 import java.util.UUID;
 
-/**
- * This is the data structure used for input and output
- * of a FaceRecognition AsyncTask.
- */
-public abstract class FaceRecognitionRequest {
+public class FaceRecognitionRequestBitmap extends FaceRecognitionRequest {
 
-    private UUID mRequestIdentifier;
-    private Camera.Face mFace;
+    private Bitmap mBitmap;
 
-    public FaceRecognitionRequest(UUID requestIdentifier, Camera.Face face) {
-        mRequestIdentifier = requestIdentifier;
-        mFace = face;
+    public FaceRecognitionRequestBitmap(UUID requestIdentifier, Bitmap bitmap, Camera.Face face) {
+        super(requestIdentifier, face);
+        mBitmap = bitmap;
+    }
+    
+    @Override
+    public Bitmap getBitmap() {
+        return mBitmap;
     }
 
-    public abstract Bitmap getBitmap();
-
-    public UUID getmRequestIdentifier() {
-        return mRequestIdentifier;
-    }
-
-    public Camera.Face getFace() {
-        return mFace;
-    }
 }
-
-

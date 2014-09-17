@@ -30,10 +30,13 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.bytefish.videofacerecognition.api.common.Common;
 import org.bytefish.videofacerecognition.api.exceptions.AccessDeniedException;
 import org.bytefish.videofacerecognition.api.exceptions.InternalServerErrorException;
@@ -47,6 +50,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is a Base class for a simple JSON Request/Response scheme.
@@ -69,11 +74,13 @@ public class BaseServiceClient {
         mHttpClient = new DefaultHttpClient();
 
         setCredentials(username, password);
+        setInterceptors();
+    }
 
+    public void setInterceptors() {
         // Let's add some logging:
         mHttpClient.addRequestInterceptor(new LoggingRequestInterceptor());
         mHttpClient.addResponseInterceptor(new LoggingResponseInterceptor());
-
     }
 
     private void setCredentials(String username, String password) {
@@ -100,6 +107,43 @@ public class BaseServiceClient {
          return mHost + "/" + removeLeadingSlash(relativePath);
     }
 
+    private String getFullUrl(final String relativePath, final List<BasicNameValuePair> parameters) {
+        String destUrl = getFullUrl(relativePath);
+        String paramString = URLEncodedUtils.format(parameters, "utf-8");
+        return destUrl + paramString;
+    }
+
+    /**
+     * Get a JSON object from the given API method.
+     *
+     * @param relativePath API method to invoke.
+     * @param parameters QueryParameters to add to the request.
+     * @return JSON result
+     *
+     * @throws AccessDeniedException
+     * @throws ResourceNotFoundException
+     * @throws InternalServerErrorException
+     * @throws RestClientException
+     */
+    protected JSONObject get(String relativePath, List<BasicNameValuePair> parameters)
+            throws AccessDeniedException, ResourceNotFoundException, InternalServerErrorException, RestClientException {
+        String destUrl = getFullUrl(relativePath, parameters);
+        HttpGet httpGet = new HttpGet(destUrl);
+        return executeHttpMethod(httpGet);
+    }
+
+    /**
+     * Post a JSON object to the given API method.
+     *
+     * @param relativePath API method to request.
+     * @param jsonObject JSON data to send to the Webservice.
+     * @return JSON result
+     *
+     * @throws AccessDeniedException
+     * @throws ResourceNotFoundException
+     * @throws InternalServerErrorException
+     * @throws RestClientException
+     */
     protected JSONObject post(String relativePath, JSONObject jsonObject)
             throws AccessDeniedException, ResourceNotFoundException, InternalServerErrorException, RestClientException {
         String destUrl = getFullUrl(relativePath);
@@ -130,7 +174,7 @@ public class BaseServiceClient {
      * @throws InternalServerErrorException
      */
     private JSONObject executeHttpMethod(final HttpRequestBase httpMethod)
-            throws AccessDeniedException, ResourceNotFoundException, InternalServerErrorException {
+            throws AccessDeniedException, ResourceNotFoundException, InternalServerErrorException, RestClientException {
 
         JSONObject resultJson = null;
         try {
@@ -142,8 +186,10 @@ public class BaseServiceClient {
             resultJson = Common.getJsonFromResponse(httpResponse);
         } catch(IOException e) {
             Log.e(TAG, "Unable to execute HTTP Method.", e);
+            throw new RestClientException("Unable executing HTTP Request.", e);
         } catch (JSONException e) {
             Log.e(TAG, "There was an error decoding the JSON Object.", e);
+            throw new RestClientException("JSON decoding failed.", e);
         } finally {
             httpMethod.abort();
         }

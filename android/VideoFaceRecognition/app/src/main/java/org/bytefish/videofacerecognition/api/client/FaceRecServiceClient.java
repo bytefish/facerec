@@ -73,7 +73,7 @@ public class FaceRecServiceClient {
         } catch(JSONException e) {
             throw new RestClientException("Unable to parse JSON data", e);
         }
-        JSONObject responseObject = mBaseServiceClient.post(API_RECOGNIZE, requestObject);
+        JSONObject responseObject = post(API_RECOGNIZE, requestObject);
 
         return responseObject.optString("name");
     }
@@ -93,6 +93,17 @@ public class FaceRecServiceClient {
         return requestObject;
     }
 
+    /**
+     *
+     * @param relativePath
+     * @param jsonObject
+     * @return
+     * @throws AccessDeniedException
+     * @throws ResourceNotFoundException
+     * @throws InternalServerErrorException
+     * @throws RestClientException
+     * @throws WebAppException
+     */
     private JSONObject post(String relativePath, JSONObject jsonObject) throws AccessDeniedException, ResourceNotFoundException, InternalServerErrorException, RestClientException, WebAppException {
         JSONObject resultJson = mBaseServiceClient.post(relativePath, jsonObject);
         if(resultJson != null) {

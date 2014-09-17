@@ -53,7 +53,12 @@ public class Common {
         if(str == null || str.isEmpty()) {
             return true;
         }
-        return false;
+        for(char c : str.toCharArray()) {
+            if(!Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

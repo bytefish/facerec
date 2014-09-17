@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -37,7 +38,11 @@ import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
@@ -49,6 +54,7 @@ import org.bytefish.videofacerecognition.api.client.FaceRecServiceClient;
 import org.bytefish.videofacerecognition.app.task.AsyncTaskResult;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionCallback;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionRequest;
+import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionRequestYuv;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionResult;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionTask;
 import org.bytefish.videofacerecognition.app.util.Util;
@@ -85,6 +91,56 @@ public class CameraActivity extends Activity
 
     // FaceRecognition Service:
     FaceRecServiceClient mFaceRecServiceClient;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        initActionBar();
+
+        mView = new SurfaceView(this);
+
+        setContentView(mView);
+        // Now create the OverlayView:
+        mFaceView = new FaceOverlayView(this);
+        addContentView(mFaceView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        // Create and Start the OrientationListener:
+        mOrientationEventListener = new SimpleOrientationEventListener(this);
+        mOrientationEventListener.enable();
+        // Create a new FaceRecService Client:
+        mFaceRecServiceClient = new FaceRecServiceClient("http://192.168.178.21:5000", null, null);
+    }
+
+    private void initActionBar() {
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(false); // disable the button
+            actionBar.setDisplayHomeAsUpEnabled(false); // remove the left caret
+            actionBar.setDisplayShowHomeEnabled(false); // remove the icon
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Log.i(TAG, "Settings selected");
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
@@ -137,21 +193,6 @@ public class CameraActivity extends Activity
         }
     };
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mView = new SurfaceView(this);
-
-        setContentView(mView);
-        // Now create the OverlayView:
-        mFaceView = new FaceOverlayView(this);
-        addContentView(mFaceView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        // Create and Start the OrientationListener:
-        mOrientationEventListener = new SimpleOrientationEventListener(this);
-        mOrientationEventListener.enable();
-        // Create a new FaceRecService Client:
-        mFaceRecServiceClient = new FaceRecServiceClient("http://192.168.178.21:5000", null, null);
-    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -163,8 +204,9 @@ public class CameraActivity extends Activity
     @Override
     protected void onPause() {
         mOrientationEventListener.disable();
-        mCamera.stopPreview();
-
+        if(mCamera != null) {
+            mCamera.stopPreview();
+        }
         super.onPause();
     }
 
@@ -207,9 +249,8 @@ public class CameraActivity extends Activity
                         // to the resource we are going to work on. This task should be a background
                         // task, in case it takes too long.
                         UUID requestIdentifier = UUID.randomUUID();
-                        Bitmap bitmap = Util.convertYuvByteArrayToBitmap(mPreviewFrameBuffer, mCamera);
                         // Create the Request Object:
-                        FaceRecognitionRequest request = new FaceRecognitionRequest(requestIdentifier, bitmap, face);
+                        FaceRecognitionRequest request = new FaceRecognitionRequestYuv(requestIdentifier, mPreviewFrameBuffer.clone(), mCamera, face);
                         // Execute a FaceRecognitionRequest:
                         new FaceRecognitionTask(faceRecognitionCallback, mFaceRecServiceClient).execute(request);
                     } finally {
