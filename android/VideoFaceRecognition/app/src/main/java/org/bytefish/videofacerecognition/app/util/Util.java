@@ -89,6 +89,13 @@ public class Util {
         return Base64.encodeToString(full_bytes, Base64.DEFAULT);
     }
 
+    public static Bitmap rotateBitmap(Bitmap bitmap, int rotation) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotation);
+        // create a new bitmap from the original using the matrix to transform the result
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    }
+
     /**
      * Extracts a Rectangle given by a Camera.Face from a given Bitmap.
      *
@@ -96,12 +103,14 @@ public class Util {
      * @param face Face Detection result
      * @return Cropped face
      */
-    public static Bitmap extract(Bitmap bitmap, Camera.Face face) {
+    public static Bitmap extract(Bitmap bitmap, Camera.Face face, int rotation) {
         // The coordinates of the Camera.Face are given in a range of (-1000,1000),
         // so let's scale them to the Bitmap coordinate system:
         Matrix matrix = new Matrix();
+
         matrix.postScale(bitmap.getWidth() / 2000f, bitmap.getHeight() / 2000f);
         matrix.postTranslate(bitmap.getWidth() / 2f, bitmap.getHeight() / 2f);
+
         // Now translate the Camera.Face coordinates into the
         // Bitmap coordinate system:
         RectF scaledRect = new RectF(face.rect);
@@ -121,7 +130,7 @@ public class Util {
         Canvas canvas = new Canvas(croppedImage);
         canvas.drawBitmap(bitmap, srcRect, dstRect, null);
 
-        return croppedImage;
+        return rotateBitmap(croppedImage, rotation);
     }
 
     /**

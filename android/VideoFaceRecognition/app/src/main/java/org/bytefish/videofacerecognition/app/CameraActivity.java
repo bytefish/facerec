@@ -279,7 +279,7 @@ public class CameraActivity extends Activity
                         // task, in case it takes too long.
                         UUID requestIdentifier = UUID.randomUUID();
                         // Create the Request Object:
-                        FaceRecognitionRequest request = new FaceRecognitionRequestYuv(requestIdentifier, mPreviewFrameBuffer.clone(), mCamera, face);
+                        FaceRecognitionRequest request = new FaceRecognitionRequestYuv(requestIdentifier, mPreviewFrameBuffer.clone(), mCamera, face, mDisplayOrientation);
                         // Execute a FaceRecognitionRequest:
                         new FaceRecognitionTask(faceRecognitionCallback, mFaceRecServiceClient).execute(request);
                     } finally {

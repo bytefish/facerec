@@ -39,10 +39,12 @@ public abstract class FaceRecognitionRequest {
 
     private UUID mRequestIdentifier;
     private Camera.Face mFace;
+    private int mRotation;
 
-    public FaceRecognitionRequest(UUID requestIdentifier, Camera.Face face) {
+    public FaceRecognitionRequest(UUID requestIdentifier, Camera.Face face, int rotation) {
         mRequestIdentifier = requestIdentifier;
         mFace = face;
+        mRotation = rotation;
     }
 
     public abstract Bitmap getBitmap();
@@ -54,6 +56,8 @@ public abstract class FaceRecognitionRequest {
     public Camera.Face getFace() {
         return mFace;
     }
+
+    public int getRotation() { return mRotation; }
 }
 
 

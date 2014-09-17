@@ -78,8 +78,9 @@ public class FaceRecognitionTask extends AsyncTask<FaceRecognitionRequest, Void,
     private Bitmap extractFace(FaceRecognitionRequest recognitionInputData) {
         Bitmap bitmap = recognitionInputData.getBitmap();
         Camera.Face face = recognitionInputData.getFace();
+        int rotation = recognitionInputData.getRotation();
 
-        return Util.extract(bitmap, face);
+        return Util.extract(bitmap, face, rotation);
     }
 
     @Override

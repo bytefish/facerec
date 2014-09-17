@@ -36,8 +36,8 @@ public class FaceRecognitionRequestYuv extends FaceRecognitionRequest {
     private byte[] mYuvData;
     private Camera mCamera;
 
-    public FaceRecognitionRequestYuv(UUID requestIdentifier, byte[] yuvData, Camera camera, Camera.Face face) {
-        super(requestIdentifier, face);
+    public FaceRecognitionRequestYuv(UUID requestIdentifier, byte[] yuvData, Camera camera, Camera.Face face, int rotation) {
+        super(requestIdentifier, face, rotation);
         mCamera = camera;
         mYuvData = yuvData;
     }

@@ -33,8 +33,8 @@ public class FaceRecognitionRequestBitmap extends FaceRecognitionRequest {
 
     private Bitmap mBitmap;
 
-    public FaceRecognitionRequestBitmap(UUID requestIdentifier, Bitmap bitmap, Camera.Face face) {
-        super(requestIdentifier, face);
+    public FaceRecognitionRequestBitmap(UUID requestIdentifier, Bitmap bitmap, Camera.Face face, int rotation) {
+        super(requestIdentifier, face, rotation);
         mBitmap = bitmap;
     }
     
