@@ -4,12 +4,15 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowActionModeOverlay">true</item>
-        <item name="android:actionBarStyle">@style/MyTheme.ActionBar</item>
+        <item name="android:actionBarStyle">@style/CaptureTheme.ActionBar</item>
     </style>
 
-    <style name="MyTheme.ActionBar" parent="android:Widget.Holo.ActionBar">
+    <style name="CaptureTheme.ActionBar" parent="android:Widget.Holo.ActionBar">
         <item name="android:background">#bb000000</item>
         <item name="android:backgroundStacked">@android:color/transparent</item>
+    </style>
+
+    <style name="SettingsTheme" parent="android:Theme.Holo.Light.NoActionBar">
     </style>
 
 </resources>

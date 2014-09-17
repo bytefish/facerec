@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/server_preferences">
+
+        <EditTextPreference
+            android:key="key_server_address"
+            android:title="@string/title_server_address"
+            android:summary="@string/summary_server_address"
+            android:dialogTitle="@string/dialog_title_server_address" />
+
+        <CheckBoxPreference
+            android:key="key_enable_https"
+            android:title="@string/title_enable_https"
+            android:summary="@string/summary_enable_https"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

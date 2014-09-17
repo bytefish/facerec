@@ -2,7 +2,16 @@
 <resources>
 
     <string name="app_name">VideoFaceRecognition</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <string name="server_preferences">Server</string>
+
+    <string name="title_server_address">Server Address</string>
+    <string name="summary_server_address">Web service address</string>
+    <string name="dialog_title_server_address">Server Address</string>
+    <string name="defaultValue_server_address">http://localhost</string>
+
+    <string name="title_enable_https">Enable HTTPS</string>
+    <string name="summary_enable_https">Use HTTPS for secure communication</string>
 
 </resources>

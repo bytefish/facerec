@@ -32,12 +32,15 @@ import java.util.concurrent.locks.ReentrantLock;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.Face;
 import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -51,6 +54,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
 
 import org.bytefish.videofacerecognition.api.client.FaceRecServiceClient;
+import org.bytefish.videofacerecognition.app.common.Constants;
 import org.bytefish.videofacerecognition.app.task.AsyncTaskResult;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionCallback;
 import org.bytefish.videofacerecognition.app.webservice.FaceRecognitionRequest;
@@ -95,11 +99,12 @@ public class CameraActivity extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        // Initialize the app:
         initActionBar();
-
+        initSettings();
+        // SurfaceView holding the Camera Preview:
         mView = new SurfaceView(this);
-
+        // Set the Camera Preview as Content:
         setContentView(mView);
         // Now create the OverlayView:
         mFaceView = new FaceOverlayView(this);
@@ -107,8 +112,18 @@ public class CameraActivity extends Activity
         // Create and Start the OrientationListener:
         mOrientationEventListener = new SimpleOrientationEventListener(this);
         mOrientationEventListener.enable();
+    }
+
+    private void initSettings() {
+        Log.i(TAG, "Updating settings.");
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        String server_address = sharedPrefs.getString("key_server_address", "http://192.168.178.21:5000");
+        boolean server_enable_https = sharedPrefs.getBoolean("key_enable_https", false);
+
         // Create a new FaceRecService Client:
-        mFaceRecServiceClient = new FaceRecServiceClient("http://192.168.178.21:5000", null, null);
+        mFaceRecServiceClient = new FaceRecServiceClient(server_address, null, null);
     }
 
     private void initActionBar() {
@@ -128,10 +143,21 @@ public class CameraActivity extends Activity
         switch (item.getItemId()) {
             case R.id.action_settings:
                 Log.i(TAG, "Settings selected");
+                Intent intent = new Intent(CameraActivity.this, SettingsActivity.class);
+                startActivityForResult(intent, Constants.REQUEST_CODE_SETTINGS);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == Constants.REQUEST_CODE_SETTINGS) {
+            initSettings();
+        }
+
     }
 
     @Override
@@ -175,7 +201,10 @@ public class CameraActivity extends Activity
                     + Util.getDisplayRotation(CameraActivity.this);
             if (mOrientationCompensation != orientationCompensation) {
                 mOrientationCompensation = orientationCompensation;
-                mFaceView.setOrientation(mOrientationCompensation);
+                // Update the Overlay with the current orientation:
+                if(mFaceView != null) {
+                    mFaceView.setOrientation(mOrientationCompensation);
+                }
             }
         }
     }
