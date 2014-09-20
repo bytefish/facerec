@@ -131,4 +131,12 @@ public class FaceRecServiceClient {
         }
     }
 
+    public void setConnectionTimeout(int seconds) {
+        int milliseconds = seconds * 1000;
+        mBaseServiceClient.setConnectionTimeout(milliseconds);
+    }
+
+    public void setHttps(boolean enableHttps) {
+        mBaseServiceClient.setHttps(enableHttps);
+    }
 }

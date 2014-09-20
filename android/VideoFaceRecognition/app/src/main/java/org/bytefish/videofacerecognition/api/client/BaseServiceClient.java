@@ -37,6 +37,9 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.bytefish.videofacerecognition.api.common.Common;
 import org.bytefish.videofacerecognition.api.exceptions.AccessDeniedException;
 import org.bytefish.videofacerecognition.api.exceptions.InternalServerErrorException;
@@ -222,5 +225,29 @@ public class BaseServiceClient {
             Log.e(TAG, "Internal Server Error.");
             throw new InternalServerErrorException(requestedPath);
         }
+    }
+
+    /**
+     * Sets the timeout to wait for responses.
+     *
+     * @param milliseconds
+     */
+    public void setConnectionTimeout(int milliseconds) {
+        HttpParams httpParams = mHttpClient.getParams();
+        if(httpParams == null) {
+            httpParams = new BasicHttpParams();
+        }
+        HttpConnectionParams.setConnectionTimeout(httpParams, milliseconds);
+        HttpConnectionParams.setSoTimeout(httpParams, milliseconds);
+        mHttpClient.setParams(httpParams);
+    }
+
+    /**
+     * Sets this instance to use HTTPS or not.
+     *
+     * @param enableHttps
+     */
+    public void setHttps(boolean enableHttps) {
+        Log.w(TAG, "HTTPS encryption is not implemented yet.");
     }
 }
