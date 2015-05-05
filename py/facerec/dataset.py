@@ -47,15 +47,15 @@ class NumericDataSet(object):
         self.str_to_num_mapping = {}
         self.num_to_str_mapping = {}
 
-    def add(self, identifier, image):
+    def add(self, label, image):
         try:
-            self.data[identifier].append(image)
+            self.data[label].append(image)
         except:
-            self.data[identifier] = [image]
+            self.data[label] = [image]
             numerical_identifier = len(self.str_to_num_mapping)
             # Store in mapping tables:
-            self.str_to_num_mapping[identifier] = numerical_identifier
-            self.num_to_str_mapping[numerical_identifier] = identifier
+            self.str_to_num_mapping[label] = numerical_identifier
+            self.num_to_str_mapping[numerical_identifier] = label
 
     def get(self):
         X = []
@@ -66,8 +66,8 @@ class NumericDataSet(object):
                 y.append(num)
         return X,y
 
-    def resolve_by_str(self, identifier):
-        return self.str_num_mapping[identifier]
+    def resolve_by_str(self, label):
+        return self.str_to_num_mapping[label]
 
     def resolve_by_num(self, numerical_identifier):
         return self.num_to_str_mapping[numerical_identifier]
