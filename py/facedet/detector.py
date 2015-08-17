@@ -72,7 +72,7 @@ class CascadedDetector(Detector):
 		src = cv2.equalizeHist(src)
 		rects = self.cascade.detectMultiScale(src, scaleFactor=self.scaleFactor, minNeighbors=self.minNeighbors, minSize=self.minSize)
 		if len(rects) == 0:
-			return []
+			return np.ndarray((0,))
 		rects[:,2:] += rects[:,:2]
 		return rects
 
