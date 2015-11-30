@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function SH = spatialhistogram(L, m, n, numBins)
 	%% Calculate the spatial histogram of a LBP image divided into [m x n] cells.
 	%% 

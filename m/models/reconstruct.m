@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function X = reconstruct(W, Y, mu)
     %%  Reonstruct Y from X using W, pass mu to adjust mean.
     %%

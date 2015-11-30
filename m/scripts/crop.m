@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function crop(filename, eye0, eye1, top, left, dsize)
 	%% Rotates an image around the eyes, resizes to destination size.
 	%%

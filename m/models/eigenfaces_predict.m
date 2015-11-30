@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function C = eigenfaces_predict(model, Xtest, k)
 	%%	Predicts nearest neighbor for given Eigenfaces model.
 	%%

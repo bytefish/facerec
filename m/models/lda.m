@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function model = lda(X, y, num_components)
   %%  Performs a Linear Discriminant Analysis and returns the 
   %%  num_components components sorted descending by their 

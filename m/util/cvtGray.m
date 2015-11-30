@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function G = cvtGray(I, width, height)
 	%% Returns a greyscaled representation G of I.
 	%%

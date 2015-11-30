@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function [X y g group_names subject_names width height] = read_groups(path)
 	%% Read groups of images from a given path and return the Imagematrix X.
 	%%

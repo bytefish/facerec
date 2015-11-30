@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function gallery(path, filename, _rows, _cols)
 	%% Create a gallery from a given image directory. 
 	%%

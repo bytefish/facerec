@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function validation_result = LeaveOneClassOutCV(X, y, g, fun_train, fun_predict, print_debug)
 	%% Performs a Leave-One-Out-Cross validation.
 	%%

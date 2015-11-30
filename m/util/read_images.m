@@ -1,3 +1,6 @@
+% Copyright (c) Philipp Wagner. All rights reserved.
+% Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 function [X y width height names] = read_images(path)
 	%% Read images from a given path and return the Imagematrix X.
 	%%
