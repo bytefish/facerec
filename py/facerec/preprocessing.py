@@ -1,3 +1,6 @@
+# Copyright (c) Philipp Wagner. All rights reserved.
+# Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 import numpy as np
 from facerec.feature import AbstractFeature
 from facerec.util import asColumnMatrix

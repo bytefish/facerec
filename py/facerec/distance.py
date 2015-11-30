@@ -1,6 +1,7 @@
-# Implements various distance metrics (because my old scipy.spatial.distance module is horrible)
-import numpy as np
+# Copyright (c) Philipp Wagner. All rights reserved.
+# Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
+import numpy as np
 
 class AbstractDistance(object):
     def __init__(self, name):

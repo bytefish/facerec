@@ -1,3 +1,8 @@
+#!/usr/bin/python
+#
+# Copyright (c) Philipp Wagner. All rights reserved.
+# Licensed under the BSD license. See LICENSE file in the project root for full license information.
+
 import sys
 # append facerec to module search path
 sys.path.append("../..")
