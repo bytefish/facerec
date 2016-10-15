@@ -90,7 +90,7 @@ class NearestNeighbor(AbstractClassifier):
         # Make a histogram of them:
         hist = dict((key,val) for key, val in enumerate(np.bincount(sorted_y)) if val)
         # And get the bin with the maximum frequency:
-        predicted_label = max(hist.iteritems(), key=op.itemgetter(1))[0]
+        predicted_label = max(iter(hist.items()), key=op.itemgetter(1))[0]
         # A classifier should output a list with the label as first item and
         # generic data behind. The k-nearest neighbor classifier outputs the 
         # distance of the k first items. So imagine you have a 1-NN and you
@@ -112,7 +112,7 @@ except:
     logger.debug("Import Error: libsvm bindings not available.")
 
 import sys
-from StringIO import StringIO
+from io import StringIO
 bkp_stdout=sys.stdout
 
 class SVM(AbstractClassifier):

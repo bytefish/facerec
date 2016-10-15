@@ -6,6 +6,15 @@
 
 import sys, os
 sys.path.append("../..")
+
+# Import Matplotlib:
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.cm as cm
+
+# For Python2 backward comability:
+from builtins import range
+
 # import facerec modules
 from facerec.feature import Fisherfaces, SpatialHistogram, Identity
 from facerec.distance import EuclideanDistance, ChiSquareDistance
@@ -22,10 +31,8 @@ try:
     from PIL import Image
 except ImportError:
     import Image
-import matplotlib.cm as cm
 import logging
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 from facerec.lbp import LPQ, ExtendedLBP
 
 
@@ -56,10 +63,11 @@ def read_images(path, sz=None):
                         im = im.resize(sz, Image.ANTIALIAS)
                     X.append(np.asarray(im, dtype=np.uint8))
                     y.append(c)
-                except IOError, (errno, strerror):
-                    print "I/O error({0}): {1}".format(errno, strerror)
+                except IOError as e:
+                    print("I/O error: {0}".format(e))
+                    raise e
                 except:
-                    print "Unexpected error:", sys.exc_info()[0]
+                    print("Unexpected error: {0}".format(sys.exc_info()[0]))
                     raise
             c = c+1
     return [X,y]
@@ -72,7 +80,7 @@ if __name__ == "__main__":
     # the tutorial coming with this source code on how to prepare
     # your image data:
     if len(sys.argv) < 2:
-        print "USAGE: facerec_demo.py </path/to/images>"
+        print("USAGE: facerec_demo.py </path/to/images>")
         sys.exit()
     # Now read in the image data. This must be a valid path!
     [X,y] = read_images(sys.argv[1])
@@ -98,7 +106,7 @@ if __name__ == "__main__":
     # Then turn the first (at most) 16 eigenvectors into grayscale
     # images (note: eigenvectors are stored by column!)
     E = []
-    for i in xrange(min(model.feature.eigenvectors.shape[1], 16)):
+    for i in range(min(model.feature.eigenvectors.shape[1], 16)):
         e = model.feature.eigenvectors[:,i].reshape(X[0].shape)
         E.append(minmax_normalize(e,0,255, dtype=np.uint8))
     # Plot them and store the plot to "python_fisherfaces_fisherfaces.pdf"

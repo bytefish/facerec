@@ -39,4 +39,4 @@ class NumericDataSet(object):
         return len(self.data)
 
     def __repr__(self):
-        print "NumericDataSet"
+        print("NumericDataSet")

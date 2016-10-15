@@ -17,6 +17,9 @@ except ImportError:
     import Image
 import math as math
 
+# For Python2 backward comability:
+from builtins import range
+
 
 def create_font(fontname='Tahoma', fontsize=10):
     return { 'fontname': fontname, 'fontsize':fontsize }
@@ -60,7 +63,7 @@ def subplot(title, images, rows, cols, sptitle="subplot", sptitles=[], colormap=
     fig = plt.figure()
     # main title
     fig.text(.5, .95, title, horizontalalignment='center') 
-    for i in xrange(len(images)):
+    for i in range(len(images)):
         ax0 = fig.add_subplot(rows,cols,(i+1))
         plt.setp(ax0.get_xticklabels(), visible=False)
         plt.setp(ax0.get_yticklabels(), visible=False)
@@ -73,18 +76,3 @@ def subplot(title, images, rows, cols, sptitle="subplot", sptitles=[], colormap=
         plt.show()
     else:
         fig.savefig(filename)
-
-
-# using plt plot:
-#filename="/home/philipp/facerec/at_database_vs_accuracy_xy.png"
-#t = np.arange(2., 10., 1.)
-#fig = plt.figure()
-#plt.plot(t, r0, 'k--', t, r1, 'k')
-#plt.legend(("Eigenfaces", "Fisherfaces"), 'lower right', shadow=True, fancybox=True)
-#plt.ylim(0,1)
-#plt.ylabel('Recognition Rate')
-#plt.xlabel('Database Size (Images per Person)')
-#fig.savefig(filename, format="png", transparent=False)
-#plt.show()
-
-

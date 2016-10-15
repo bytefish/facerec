@@ -12,6 +12,9 @@ import logging
 from facerec.model import PredictableModel
 from facerec.classifier import AbstractClassifier
 
+# For Python2 backward comability:
+from builtins import range
+
 # TODO The evaluation of a model should be completely moved to the generic ValidationStrategy. The specific Validation 
 #       implementations should only care about partition the data, which would make a lot sense. Currently it is not 
 #       possible to calculate the true_negatives and false_negatives with the way the predicitions are generated and 
@@ -36,7 +39,7 @@ def shuffle(X, y):
 
             Shuffled input arrays.
     """
-    idx = np.argsort([random.random() for i in xrange(len(y))])
+    idx = np.argsort([random.random() for i in range(len(y))])
     y = np.asarray(y)
     X = [X[i] for i in idx]
     y = y[idx]
@@ -131,9 +134,9 @@ class ValidationStrategy(object):
         
     
     def print_results(self):
-        print self.model
+        print(self.model)
         for validation_result in self.validation_results:
-            print validation_result
+            print(validation_result)
 
     def __repr__(self):
         return "Validation Kernel (model=%s)" % (self.model)
