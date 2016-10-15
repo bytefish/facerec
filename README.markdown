@@ -29,7 +29,6 @@ This project implements a face recognition framework for Python with:
 
 ## Documentation ##
 
-
 You can find the documentation in the `doc` folder coming with this project. I have added the build html folder to 
 the repository, so you don't need to build it by yourself. But if you want to build the documentation by yourself,
 here is how to do it.
@@ -37,6 +36,27 @@ here is how to do it.
 I've uploaded the documentation to my website, if you just want to view the documentation without cloning the repository:
 
 * [http://bytefish.de/dev/facerec](http://bytefish.de/dev/facerec)
+
+### Dependencies ###
+
+#### Python2 ####
+
+```
+pip install future
+pip install numpy
+pip install scipy
+pip install matplotlib
+pip install PIL
+```
+
+#### Python3 ####
+
+```
+pip install numpy
+pip install scipy
+pip install matplotlib
+pip install Pillow
+```
 
 ### Sphinx ###
 
