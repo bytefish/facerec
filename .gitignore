@@ -1,3 +1,4 @@
 *.pyc
 *.pkl
 serverlog.log
+.DS_Store
