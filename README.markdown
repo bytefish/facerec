@@ -43,6 +43,7 @@ I've uploaded the documentation to my website, if you just want to view the docu
 
 ```
 pip install future
+pip install scikit-learn
 pip install numpy
 pip install scipy
 pip install matplotlib
@@ -52,6 +53,7 @@ pip install PIL
 #### Python3 ####
 
 ```
+pip install scikit-learn
 pip install numpy
 pip install scipy
 pip install matplotlib
