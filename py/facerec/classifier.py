@@ -10,6 +10,7 @@ import logging
 import numpy as np
 import operator as op
 from sklearn import svm
+from sklearn.model_selection import GridSearchCV
 
 class AbstractClassifier(object):
 
@@ -120,7 +121,7 @@ class SVM(AbstractClassifier):
     step.
     """
 
-    def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=True, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None):
+    def __init__(self, C=1.0, kernel='linear', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=True, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None):
         AbstractClassifier.__init__(self)
         self.logger = logging.getLogger("facerec.classifier.SVM")
         # Initialize the SVM with given Parameters:
@@ -141,8 +142,6 @@ class SVM(AbstractClassifier):
         self.decision_function_shape = decision_function_shape
         self.random_state = random_state 
 
-
-    
     def compute(self, X, y):
         X = asRowMatrix(X)
         y = np.asarray(y)
@@ -177,9 +176,7 @@ class SVM(AbstractClassifier):
         # Turn the image into a row-vector:
         X = np.asarray(X).reshape(1,-1)
         # Predict the Probability:
-        results = self.svm.predict_proba(y)[0]
-        # Gets the probabilities per class:
-        prob_per_class_dictionary = dict(zip(self.svm.classes_, results))
+        results = self.svm.predict_proba(X)[0]
         # Sorts the classes by probability:
         results_ordered_by_probability = map(lambda x: x[0], sorted(zip(self.svm.classes_, results), key=lambda x: x[1], reverse=True))
         # Take the first item as the predicted label:

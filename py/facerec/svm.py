@@ -7,73 +7,55 @@
 from facerec.classifier import SVM
 from facerec.validation import KFoldCrossValidation
 from facerec.model import PredictableModel
-from svmutil import *
+from facerec.util import asRowMatrix
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import classification_report
+from sklearn.svm import SVC
 from itertools import product
 import numpy as np
 import logging
 
 
-def range_f(begin, end, step):
-    seq = []
-    while True:
-        if step == 0: break
-        if step > 0 and begin > end: break
-        if step < 0 and begin < end: break
-        seq.append(begin)
-        begin = begin + step
-    return seq
-
-def grid(grid_parameters):
-    grid = []
-    for parameter in grid_parameters:
-        begin, end, step = parameter
-        grid.append(range_f(begin, end, step))
-    return product(*grid)
-
-def grid_search(model, X, y, C_range=(-5,  15, 2), gamma_range=(3, -15, -2), k=5, num_cores=1):
-    
-    if not isinstance(model, PredictableModel):
-        raise TypeError("GridSearch expects a PredictableModel. If you want to perform optimization on raw data use facerec.feature.Identity to pass unpreprocessed data!")
+def grid_search(model, X, y, tuned_parameters):
+    # Check if the Classifier in the Model is actually an SVM:
     if not isinstance(model.classifier, SVM):
-        raise TypeError("GridSearch expects a SVM as classifier. Please use a facerec.classifier.SVM!")
+        raise TypeError("classifier must be of type SVM!")
+    # First compute the features for this SVM-based model:
+    features = model.feature.compute(X,y)
+    # Turn the List of Features into a matrix with each feature as Row:
+    Xrow = asRowMatrix(features)
+    # Split the dataset in two equal parts
+    X_train, X_test, y_train, y_test = train_test_split(Xrow, y, test_size=0.5, random_state=0)
+    # Define the Classifier:
+    scores = ['precision', 'recall']
+    # Evaluate the Model:
+    for score in scores:
+        print("# Tuning hyper-parameters for %s" % score)
+        print()
     
-    logger = logging.getLogger("facerec.svm.gridsearch")
-    logger.info("Performing a Grid Search.")
+        clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=5,
+                        scoring='%s_macro' % score)
+        clf.fit(X_train, y_train)
     
-    # best parameter combination to return
-    best_parameter = svm_parameter("-q")
-    best_parameter.kernel_type = model.classifier.param.kernel_type
-    best_parameter.nu = model.classifier.param.nu
-    best_parameter.coef0 = model.classifier.param.coef0
-    # either no gamma given or kernel is linear (only C to optimize)
-    if (gamma_range is None) or (model.classifier.param.kernel_type == LINEAR):
-        gamma_range = (0, 0, 1)
+        print("Best parameters set found on development set:")
+        print()
+        print(clf.best_params_)
+        print()
+        print("Grid scores on development set:")
+        print()
+        means = clf.cv_results_['mean_test_score']
+        stds = clf.cv_results_['std_test_score']
+        for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+            print("%0.3f (+/-%0.03f) for %r"
+                % (mean, std * 2, params))
+        print()
     
-    # best validation error so far
-    best_accuracy = np.finfo('float').min
-    
-    # create grid (cartesian product of ranges)        
-    g = grid([C_range, gamma_range])
-    results = []
-    for p in g:
-        C, gamma = p
-        C, gamma = 2**C, 2**gamma
-        model.classifier.param.C, model.classifier.param.gamma = C, gamma
-
-        # perform a k-fold cross validation
-        cv = KFoldCrossValidation(model=model,k=k)
-        cv.validate(X,y)
-
-        # append parameter into list with accuracies for all parameter combinations
-        results.append([C, gamma, cv.accuracy])
-        
-        # store best parameter combination
-        if cv.accuracy > best_accuracy:
-            logger.info("best_accuracy=%s" % (cv.accuracy))
-            best_accuracy = cv.accuracy
-            best_parameter.C, best_parameter.gamma = C, gamma
-        
-        logger.info("%d-CV Result = %.2f." % (k, cv.accuracy))
-        
-    # set best parameter combination to best found
-    return best_parameter, results
+        print("Detailed classification report:")
+        print()
+        print("The model is trained on the full development set.")
+        print("The scores are computed on the full evaluation set.")
+        print()
+        y_true, y_pred = y_test, clf.predict(X_test)
+        print(classification_report(y_true, y_pred))
+        print()
