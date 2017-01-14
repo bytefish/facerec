@@ -98,6 +98,10 @@ if __name__ == "__main__":
     classifier = SVM()
     # Define the model as the combination
     model = PredictableModel(feature=feature, classifier=classifier)
+    # Compute a model:
+    model.compute(X, y)
+    # Save the Model using joblib:
+    save_model('model.pkl', model)
     # Perform a Grid Search for the Set of Parameters:
     tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
         'C': [1, 10, 100, 1000]},

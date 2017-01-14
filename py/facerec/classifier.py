@@ -123,7 +123,6 @@ class SVM(AbstractClassifier):
 
     def __init__(self, C=1.0, kernel='linear', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=True, tol=0.001, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr', random_state=None):
         AbstractClassifier.__init__(self)
-        self.logger = logging.getLogger("facerec.classifier.SVM")
         # Initialize the SVM with given Parameters:
         self.svm = svm.SVC(C=C, kernel=kernel, degree=degree, gamma=gamma, coef0=coef0, shrinking=shrinking, probability=probability, tol=tol, cache_size=cache_size, class_weight=class_weight, verbose=verbose, max_iter=max_iter, decision_function_shape=decision_function_shape, random_state=random_state)
         # Store parameters:
