@@ -8,7 +8,7 @@ import sys
 # append facerec to module search path
 sys.path.append("../..")
 # import facerec stuff
-from facerec.dataset import DataSet
+from facerec.dataset import NumericDataSet
 from facerec.feature import Fisherfaces
 from facerec.distance import EuclideanDistance, CosineDistance
 from facerec.classifier import NearestNeighbor
@@ -32,7 +32,7 @@ logger = logging.getLogger("facerec")
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 # load a dataset (e.g. AT&T Facedatabase)
-dataSet = DataSet("/home/philipp/facerec/data/yalefaces_recognition")
+dataSet = NumericDataSet("/home/philipp/facerec/data/yalefaces_recognition")
 # define Fisherfaces as feature extraction method
 feature = Fisherfaces()
 # define a 1-NN classifier with Euclidean Distance

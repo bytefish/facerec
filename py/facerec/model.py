@@ -8,6 +8,7 @@ from facerec.feature import AbstractFeature
 from facerec.classifier import AbstractClassifier
 
 class PredictableModel(object):
+
     def __init__(self, feature, classifier):
         if not isinstance(feature, AbstractFeature):
             raise TypeError("feature must be of type AbstractFeature!")

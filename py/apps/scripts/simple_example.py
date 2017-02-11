@@ -4,7 +4,9 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
-import sys, os
+import os
+import sys
+
 sys.path.append("../..")
 
 # Import Matplotlib:
@@ -16,8 +18,8 @@ import matplotlib.cm as cm
 from builtins import range
 
 # import facerec modules
-from facerec.feature import Fisherfaces, SpatialHistogram, Identity
-from facerec.distance import EuclideanDistance, ChiSquareDistance
+from facerec.feature import Fisherfaces
+from facerec.distance import EuclideanDistance
 from facerec.classifier import NearestNeighbor
 from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
@@ -32,8 +34,6 @@ try:
 except ImportError:
     import Image
 import logging
-import matplotlib.pyplot as plt
-from facerec.lbp import LPQ, ExtendedLBP
 
 
 def read_images(path, sz=None):

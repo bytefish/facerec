@@ -4,17 +4,13 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
-from facerec.classifier import SVM
-from facerec.validation import KFoldCrossValidation
-from facerec.model import PredictableModel
-from facerec.util import asRowMatrix
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from itertools import product
-import numpy as np
-import logging
+
+from facerec.classifier import SVM
+from facerec.util import asRowMatrix
 
 
 def grid_search(model, X, y, tuned_parameters):

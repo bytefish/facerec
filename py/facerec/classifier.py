@@ -4,13 +4,14 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
+import operator as op
+
+import numpy as np
+from sklearn import svm
+
 from facerec.distance import EuclideanDistance
 from facerec.util import asRowMatrix
-import logging
-import numpy as np
-import operator as op
-from sklearn import svm
-from sklearn.model_selection import GridSearchCV
+
 
 class AbstractClassifier(object):
 
@@ -24,6 +25,7 @@ class AbstractClassifier(object):
         raise NotImplementedError("This Classifier is cannot be updated.")
 
 class NearestNeighbor(AbstractClassifier):
+
     """
     Implements a k-Nearest Neighbor Model with a generic distance metric.
     """

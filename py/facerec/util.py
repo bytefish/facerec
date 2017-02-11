@@ -4,14 +4,16 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
-import numpy as np
+import os
 import random
-from scipy import ndimage
+import numpy as np
+import PIL
+from builtins import range
 
 def read_image(filename):
     imarr = np.array([])
     try:
-        im = Image.open(os.path.join(filename))
+        im = PIL.Image.open(os.path.join(filename))
         im = im.convert("L") # convert to greyscale
         imarr = np.array(im, dtype=np.uint8)
     except IOError as e:
@@ -83,13 +85,13 @@ def zscore(X):
     return X, mean, std
 
 def shuffle(X,y):
-    idx = np.argsort([random.random() for i in xrange(y.shape[0])])
+    idx = np.argsort([random.random() for i in range(y.shape[0])])
     return X[:,idx], y[idx]
 
 def shuffle_array(X,y):
     """ Shuffles two arrays!
     """
-    idx = np.argsort([random.random() for i in xrange(len(y))])
+    idx = np.argsort([random.random() for i in range(len(y))])
     X = [X[i] for i in idx]
     y = [y[i] for i in idx]
     return (X, y)

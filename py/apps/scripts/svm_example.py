@@ -4,26 +4,17 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
-import sys, os
+import os
+import sys
+
 sys.path.append("../..")
 
-# Import Matplotlib:
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.cm as cm
-
-# For Python2 backward comability:
-from builtins import range
-
 # import facerec modules
-from facerec.feature import Fisherfaces, SpatialHistogram, Identity
-from facerec.distance import EuclideanDistance, ChiSquareDistance
-from facerec.classifier import NearestNeighbor, SVM
+from facerec.feature import Fisherfaces
+from facerec.classifier import SVM
 from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
-from facerec.visual import subplot
-from facerec.util import minmax_normalize
-from facerec.serialization import save_model, load_model
+from facerec.serialization import save_model
 from facerec.svm import grid_search
 import numpy as np
 # try to import the PIL Image module
@@ -32,8 +23,6 @@ try:
 except ImportError:
     import Image
 import logging
-import matplotlib.pyplot as plt
-from facerec.lbp import LPQ, ExtendedLBP
 
 
 def read_images(path, sz=None):

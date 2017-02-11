@@ -4,10 +4,11 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
-import numpy as np
-from scipy import ndimage
 import os
 import sys
+
+import numpy as np
+from scipy import ndimage
 
 sys.path.append("../..")
 
@@ -18,10 +19,9 @@ except ImportError:
     import Image
 
 import matplotlib.pyplot as plt
-import textwrap
 
 import logging
-
+from builtins import range
 from facerec.feature import SpatialHistogram
 from facerec.distance import ChiSquareDistance
 from facerec.classifier import NearestNeighbor
@@ -90,7 +90,7 @@ class YaleBaseFilter(FileNameFilter):
         return True
 
     def __repr__(self):
-        return "Yale FDB Filter (min_azimuth=%s, max_azimuth=%s, min_elevation=%s, max_elevation=%s)" % (min_azimuth, max_azimuth, min_elevation, max_elevation)
+        return "Yale FDB Filter (min_azimuth=%s, max_azimuth=%s, min_elevation=%s, max_elevation=%s)" % (self.min_azimuth, self.max_azimuth, self.min_elevation, self.max_elevation)
 
 
 def read_images(path, fileNameFilter=FileNameFilter("None"), sz=None):
@@ -121,11 +121,12 @@ def read_images(path, fileNameFilter=FileNameFilter("None"), sz=None):
                             im = im.resize(sz, Image.ANTIALIAS)
                         X.append(np.asarray(im, dtype=np.uint8))
                         y.append(c)
-                    except IOError, (errno, strerror):
-                        print "I/O error({0}): {1}".format(errno, strerror)
+                    except IOError as e:
+                        print("I/O error: {0}".format(e))
+                        raise e
                     except:
-                        print "Unexpected error:", sys.exc_info()[0]
-                        raise         
+                        print("Unexpected error: {0}".format(sys.exc_info()[0]))
+                        raise
             c = c+1
     return [X,y]
     
@@ -159,7 +160,7 @@ def partition_data(X, y):
     Xs,ys = shuffle_array(X,y)
     # Maps index to class:
     mapping = {}
-    for i in xrange(len(y)):
+    for i in range(len(y)):
         yi = ys[i]
         try:
             mapping[yi].append(i)
@@ -178,11 +179,6 @@ def partition_data(X, y):
     # Return shuffled partitions:
     return Xtrain, ytrain, Xtest, ytest
 
-class ModelWrapper:
-    def __init__(model):
-        self.model = model
-        self.result = []
-
 if __name__ == "__main__":
     # This is where we write the results to, if an output_dir is given
     # in command line:
@@ -192,7 +188,7 @@ if __name__ == "__main__":
     # your image data:
     if len(sys.argv) < 2:
 
-        print "USAGE: lpq_experiment.py </path/to/images>"
+        print("USAGE: lpq_experiment.py </path/to/images>")
         sys.exit()
     # Define filters for the Dataset:
     yale_subset_0_40 = YaleBaseFilter(0, 40, 0, 40)
@@ -211,20 +207,20 @@ if __name__ == "__main__":
     model1 = PredictableModel(feature=SpatialHistogram(lbp_operator=LPQ()), classifier=NearestNeighbor(dist_metric=ChiSquareDistance(), k=1))
     # The sigmas we'll apply for each run:
     sigmas = [0]
-    print 'The experiment will be run %s times!' % ITER_MAX
+    print("The experiment will be run %s times!" % ITER_MAX)
     # Initialize experiments (with empty results):
     experiments = {}
     experiments['lbp_model'] = { 'model': model0, 'results' : {}, 'color' : 'r', 'linestyle' : '--', 'marker' : '*'} 
     experiments['lpq_model'] = { 'model': model1, 'results' : {}, 'color' : 'b', 'linestyle' : '--', 'marker' : 's'}
     # Loop to acquire the results for each experiment:
     for sigma in sigmas:
-        print "Setting sigma=%s" % sigma
+        print("Setting sigma=%s" % sigma)
         for key, value in experiments.iteritems():
-            print 'Running experiment for model=%s' % key
+            print("Running experiment for model=%s" % key)
             # Define the validators for the model:
             cv0 = SimpleValidation(value['model'])
-            for iteration in xrange(ITER_MAX):
-                print "Repeating experiment %s/%s." % (iteration + 1, ITER_MAX)
+            for iteration in range(ITER_MAX):
+                print("Repeating experiment %s/%s." % (iteration + 1, ITER_MAX))
                 # Split dataset according to the papers description:
                 Xtrain, ytrain, Xtest, ytest = partition_data(X,y)
                 # Apply a gaussian blur on the images:
@@ -238,7 +234,6 @@ if __name__ == "__main__":
             # Calculate overall precision:
             prec = precision(true_positives,false_positives)
             # Store the result:
-            print key
             experiments[key]['results'][sigma] = prec
 
     # Make a nice plot of this textual output:
@@ -247,7 +242,7 @@ if __name__ == "__main__":
     plot_legend = []
     # Add the Validation results:
     for experiment_name, experiment_definition in experiments.iteritems():
-        print key, experiment_definition
+        print(key, experiment_definition)
         results = experiment_definition['results']
         (xvalues, yvalues) = zip(*[(k,v) for k,v in results.iteritems()])
         # Add to the legend:

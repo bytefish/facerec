@@ -4,16 +4,15 @@
 # Copyright (c) Philipp Wagner. All rights reserved.
 # Licensed under the BSD license. See LICENSE file in the project root for full license information.
 
-import numpy as np
+import logging
 import math as math
 import random as random
-import logging
+from builtins import range
+
+import numpy as np
 
 from facerec.model import PredictableModel
-from facerec.classifier import AbstractClassifier
 
-# For Python2 backward comability:
-from builtins import range
 
 # TODO The evaluation of a model should be completely moved to the generic ValidationStrategy. The specific Validation 
 #       implementations should only care about partition the data, which would make a lot sense. Currently it is not 

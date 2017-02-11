@@ -6,15 +6,17 @@
 
 import sys, os
 sys.path.append("../..")
+
+from builtins import range
+
 # facerec
 from facerec.feature import Fisherfaces, PCA, SpatialHistogram, Identity
-from facerec.distance import EuclideanDistance, ChiSquareDistance
+from facerec.distance import EuclideanDistance
 from facerec.classifier import NearestNeighbor
 from facerec.model import PredictableModel
 from facerec.validation import KFoldCrossValidation
 from facerec.visual import subplot
 from facerec.util import minmax_normalize
-from facerec.serialization import save_model, load_model
 # required libraries
 import numpy as np
 # try to import the PIL Image module
@@ -22,11 +24,9 @@ try:
     from PIL import Image
 except ImportError:
     import Image
-import matplotlib.cm as cm
 import logging
-import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from facerec.lbp import LPQ, ExtendedLBP
+
 
 class FileNameFilter:
     def __init__(self, name):
@@ -89,19 +89,20 @@ def read_images(path, fileNameFilter=FileNameFilter("None"), sz=None):
             subject_path = os.path.join(dirname, subdirname)
             for filename in os.listdir(subject_path):
                 if fileNameFilter(filename):
-                    print filename
+                    print(filename)
                     try:
                         im = Image.open(os.path.join(subject_path, filename))
                         im = im.convert("L")
                         # resize to given size (if given)
                         if (sz is not None):
-                            im = im.resize(self.sz, Image.ANTIALIAS)
+                            im = im.resize(sz, Image.ANTIALIAS)
                         X.append(np.asarray(im, dtype=np.uint8))
                         y.append(c)
-                    except IOError, (errno, strerror):
-                        print "I/O error({0}): {1}".format(errno, strerror)
+                    except IOError as e:
+                        print("I/O error: {0}".format(e))
+                        raise e
                     except:
-                        print "Unexpected error:", sys.exc_info()[0]
+                        print("Unexpected error: {0}".format(sys.exc_info()[0]))
                         raise
             c = c+1
     return [X,y]
@@ -115,7 +116,7 @@ if __name__ == "__main__":
     # the tutorial coming with this source code on how to prepare
     # your image data:
     if len(sys.argv) < 2:
-        print "USAGE: facerec_demo.py </path/to/images>"
+        print("USAGE: facerec_demo.py </path/to/images>")
         sys.exit()
     yale_filter = YaleBaseFilter(-25, 25, -25, 25)
     # Now read in the image data. This must be a valid path!
@@ -139,7 +140,7 @@ if __name__ == "__main__":
     # Then turn the first (at most) 16 eigenvectors into grayscale
     # images (note: eigenvectors are stored by column!)
     E = []
-    for i in xrange(min(model.feature.eigenvectors.shape[1], 16)):
+    for i in range(min(model.feature.eigenvectors.shape[1], 16)):
         e = model.feature.eigenvectors[:,i].reshape(X[0].shape)
         E.append(minmax_normalize(e,0,255, dtype=np.uint8))
     # Plot them and store the plot to "python_fisherfaces_fisherfaces.pdf"
