@@ -35,7 +35,7 @@ here is how to do it.
 
 I've uploaded the documentation to my website, if you just want to view the documentation without cloning the repository:
 
-* [http://bytefish.de/dev/facerec](http://bytefish.de/dev/facerec)
+* [https://bytefish.de/dev/facerec](https://bytefish.de/dev/facerec)
 
 ### Dependencies ###
 
@@ -563,8 +563,8 @@ Once you have created your model you can call `compute` to learn it. Please see 
     <tr>
         <td style="border-style: none;"><img src="https://raw.github.com/bytefish/facerec/master/py/apps/videofacerec/simple_videofacerec.png" alt="simple_videofacerec.py in action" /></td> 
         <td style="border-style: none;">
-            <p><a href="https://github.com/bytefish/facerec/tree/master/py/apps/videofacerec">videofacerec</a> is a tiny Python script I wrote to perform face recognition in videos and to showcase some of the <a href="http://www.github.com/bytefish/facerec">facerec framework</a> features. It was a really quick hack and I've always told people, that I can't give much of a help. But since many people kept asking for it recently, I've finally decided to rewrite it into something more useful and robust. And this is also the perfect chance to add some more <a href="http://www.github.com/bytefish/facerec">facerec</a> features and write a new blog post.</p>
-            <p>The screenshot shows you the final applications output, with my beautiful face of course. I've trained a model with the images of some celebrities and the application recognizes me as the <i>terrific</i> <a href="http://en.wikipedia.org/wiki/Patrick_Stewart">Sir Patrick Stewart</a>, which makes perfect sense if you have read <a href="http://www.bytefish.de/blog/fisherfaces">my article on the Fisherfaces algorithm</a>.</p></td>
+            <p><a href="https://github.com/bytefish/facerec/tree/master/py/apps/videofacerec">videofacerec</a> is a tiny Python script I wrote to perform face recognition in videos and to showcase some of the <a href="https://www.github.com/bytefish/facerec">facerec framework</a> features. It was a really quick hack and I've always told people, that I can't give much of a help. But since many people kept asking for it recently, I've finally decided to rewrite it into something more useful and robust. And this is also the perfect chance to add some more <a href="https://www.github.com/bytefish/facerec">facerec</a> features and write a new blog post.</p>
+            <p>The screenshot shows you the final applications output, with my beautiful face of course. I've trained a model with the images of some celebrities and the application recognizes me as the <i>terrific</i> <a href="https://en.wikipedia.org/wiki/Patrick_Stewart">Sir Patrick Stewart</a>, which makes perfect sense if you have read <a href="https://www.bytefish.de/blog/fisherfaces">my article on the Fisherfaces algorithm</a>.</p></td>
     </tr>
 </table>
 
@@ -617,7 +617,7 @@ As you can see, the name for the recognition model (called ``model_filename`` ab
     </tr>
     <tr>
         <td><code>-v NUMFOLDS, --validate=NUMFOLDS</code></td>
-        <td>You really want to validate a model before using it, so you are able to estimate the performance you can expect from it. The script only supports a simple k-Fold Cross Validation and outputs the <i>precision</i> of the model. If you want to use other estimates I suggest reading <a href="http://bytefish.de/blog/validating_algorithms/">my post on validating algorithms</a>, which uses the great <a href="https://github.com/scikit-learn/scikit-learn">scikit-learn</a> project. The following example performs a 10-fold Cross Validation on a given dataset and stores the computed model to <code>model_filename.pkl</code>.</td>
+        <td>You really want to validate a model before using it, so you are able to estimate the performance you can expect from it. The script only supports a simple k-Fold Cross Validation and outputs the <i>precision</i> of the model. If you want to use other estimates I suggest reading <a href="https://bytefish.de/blog/validating_algorithms/">my post on validating algorithms</a>, which uses the great <a href="https://github.com/scikit-learn/scikit-learn">scikit-learn</a> project. The following example performs a 10-fold Cross Validation on a given dataset and stores the computed model to <code>model_filename.pkl</code>.</td>
         <td><code>python simple_videofacerec.py -t /path/to/some/dataset -v 10 model_filename.pkl</code></td>
     </tr>
     <tr>
@@ -756,7 +756,7 @@ Starting application...
 
 #### defining your own model ####
 
-If you are experimenting with the framework, you probably don't want to stick to the [Fisherfaces](http://www.bytefish.de/blog/fisherfaces) algorithm used as default. Instead of coming up with an own language for defining a model or using a XML configuration (*please not!*), there's simply a method which returns the model definition. Sometimes a method is totally sufficient in programming:
+If you are experimenting with the framework, you probably don't want to stick to the [Fisherfaces](https://www.bytefish.de/blog/fisherfaces) algorithm used as default. Instead of coming up with an own language for defining a model or using a XML configuration (*please not!*), there's simply a method which returns the model definition. Sometimes a method is totally sufficient in programming:
 
 ```python
 def get_model(image_size, subject_names):
