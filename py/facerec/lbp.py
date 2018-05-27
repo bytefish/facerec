@@ -63,11 +63,11 @@ class ExtendedLBP(LocalDescriptor):
         blocksizey = np.ceil(max(maxy,0)) - np.floor(min(miny,0)) + 1
         blocksizex = np.ceil(max(maxx,0)) - np.floor(min(minx,0)) + 1
         # coordinates of origin (0,0) in the block
-        origy =  0 - np.floor(min(miny,0))
-        origx =  0 - np.floor(min(minx,0))
+        origy =  int(0 - np.floor(min(miny,0)))
+        origx =  int(0 - np.floor(min(minx,0)))
         # calculate output image size
-        dx = xsize - blocksizex + 1
-        dy = ysize - blocksizey + 1
+        dx = int(xsize - blocksizex + 1)
+        dy = int(ysize - blocksizey + 1)
         # get center points
         C = np.asarray(X[origy:origy+dy,origx:origx+dx], dtype=np.uint8)
         result = np.zeros((dy,dx), dtype=np.uint32)
@@ -75,10 +75,10 @@ class ExtendedLBP(LocalDescriptor):
             # get coordinate in the block
             y,x = p + (origy, origx)
             # Calculate floors, ceils and rounds for the x and y.
-            fx = np.floor(x)
-            fy = np.floor(y)
-            cx = np.ceil(x)
-            cy = np.ceil(y)
+            fx = int(np.floor(x))
+            fy = int(np.floor(y))
+            cx = int(np.ceil(x))
+            cy = int(np.ceil(y))
             # calculate fractional part    
             ty = y - fy
             tx = x - fx
@@ -89,12 +89,12 @@ class ExtendedLBP(LocalDescriptor):
             w4 =      tx  *      ty
             # calculate interpolated image
             N = w1*X[fy:fy+dy,fx:fx+dx]
-            N += w2*X[fy:fy+dy,cx:cx+dx]
-            N += w3*X[cy:cy+dy,fx:fx+dx]
-            N += w4*X[cy:cy+dy,cx:cx+dx]
+            np.add(N, w2*X[fy:fy+dy,cx:cx+dx], out=N, casting="unsafe")
+            np.add(N, w3*X[cy:cy+dy,fx:fx+dx], out=N, casting="unsafe")
+            np.add(N, w4*X[cy:cy+dy,cx:cx+dx], out=N, casting="unsafe")
             # update LBP codes        
             D = N >= C
-            result += (1<<i)*D
+            np.add(result, (1<<i)*D, out=result,  casting="unsafe")
         return result
 
     @property
@@ -130,8 +130,8 @@ class VarLBP(LocalDescriptor):
         origy =  0 - np.floor(min(miny,0))
         origx =  0 - np.floor(min(minx,0))
         # Calculate output image size:
-        dx = xsize - blocksizex + 1
-        dy = ysize - blocksizey + 1
+        dx = int(xsize - blocksizex + 1)
+        dy = int(ysize - blocksizey + 1)
         # Allocate memory for online variance calculation:
         mean = np.zeros((dy,dx), dtype=np.float32)
         delta = np.zeros((dy,dx), dtype=np.float32)
@@ -142,10 +142,10 @@ class VarLBP(LocalDescriptor):
             # Get coordinate in the block:
             y,x = p + (origy, origx)
             # Calculate floors, ceils and rounds for the x and y:
-            fx = np.floor(x)
-            fy = np.floor(y)
-            cx = np.ceil(x)
-            cy = np.ceil(y)
+            fx = int(np.floor(x))
+            fy = int(np.floor(y))
+            cx = int(np.ceil(x))
+            cy = int(np.ceil(y))
             # Calculate fractional part:
             ty = y - fy
             tx = x - fx
@@ -156,9 +156,9 @@ class VarLBP(LocalDescriptor):
             w4 =      tx  *      ty
             # Calculate interpolated image:
             N = w1*X[fy:fy+dy,fx:fx+dx]
-            N += w2*X[fy:fy+dy,cx:cx+dx]
-            N += w3*X[cy:cy+dy,fx:fx+dx]
-            N += w4*X[cy:cy+dy,cx:cx+dx]
+            np.add(N, w2*X[fy:fy+dy,cx:cx+dx], out=N, casting="unsafe")
+            np.add(N, w3*X[cy:cy+dy,fx:fx+dx], out=N, casting="unsafe")
+            np.add(N, w4*X[cy:cy+dy,cx:cx+dx], out=N, casting="unsafe")
             # Update the matrices for Online Variance calculation (http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm):
             delta = N - mean
             mean = mean + delta/float(i+1)

@@ -47,7 +47,7 @@ pip install scikit-learn
 pip install numpy
 pip install scipy
 pip install matplotlib
-pip install PIL
+pip install Pillow
 ```
 
 #### Python3 ####
