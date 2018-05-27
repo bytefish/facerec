@@ -136,9 +136,10 @@ class LDA(AbstractFeature):
             Sw = Sw + np.dot((Xi-meanClass), (Xi-meanClass).T)
             Sb = Sb + Xi.shape[1] * np.dot((meanClass - meanTotal), (meanClass - meanTotal).T)
         # solve eigenvalue problem for a general matrix
-        self._eigenvalues, self._eigenvectors = np.linalg.eig(np.linalg.inv(Sw)*Sb)
+        BinvA = np.dot(np.linalg.inv(Sw), Sb)
+        self._eigenvalues, self._eigenvectors = np.linalg.eig(BinvA)
         # sort eigenvectors by their eigenvalue in descending order
-        idx = np.argsort(-self._eigenvalues.real)
+        idx = np.argsort(-self._eigenvalues)
         self._eigenvalues, self._eigenvectors = self._eigenvalues[idx], self._eigenvectors[:,idx]
         # only store (c-1) non-zero eigenvalues
         self._eigenvalues = np.array(self._eigenvalues[0:self._num_components].real, dtype=np.float32, copy=True)
