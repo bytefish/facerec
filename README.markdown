@@ -2,7 +2,7 @@
 
 ## Overview ##
 
-This project implements a face recognition framework for Python with:
+This project implements a face recognition framework for Python and GNU Octave / MATLAB with:
 
 * Preprocessing
     * Histogram Equalization
@@ -27,19 +27,19 @@ This project implements a face recognition framework for Python with:
     * Leave-One-Out Cross Validation
     * Leave-One-Class-Out Cross Validation
 
-## Documentation ##
 
-You can find the documentation in the `doc` folder coming with this project. I have added the build html folder to 
-the repository, so you don't need to build it by yourself. But if you want to build the documentation by yourself,
-here is how to do it.
+### Related Projects ###
 
-I've uploaded the documentation to my website, if you just want to view the documentation without cloning the repository:
+[jFaces]: https://github.com/DanielMartensson/jFaces---Image-classification-in-Java-
+[@DanielMartensson]: https://github.com/DanielMartensson
 
-* [https://bytefish.de/dev/facerec](https://bytefish.de/dev/facerec)
+[@DanielMartensson] implemented a pure Java version of the Fisherfaces algorithm called [jFaces] here:
 
-### Dependencies ###
+* https://github.com/DanielMartensson/jFaces---Image-classification-in-Java-
 
-#### Python2 ####
+## Dependencies ##
+
+### Python2 ###
 
 ```
 pip install future
@@ -50,7 +50,7 @@ pip install matplotlib
 pip install Pillow
 ```
 
-#### Python3 ####
+### Python3 ###
 
 ```
 pip install scikit-learn
@@ -60,38 +60,7 @@ pip install matplotlib
 pip install Pillow
 ```
 
-### Sphinx ###
-
-You need to install [Sphinx](http://sphinx-doc.org) in order to build the project, which can be obtained with `pip`:
-
-```
-pip install sphinx
-```
-
-### Build the Documentation ###
-
-Windows:
-
-```
-make.cmd html
-```
-
-Linux:
-
-```
-make html
-```
-
-Or if you only have `sphinx` installed then simply run:
-
-```
-sphinx-build -b html source build
-```
-
-
-## Old Documentation ##
-
-I've appended the old documentation, so people can also read this without visiting other pages.
+## Examples ##
 
 ### A simple example for beginners
 
